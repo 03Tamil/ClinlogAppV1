@@ -1,0 +1,3047 @@
+[
+    {
+        "_index": "search-smileconnect-log",
+        "_id": "q3p1b48BRCwhtTjkf2pN",
+        "_version": 1,
+        "_score": null,
+        "fields": {
+            "eventName.stem": [
+                "portal-user-login"
+            ],
+            "eventName.enum": [
+                "portal-user-login"
+            ],
+            "logLevel.joined": [
+                "INFO"
+            ],
+            "message.prefix": [
+                "User logged in successfully"
+            ],
+            "userId.delimiter": [
+                "209040"
+            ],
+            "logLevel.enum": [
+                "INFO"
+            ],
+            "message.delimiter": [
+                "User logged in successfully"
+            ],
+            "dateCreated": [
+                "2024-05-13T00:58:42.000Z"
+            ],
+            "eventName.joined": [
+                "portal-user-login"
+            ],
+            "logLevel": [
+                "INFO"
+            ],
+            "userId.joined": [
+                "209040"
+            ],
+            "logLevel.prefix": [
+                "INFO"
+            ],
+            "message.enum": [
+                "User logged in successfully"
+            ],
+            "eventName": [
+                "portal-user-login"
+            ],
+            "logLevel.stem": [
+                "INFO"
+            ],
+            "userId.stem": [
+                "209040"
+            ],
+            "userId.enum": [
+                "209040"
+            ],
+            "message": [
+                "User logged in successfully"
+            ],
+            "userId": [
+                "209040"
+            ],
+            "eventName.prefix": [
+                "portal-user-login"
+            ],
+            "userId.prefix": [
+                "209040"
+            ],
+            "eventName.delimiter": [
+                "portal-user-login"
+            ],
+            "message.stem": [
+                "User logged in successfully"
+            ],
+            "logLevel.delimiter": [
+                "INFO"
+            ],
+            "message.joined": [
+                "User logged in successfully"
+            ]
+        },
+        "sort": [
+            "2024-05-13T00:58:42.000Z",
+            1215
+        ]
+    },
+    {
+        "_index": "search-smileconnect-log",
+        "_id": "sXr8b48BRCwhtTjk7GpJ",
+        "_version": 1,
+        "_score": null,
+        "fields": {
+            "eventName.stem": [
+                "portal-user-login"
+            ],
+            "eventName.enum": [
+                "portal-user-login"
+            ],
+            "logLevel.joined": [
+                "INFO"
+            ],
+            "message.prefix": [
+                "User logged in successfully"
+            ],
+            "userId.delimiter": [
+                "209040"
+            ],
+            "logLevel.enum": [
+                "INFO"
+            ],
+            "message.delimiter": [
+                "User logged in successfully"
+            ],
+            "dateCreated": [
+                "2024-05-13T00:58:42.000Z"
+            ],
+            "eventName.joined": [
+                "portal-user-login"
+            ],
+            "logLevel": [
+                "INFO"
+            ],
+            "userId.joined": [
+                "209040"
+            ],
+            "logLevel.prefix": [
+                "INFO"
+            ],
+            "message.enum": [
+                "User logged in successfully"
+            ],
+            "eventName": [
+                "portal-user-login"
+            ],
+            "logLevel.stem": [
+                "INFO"
+            ],
+            "userId.stem": [
+                "209040"
+            ],
+            "userId.enum": [
+                "209040"
+            ],
+            "message": [
+                "User logged in successfully"
+            ],
+            "userId": [
+                "209040"
+            ],
+            "eventName.prefix": [
+                "portal-user-login"
+            ],
+            "userId.prefix": [
+                "209040"
+            ],
+            "eventName.delimiter": [
+                "portal-user-login"
+            ],
+            "message.stem": [
+                "User logged in successfully"
+            ],
+            "logLevel.delimiter": [
+                "INFO"
+            ],
+            "message.joined": [
+                "User logged in successfully"
+            ]
+        },
+        "sort": [
+            "2024-05-13T00:58:42.000Z",
+            560
+        ]
+    },
+    {
+        "_index": "search-smileconnect-log",
+        "_id": "qnpyb48BRCwhtTjkYGpS",
+        "_version": 1,
+        "_score": null,
+        "fields": {
+            "eventName.stem": [
+                "portal-entry-created"
+            ],
+            "eventName.enum": [
+                "portal-entry-created"
+            ],
+            "logLevel.joined": [
+                "INFO"
+            ],
+            "message.prefix": [
+                "Entry with Id:338734 is created"
+            ],
+            "userId.delimiter": [
+                "140705"
+            ],
+            "logLevel.enum": [
+                "INFO"
+            ],
+            "message.delimiter": [
+                "Entry with Id:338734 is created"
+            ],
+            "dateCreated": [
+                "2024-05-13T00:55:17.000Z"
+            ],
+            "eventName.joined": [
+                "portal-entry-created"
+            ],
+            "logLevel": [
+                "INFO"
+            ],
+            "userId.joined": [
+                "140705"
+            ],
+            "logLevel.prefix": [
+                "INFO"
+            ],
+            "message.enum": [
+                "Entry with Id:338734 is created"
+            ],
+            "eventName": [
+                "portal-entry-created"
+            ],
+            "logLevel.stem": [
+                "INFO"
+            ],
+            "userId.stem": [
+                "140705"
+            ],
+            "userId.enum": [
+                "140705"
+            ],
+            "message": [
+                "Entry with Id:338734 is created"
+            ],
+            "userId": [
+                "140705"
+            ],
+            "eventName.prefix": [
+                "portal-entry-created"
+            ],
+            "userId.prefix": [
+                "140705"
+            ],
+            "eventName.delimiter": [
+                "portal-entry-created"
+            ],
+            "message.stem": [
+                "Entry with Id:338734 is created"
+            ],
+            "logLevel.delimiter": [
+                "INFO"
+            ],
+            "message.joined": [
+                "Entry with Id:338734 is created"
+            ]
+        },
+        "sort": [
+            "2024-05-13T00:55:17.000Z",
+            1211
+        ]
+    },
+    {
+        "_index": "search-smileconnect-log",
+        "_id": "yXr8b48BRCwhtTjk7GpS",
+        "_version": 1,
+        "_score": null,
+        "fields": {
+            "eventName.stem": [
+                "portal-entry-created"
+            ],
+            "eventName.enum": [
+                "portal-entry-created"
+            ],
+            "logLevel.joined": [
+                "INFO"
+            ],
+            "message.prefix": [
+                "Entry with Id:338732 is created"
+            ],
+            "userId.delimiter": [
+                "140705"
+            ],
+            "logLevel.enum": [
+                "INFO"
+            ],
+            "message.delimiter": [
+                "Entry with Id:338732 is created"
+            ],
+            "dateCreated": [
+                "2024-05-13T00:53:31.000Z"
+            ],
+            "eventName.joined": [
+                "portal-entry-created"
+            ],
+            "logLevel": [
+                "INFO"
+            ],
+            "userId.joined": [
+                "140705"
+            ],
+            "logLevel.prefix": [
+                "INFO"
+            ],
+            "message.enum": [
+                "Entry with Id:338732 is created"
+            ],
+            "eventName": [
+                "portal-entry-created"
+            ],
+            "logLevel.stem": [
+                "INFO"
+            ],
+            "userId.stem": [
+                "140705"
+            ],
+            "userId.enum": [
+                "140705"
+            ],
+            "message": [
+                "Entry with Id:338732 is created"
+            ],
+            "userId": [
+                "140705"
+            ],
+            "eventName.prefix": [
+                "portal-entry-created"
+            ],
+            "userId.prefix": [
+                "140705"
+            ],
+            "eventName.delimiter": [
+                "portal-entry-created"
+            ],
+            "message.stem": [
+                "Entry with Id:338732 is created"
+            ],
+            "logLevel.delimiter": [
+                "INFO"
+            ],
+            "message.joined": [
+                "Entry with Id:338732 is created"
+            ]
+        },
+        "sort": [
+            "2024-05-13T00:53:31.000Z",
+            574
+        ]
+    },
+    {
+        "_index": "search-smileconnect-log",
+        "_id": "3Xr8b48BRCwhtTjk7Gqo",
+        "_version": 1,
+        "_score": null,
+        "fields": {
+            "eventName.stem": [
+                "portal-entry-created"
+            ],
+            "eventName.enum": [
+                "portal-entry-created"
+            ],
+            "logLevel.joined": [
+                "INFO"
+            ],
+            "message.prefix": [
+                "Entry with Id:338730 is created"
+            ],
+            "userId.delimiter": [
+                "140705"
+            ],
+            "logLevel.enum": [
+                "INFO"
+            ],
+            "message.delimiter": [
+                "Entry with Id:338730 is created"
+            ],
+            "dateCreated": [
+                "2024-05-13T00:50:52.000Z"
+            ],
+            "eventName.joined": [
+                "portal-entry-created"
+            ],
+            "logLevel": [
+                "INFO"
+            ],
+            "userId.joined": [
+                "140705"
+            ],
+            "logLevel.prefix": [
+                "INFO"
+            ],
+            "message.enum": [
+                "Entry with Id:338730 is created"
+            ],
+            "eventName": [
+                "portal-entry-created"
+            ],
+            "logLevel.stem": [
+                "INFO"
+            ],
+            "userId.stem": [
+                "140705"
+            ],
+            "userId.enum": [
+                "140705"
+            ],
+            "message": [
+                "Entry with Id:338730 is created"
+            ],
+            "userId": [
+                "140705"
+            ],
+            "eventName.prefix": [
+                "portal-entry-created"
+            ],
+            "userId.prefix": [
+                "140705"
+            ],
+            "eventName.delimiter": [
+                "portal-entry-created"
+            ],
+            "message.stem": [
+                "Entry with Id:338730 is created"
+            ],
+            "logLevel.delimiter": [
+                "INFO"
+            ],
+            "message.joined": [
+                "Entry with Id:338730 is created"
+            ]
+        },
+        "sort": [
+            "2024-05-13T00:50:52.000Z",
+            540
+        ]
+    },
+    {
+        "_index": "search-smileconnect-log",
+        "_id": "v3r8b48BRCwhtTjk7GpR",
+        "_version": 1,
+        "_score": null,
+        "fields": {
+            "eventName.stem": [
+                "portal-entry-created"
+            ],
+            "eventName.enum": [
+                "portal-entry-created"
+            ],
+            "logLevel.joined": [
+                "INFO"
+            ],
+            "message.prefix": [
+                "Entry with Id:338728 is created"
+            ],
+            "userId.delimiter": [
+                "140705"
+            ],
+            "logLevel.enum": [
+                "INFO"
+            ],
+            "message.delimiter": [
+                "Entry with Id:338728 is created"
+            ],
+            "dateCreated": [
+                "2024-05-13T00:49:10.000Z"
+            ],
+            "eventName.joined": [
+                "portal-entry-created"
+            ],
+            "logLevel": [
+                "INFO"
+            ],
+            "userId.joined": [
+                "140705"
+            ],
+            "logLevel.prefix": [
+                "INFO"
+            ],
+            "message.enum": [
+                "Entry with Id:338728 is created"
+            ],
+            "eventName": [
+                "portal-entry-created"
+            ],
+            "logLevel.stem": [
+                "INFO"
+            ],
+            "userId.stem": [
+                "140705"
+            ],
+            "userId.enum": [
+                "140705"
+            ],
+            "message": [
+                "Entry with Id:338728 is created"
+            ],
+            "userId": [
+                "140705"
+            ],
+            "eventName.prefix": [
+                "portal-entry-created"
+            ],
+            "userId.prefix": [
+                "140705"
+            ],
+            "eventName.delimiter": [
+                "portal-entry-created"
+            ],
+            "message.stem": [
+                "Entry with Id:338728 is created"
+            ],
+            "logLevel.delimiter": [
+                "INFO"
+            ],
+            "message.joined": [
+                "Entry with Id:338728 is created"
+            ]
+        },
+        "sort": [
+            "2024-05-13T00:49:10.000Z",
+            589
+        ]
+    },
+    {
+        "_index": "search-smileconnect-log",
+        "_id": "pnpjb48BRCwhtTjkymr_",
+        "_version": 1,
+        "_score": null,
+        "fields": {
+            "eventName.stem": [
+                "portal-entry-created"
+            ],
+            "eventName.enum": [
+                "portal-entry-created"
+            ],
+            "logLevel.joined": [
+                "INFO"
+            ],
+            "message.prefix": [
+                "Entry with Id:338719 is created"
+            ],
+            "userId.delimiter": [
+                "45866"
+            ],
+            "logLevel.enum": [
+                "INFO"
+            ],
+            "message.delimiter": [
+                "Entry with Id:338719 is created"
+            ],
+            "dateCreated": [
+                "2024-05-13T00:39:22.000Z"
+            ],
+            "eventName.joined": [
+                "portal-entry-created"
+            ],
+            "logLevel": [
+                "INFO"
+            ],
+            "userId.joined": [
+                "45866"
+            ],
+            "logLevel.prefix": [
+                "INFO"
+            ],
+            "message.enum": [
+                "Entry with Id:338719 is created"
+            ],
+            "eventName": [
+                "portal-entry-created"
+            ],
+            "logLevel.stem": [
+                "INFO"
+            ],
+            "userId.stem": [
+                "45866"
+            ],
+            "userId.enum": [
+                "45866"
+            ],
+            "message": [
+                "Entry with Id:338719 is created"
+            ],
+            "userId": [
+                "45866"
+            ],
+            "eventName.prefix": [
+                "portal-entry-created"
+            ],
+            "userId.prefix": [
+                "45866"
+            ],
+            "eventName.delimiter": [
+                "portal-entry-created"
+            ],
+            "message.stem": [
+                "Entry with Id:338719 is created"
+            ],
+            "logLevel.delimiter": [
+                "INFO"
+            ],
+            "message.joined": [
+                "Entry with Id:338719 is created"
+            ]
+        },
+        "sort": [
+            "2024-05-13T00:39:22.000Z",
+            1213
+        ]
+    },
+    {
+        "_index": "search-smileconnect-log",
+        "_id": "pXpjb48BRCwhtTjkl2q5",
+        "_version": 1,
+        "_score": null,
+        "fields": {
+            "eventName.stem": [
+                "portal-entry-created"
+            ],
+            "eventName.enum": [
+                "portal-entry-created"
+            ],
+            "logLevel.joined": [
+                "INFO"
+            ],
+            "message.prefix": [
+                "Entry with Id:338717 is created"
+            ],
+            "userId.delimiter": [
+                "45866"
+            ],
+            "logLevel.enum": [
+                "INFO"
+            ],
+            "message.delimiter": [
+                "Entry with Id:338717 is created"
+            ],
+            "dateCreated": [
+                "2024-05-13T00:39:08.000Z"
+            ],
+            "eventName.joined": [
+                "portal-entry-created"
+            ],
+            "logLevel": [
+                "INFO"
+            ],
+            "userId.joined": [
+                "45866"
+            ],
+            "logLevel.prefix": [
+                "INFO"
+            ],
+            "message.enum": [
+                "Entry with Id:338717 is created"
+            ],
+            "eventName": [
+                "portal-entry-created"
+            ],
+            "logLevel.stem": [
+                "INFO"
+            ],
+            "userId.stem": [
+                "45866"
+            ],
+            "userId.enum": [
+                "45866"
+            ],
+            "message": [
+                "Entry with Id:338717 is created"
+            ],
+            "userId": [
+                "45866"
+            ],
+            "eventName.prefix": [
+                "portal-entry-created"
+            ],
+            "userId.prefix": [
+                "45866"
+            ],
+            "eventName.delimiter": [
+                "portal-entry-created"
+            ],
+            "message.stem": [
+                "Entry with Id:338717 is created"
+            ],
+            "logLevel.delimiter": [
+                "INFO"
+            ],
+            "message.joined": [
+                "Entry with Id:338717 is created"
+            ]
+        },
+        "sort": [
+            "2024-05-13T00:39:08.000Z",
+            595
+        ]
+    },
+    {
+        "_index": "search-smileconnect-log",
+        "_id": "pHpjb48BRCwhtTjkkGrU",
+        "_version": 1,
+        "_score": null,
+        "fields": {
+            "eventName.stem": [
+                "portal-entry-created"
+            ],
+            "eventName.enum": [
+                "portal-entry-created"
+            ],
+            "logLevel.joined": [
+                "INFO"
+            ],
+            "message.prefix": [
+                "Entry with Id:338716 is created"
+            ],
+            "userId.delimiter": [
+                "45866"
+            ],
+            "logLevel.enum": [
+                "INFO"
+            ],
+            "message.delimiter": [
+                "Entry with Id:338716 is created"
+            ],
+            "dateCreated": [
+                "2024-05-13T00:39:07.000Z"
+            ],
+            "eventName.joined": [
+                "portal-entry-created"
+            ],
+            "logLevel": [
+                "INFO"
+            ],
+            "userId.joined": [
+                "45866"
+            ],
+            "logLevel.prefix": [
+                "INFO"
+            ],
+            "message.enum": [
+                "Entry with Id:338716 is created"
+            ],
+            "eventName": [
+                "portal-entry-created"
+            ],
+            "logLevel.stem": [
+                "INFO"
+            ],
+            "userId.stem": [
+                "45866"
+            ],
+            "userId.enum": [
+                "45866"
+            ],
+            "message": [
+                "Entry with Id:338716 is created"
+            ],
+            "userId": [
+                "45866"
+            ],
+            "eventName.prefix": [
+                "portal-entry-created"
+            ],
+            "userId.prefix": [
+                "45866"
+            ],
+            "eventName.delimiter": [
+                "portal-entry-created"
+            ],
+            "message.stem": [
+                "Entry with Id:338716 is created"
+            ],
+            "logLevel.delimiter": [
+                "INFO"
+            ],
+            "message.joined": [
+                "Entry with Id:338716 is created"
+            ]
+        },
+        "sort": [
+            "2024-05-13T00:39:07.000Z",
+            594
+        ]
+    },
+    {
+        "_index": "search-smileconnect-log",
+        "_id": "wnr8b48BRCwhtTjk7GpR",
+        "_version": 1,
+        "_score": null,
+        "fields": {
+            "eventName.stem": [
+                "portal-entry-created"
+            ],
+            "eventName.enum": [
+                "portal-entry-created"
+            ],
+            "logLevel.joined": [
+                "INFO"
+            ],
+            "message.prefix": [
+                "Entry with Id:338707 is created"
+            ],
+            "userId.delimiter": [
+                "9723"
+            ],
+            "logLevel.enum": [
+                "INFO"
+            ],
+            "message.delimiter": [
+                "Entry with Id:338707 is created"
+            ],
+            "dateCreated": [
+                "2024-05-13T00:39:04.000Z"
+            ],
+            "eventName.joined": [
+                "portal-entry-created"
+            ],
+            "logLevel": [
+                "INFO"
+            ],
+            "userId.joined": [
+                "9723"
+            ],
+            "logLevel.prefix": [
+                "INFO"
+            ],
+            "message.enum": [
+                "Entry with Id:338707 is created"
+            ],
+            "eventName": [
+                "portal-entry-created"
+            ],
+            "logLevel.stem": [
+                "INFO"
+            ],
+            "userId.stem": [
+                "9723"
+            ],
+            "userId.enum": [
+                "9723"
+            ],
+            "message": [
+                "Entry with Id:338707 is created"
+            ],
+            "userId": [
+                "9723"
+            ],
+            "eventName.prefix": [
+                "portal-entry-created"
+            ],
+            "userId.prefix": [
+                "9723"
+            ],
+            "eventName.delimiter": [
+                "portal-entry-created"
+            ],
+            "message.stem": [
+                "Entry with Id:338707 is created"
+            ],
+            "logLevel.delimiter": [
+                "INFO"
+            ],
+            "message.joined": [
+                "Entry with Id:338707 is created"
+            ]
+        },
+        "sort": [
+            "2024-05-13T00:39:04.000Z",
+            569
+        ]
+    },
+    {
+        "_index": "search-smileconnect-log",
+        "_id": "7Hr8b48BRCwhtTjk7GrB",
+        "_version": 1,
+        "_score": null,
+        "fields": {
+            "eventName.stem": [
+                "portal-entry-created"
+            ],
+            "eventName.enum": [
+                "portal-entry-created"
+            ],
+            "logLevel.joined": [
+                "INFO"
+            ],
+            "message.prefix": [
+                "Entry with Id:338700 is created"
+            ],
+            "userId.delimiter": [
+                "295612"
+            ],
+            "logLevel.enum": [
+                "INFO"
+            ],
+            "message.delimiter": [
+                "Entry with Id:338700 is created"
+            ],
+            "dateCreated": [
+                "2024-05-13T00:32:11.000Z"
+            ],
+            "eventName.joined": [
+                "portal-entry-created"
+            ],
+            "logLevel": [
+                "INFO"
+            ],
+            "userId.joined": [
+                "295612"
+            ],
+            "logLevel.prefix": [
+                "INFO"
+            ],
+            "message.enum": [
+                "Entry with Id:338700 is created"
+            ],
+            "eventName": [
+                "portal-entry-created"
+            ],
+            "logLevel.stem": [
+                "INFO"
+            ],
+            "userId.stem": [
+                "295612"
+            ],
+            "userId.enum": [
+                "295612"
+            ],
+            "message": [
+                "Entry with Id:338700 is created"
+            ],
+            "userId": [
+                "295612"
+            ],
+            "eventName.prefix": [
+                "portal-entry-created"
+            ],
+            "userId.prefix": [
+                "295612"
+            ],
+            "eventName.delimiter": [
+                "portal-entry-created"
+            ],
+            "message.stem": [
+                "Entry with Id:338700 is created"
+            ],
+            "logLevel.delimiter": [
+                "INFO"
+            ],
+            "message.joined": [
+                "Entry with Id:338700 is created"
+            ]
+        },
+        "sort": [
+            "2024-05-13T00:32:11.000Z",
+            550
+        ]
+    },
+    {
+        "_index": "search-smileconnect-log",
+        "_id": "znr8b48BRCwhtTjk7GpT",
+        "_version": 1,
+        "_score": null,
+        "fields": {
+            "eventName.stem": [
+                "portal-entry-created"
+            ],
+            "eventName.enum": [
+                "portal-entry-created"
+            ],
+            "logLevel.joined": [
+                "INFO"
+            ],
+            "message.prefix": [
+                "Entry with Id:338699 is created"
+            ],
+            "userId.delimiter": [
+                "295612"
+            ],
+            "logLevel.enum": [
+                "INFO"
+            ],
+            "message.delimiter": [
+                "Entry with Id:338699 is created"
+            ],
+            "dateCreated": [
+                "2024-05-13T00:32:03.000Z"
+            ],
+            "eventName.joined": [
+                "portal-entry-created"
+            ],
+            "logLevel": [
+                "INFO"
+            ],
+            "userId.joined": [
+                "295612"
+            ],
+            "logLevel.prefix": [
+                "INFO"
+            ],
+            "message.enum": [
+                "Entry with Id:338699 is created"
+            ],
+            "eventName": [
+                "portal-entry-created"
+            ],
+            "logLevel.stem": [
+                "INFO"
+            ],
+            "userId.stem": [
+                "295612"
+            ],
+            "userId.enum": [
+                "295612"
+            ],
+            "message": [
+                "Entry with Id:338699 is created"
+            ],
+            "userId": [
+                "295612"
+            ],
+            "eventName.prefix": [
+                "portal-entry-created"
+            ],
+            "userId.prefix": [
+                "295612"
+            ],
+            "eventName.delimiter": [
+                "portal-entry-created"
+            ],
+            "message.stem": [
+                "Entry with Id:338699 is created"
+            ],
+            "logLevel.delimiter": [
+                "INFO"
+            ],
+            "message.joined": [
+                "Entry with Id:338699 is created"
+            ]
+        },
+        "sort": [
+            "2024-05-13T00:32:03.000Z",
+            590
+        ]
+    },
+    {
+        "_index": "search-smileconnect-log",
+        "_id": "mXpgb48BRCwhtTjkpmom",
+        "_version": 1,
+        "_score": null,
+        "fields": {
+            "eventName.stem": [
+                "portal-entry-created"
+            ],
+            "eventName.enum": [
+                "portal-entry-created"
+            ],
+            "logLevel.joined": [
+                "INFO"
+            ],
+            "message.prefix": [
+                "Entry with Id:338696 is created"
+            ],
+            "userId.delimiter": [
+                "295612"
+            ],
+            "logLevel.enum": [
+                "INFO"
+            ],
+            "message.delimiter": [
+                "Entry with Id:338696 is created"
+            ],
+            "dateCreated": [
+                "2024-05-13T00:30:21.000Z"
+            ],
+            "eventName.joined": [
+                "portal-entry-created"
+            ],
+            "logLevel": [
+                "INFO"
+            ],
+            "userId.joined": [
+                "295612"
+            ],
+            "logLevel.prefix": [
+                "INFO"
+            ],
+            "message.enum": [
+                "Entry with Id:338696 is created"
+            ],
+            "eventName": [
+                "portal-entry-created"
+            ],
+            "logLevel.stem": [
+                "INFO"
+            ],
+            "userId.stem": [
+                "295612"
+            ],
+            "userId.enum": [
+                "295612"
+            ],
+            "message": [
+                "Entry with Id:338696 is created"
+            ],
+            "userId": [
+                "295612"
+            ],
+            "eventName.prefix": [
+                "portal-entry-created"
+            ],
+            "userId.prefix": [
+                "295612"
+            ],
+            "eventName.delimiter": [
+                "portal-entry-created"
+            ],
+            "message.stem": [
+                "Entry with Id:338696 is created"
+            ],
+            "logLevel.delimiter": [
+                "INFO"
+            ],
+            "message.joined": [
+                "Entry with Id:338696 is created"
+            ]
+        },
+        "sort": [
+            "2024-05-13T00:30:21.000Z",
+            585
+        ]
+    },
+    {
+        "_index": "search-smileconnect-log",
+        "_id": "lXpgb48BRCwhtTjkpmom",
+        "_version": 1,
+        "_score": null,
+        "fields": {
+            "eventName.stem": [
+                "portal-entry-created"
+            ],
+            "eventName.enum": [
+                "portal-entry-created"
+            ],
+            "logLevel.joined": [
+                "INFO"
+            ],
+            "message.prefix": [
+                "Entry with Id:338695 is created"
+            ],
+            "userId.delimiter": [
+                "295612"
+            ],
+            "logLevel.enum": [
+                "INFO"
+            ],
+            "message.delimiter": [
+                "Entry with Id:338695 is created"
+            ],
+            "dateCreated": [
+                "2024-05-13T00:30:15.000Z"
+            ],
+            "eventName.joined": [
+                "portal-entry-created"
+            ],
+            "logLevel": [
+                "INFO"
+            ],
+            "userId.joined": [
+                "295612"
+            ],
+            "logLevel.prefix": [
+                "INFO"
+            ],
+            "message.enum": [
+                "Entry with Id:338695 is created"
+            ],
+            "eventName": [
+                "portal-entry-created"
+            ],
+            "logLevel.stem": [
+                "INFO"
+            ],
+            "userId.stem": [
+                "295612"
+            ],
+            "userId.enum": [
+                "295612"
+            ],
+            "message": [
+                "Entry with Id:338695 is created"
+            ],
+            "userId": [
+                "295612"
+            ],
+            "eventName.prefix": [
+                "portal-entry-created"
+            ],
+            "userId.prefix": [
+                "295612"
+            ],
+            "eventName.delimiter": [
+                "portal-entry-created"
+            ],
+            "message.stem": [
+                "Entry with Id:338695 is created"
+            ],
+            "logLevel.delimiter": [
+                "INFO"
+            ],
+            "message.joined": [
+                "Entry with Id:338695 is created"
+            ]
+        },
+        "sort": [
+            "2024-05-13T00:30:15.000Z",
+            583
+        ]
+    },
+    {
+        "_index": "search-smileconnect-log",
+        "_id": "i3pgb48BRCwhtTjkpmol",
+        "_version": 1,
+        "_score": null,
+        "fields": {
+            "eventName.stem": [
+                "portal-entry-created"
+            ],
+            "eventName.enum": [
+                "portal-entry-created"
+            ],
+            "logLevel.joined": [
+                "INFO"
+            ],
+            "message.prefix": [
+                "Entry with Id:338692 is created"
+            ],
+            "userId.delimiter": [
+                "295612"
+            ],
+            "logLevel.enum": [
+                "INFO"
+            ],
+            "message.delimiter": [
+                "Entry with Id:338692 is created"
+            ],
+            "dateCreated": [
+                "2024-05-13T00:29:57.000Z"
+            ],
+            "eventName.joined": [
+                "portal-entry-created"
+            ],
+            "logLevel": [
+                "INFO"
+            ],
+            "userId.joined": [
+                "295612"
+            ],
+            "logLevel.prefix": [
+                "INFO"
+            ],
+            "message.enum": [
+                "Entry with Id:338692 is created"
+            ],
+            "eventName": [
+                "portal-entry-created"
+            ],
+            "logLevel.stem": [
+                "INFO"
+            ],
+            "userId.stem": [
+                "295612"
+            ],
+            "userId.enum": [
+                "295612"
+            ],
+            "message": [
+                "Entry with Id:338692 is created"
+            ],
+            "userId": [
+                "295612"
+            ],
+            "eventName.prefix": [
+                "portal-entry-created"
+            ],
+            "userId.prefix": [
+                "295612"
+            ],
+            "eventName.delimiter": [
+                "portal-entry-created"
+            ],
+            "message.stem": [
+                "Entry with Id:338692 is created"
+            ],
+            "logLevel.delimiter": [
+                "INFO"
+            ],
+            "message.joined": [
+                "Entry with Id:338692 is created"
+            ]
+        },
+        "sort": [
+            "2024-05-13T00:29:57.000Z",
+            1185
+        ]
+    },
+    {
+        "_index": "search-smileconnect-log",
+        "_id": "onpgb48BRCwhtTjkpmom",
+        "_version": 1,
+        "_score": null,
+        "fields": {
+            "eventName.stem": [
+                "portal-entry-created"
+            ],
+            "eventName.enum": [
+                "portal-entry-created"
+            ],
+            "logLevel.joined": [
+                "INFO"
+            ],
+            "message.prefix": [
+                "Entry with Id:338691 is created"
+            ],
+            "userId.delimiter": [
+                "295612"
+            ],
+            "logLevel.enum": [
+                "INFO"
+            ],
+            "message.delimiter": [
+                "Entry with Id:338691 is created"
+            ],
+            "dateCreated": [
+                "2024-05-13T00:29:08.000Z"
+            ],
+            "eventName.joined": [
+                "portal-entry-created"
+            ],
+            "logLevel": [
+                "INFO"
+            ],
+            "userId.joined": [
+                "295612"
+            ],
+            "logLevel.prefix": [
+                "INFO"
+            ],
+            "message.enum": [
+                "Entry with Id:338691 is created"
+            ],
+            "eventName": [
+                "portal-entry-created"
+            ],
+            "logLevel.stem": [
+                "INFO"
+            ],
+            "userId.stem": [
+                "295612"
+            ],
+            "userId.enum": [
+                "295612"
+            ],
+            "message": [
+                "Entry with Id:338691 is created"
+            ],
+            "userId": [
+                "295612"
+            ],
+            "eventName.prefix": [
+                "portal-entry-created"
+            ],
+            "userId.prefix": [
+                "295612"
+            ],
+            "eventName.delimiter": [
+                "portal-entry-created"
+            ],
+            "message.stem": [
+                "Entry with Id:338691 is created"
+            ],
+            "logLevel.delimiter": [
+                "INFO"
+            ],
+            "message.joined": [
+                "Entry with Id:338691 is created"
+            ]
+        },
+        "sort": [
+            "2024-05-13T00:29:08.000Z",
+            1172
+        ]
+    },
+    {
+        "_index": "search-smileconnect-log",
+        "_id": "2nr8b48BRCwhtTjk7Gqk",
+        "_version": 1,
+        "_score": null,
+        "fields": {
+            "eventName.stem": [
+                "portal-entry-created"
+            ],
+            "eventName.enum": [
+                "portal-entry-created"
+            ],
+            "logLevel.joined": [
+                "INFO"
+            ],
+            "message.prefix": [
+                "Entry with Id:338689 is created"
+            ],
+            "userId.delimiter": [
+                "295612"
+            ],
+            "logLevel.enum": [
+                "INFO"
+            ],
+            "message.delimiter": [
+                "Entry with Id:338689 is created"
+            ],
+            "dateCreated": [
+                "2024-05-13T00:29:06.000Z"
+            ],
+            "eventName.joined": [
+                "portal-entry-created"
+            ],
+            "logLevel": [
+                "INFO"
+            ],
+            "userId.joined": [
+                "295612"
+            ],
+            "logLevel.prefix": [
+                "INFO"
+            ],
+            "message.enum": [
+                "Entry with Id:338689 is created"
+            ],
+            "eventName": [
+                "portal-entry-created"
+            ],
+            "logLevel.stem": [
+                "INFO"
+            ],
+            "userId.stem": [
+                "295612"
+            ],
+            "userId.enum": [
+                "295612"
+            ],
+            "message": [
+                "Entry with Id:338689 is created"
+            ],
+            "userId": [
+                "295612"
+            ],
+            "eventName.prefix": [
+                "portal-entry-created"
+            ],
+            "userId.prefix": [
+                "295612"
+            ],
+            "eventName.delimiter": [
+                "portal-entry-created"
+            ],
+            "message.stem": [
+                "Entry with Id:338689 is created"
+            ],
+            "logLevel.delimiter": [
+                "INFO"
+            ],
+            "message.joined": [
+                "Entry with Id:338689 is created"
+            ]
+        },
+        "sort": [
+            "2024-05-13T00:29:06.000Z",
+            538
+        ]
+    },
+    {
+        "_index": "search-smileconnect-log",
+        "_id": "jHpgb48BRCwhtTjkpmol",
+        "_version": 1,
+        "_score": null,
+        "fields": {
+            "eventName.stem": [
+                "portal-entry-created"
+            ],
+            "eventName.enum": [
+                "portal-entry-created"
+            ],
+            "logLevel.joined": [
+                "INFO"
+            ],
+            "message.prefix": [
+                "Entry with Id:338687 is created"
+            ],
+            "userId.delimiter": [
+                "295612"
+            ],
+            "logLevel.enum": [
+                "INFO"
+            ],
+            "message.delimiter": [
+                "Entry with Id:338687 is created"
+            ],
+            "dateCreated": [
+                "2024-05-13T00:28:32.000Z"
+            ],
+            "eventName.joined": [
+                "portal-entry-created"
+            ],
+            "logLevel": [
+                "INFO"
+            ],
+            "userId.joined": [
+                "295612"
+            ],
+            "logLevel.prefix": [
+                "INFO"
+            ],
+            "message.enum": [
+                "Entry with Id:338687 is created"
+            ],
+            "eventName": [
+                "portal-entry-created"
+            ],
+            "logLevel.stem": [
+                "INFO"
+            ],
+            "userId.stem": [
+                "295612"
+            ],
+            "userId.enum": [
+                "295612"
+            ],
+            "message": [
+                "Entry with Id:338687 is created"
+            ],
+            "userId": [
+                "295612"
+            ],
+            "eventName.prefix": [
+                "portal-entry-created"
+            ],
+            "userId.prefix": [
+                "295612"
+            ],
+            "eventName.delimiter": [
+                "portal-entry-created"
+            ],
+            "message.stem": [
+                "Entry with Id:338687 is created"
+            ],
+            "logLevel.delimiter": [
+                "INFO"
+            ],
+            "message.joined": [
+                "Entry with Id:338687 is created"
+            ]
+        },
+        "sort": [
+            "2024-05-13T00:28:32.000Z",
+            579
+        ]
+    },
+    {
+        "_index": "search-smileconnect-log",
+        "_id": "j3pgb48BRCwhtTjkpmom",
+        "_version": 1,
+        "_score": null,
+        "fields": {
+            "eventName.stem": [
+                "portal-entry-created"
+            ],
+            "eventName.enum": [
+                "portal-entry-created"
+            ],
+            "logLevel.joined": [
+                "INFO"
+            ],
+            "message.prefix": [
+                "Entry with Id:338685 is created"
+            ],
+            "userId.delimiter": [
+                "295612"
+            ],
+            "logLevel.enum": [
+                "INFO"
+            ],
+            "message.delimiter": [
+                "Entry with Id:338685 is created"
+            ],
+            "dateCreated": [
+                "2024-05-13T00:27:05.000Z"
+            ],
+            "eventName.joined": [
+                "portal-entry-created"
+            ],
+            "logLevel": [
+                "INFO"
+            ],
+            "userId.joined": [
+                "295612"
+            ],
+            "logLevel.prefix": [
+                "INFO"
+            ],
+            "message.enum": [
+                "Entry with Id:338685 is created"
+            ],
+            "eventName": [
+                "portal-entry-created"
+            ],
+            "logLevel.stem": [
+                "INFO"
+            ],
+            "userId.stem": [
+                "295612"
+            ],
+            "userId.enum": [
+                "295612"
+            ],
+            "message": [
+                "Entry with Id:338685 is created"
+            ],
+            "userId": [
+                "295612"
+            ],
+            "eventName.prefix": [
+                "portal-entry-created"
+            ],
+            "userId.prefix": [
+                "295612"
+            ],
+            "eventName.delimiter": [
+                "portal-entry-created"
+            ],
+            "message.stem": [
+                "Entry with Id:338685 is created"
+            ],
+            "logLevel.delimiter": [
+                "INFO"
+            ],
+            "message.joined": [
+                "Entry with Id:338685 is created"
+            ]
+        },
+        "sort": [
+            "2024-05-13T00:27:05.000Z",
+            1163
+        ]
+    },
+    {
+        "_index": "search-smileconnect-log",
+        "_id": "tnr8b48BRCwhtTjk7GpO",
+        "_version": 1,
+        "_score": null,
+        "fields": {
+            "eventName.stem": [
+                "portal-entry-created"
+            ],
+            "eventName.enum": [
+                "portal-entry-created"
+            ],
+            "logLevel.joined": [
+                "INFO"
+            ],
+            "message.prefix": [
+                "Entry with Id:338683 is created"
+            ],
+            "userId.delimiter": [
+                "7544"
+            ],
+            "logLevel.enum": [
+                "INFO"
+            ],
+            "message.delimiter": [
+                "Entry with Id:338683 is created"
+            ],
+            "dateCreated": [
+                "2024-05-13T00:25:09.000Z"
+            ],
+            "eventName.joined": [
+                "portal-entry-created"
+            ],
+            "logLevel": [
+                "INFO"
+            ],
+            "userId.joined": [
+                "7544"
+            ],
+            "logLevel.prefix": [
+                "INFO"
+            ],
+            "message.enum": [
+                "Entry with Id:338683 is created"
+            ],
+            "eventName": [
+                "portal-entry-created"
+            ],
+            "logLevel.stem": [
+                "INFO"
+            ],
+            "userId.stem": [
+                "7544"
+            ],
+            "userId.enum": [
+                "7544"
+            ],
+            "message": [
+                "Entry with Id:338683 is created"
+            ],
+            "userId": [
+                "7544"
+            ],
+            "eventName.prefix": [
+                "portal-entry-created"
+            ],
+            "userId.prefix": [
+                "7544"
+            ],
+            "eventName.delimiter": [
+                "portal-entry-created"
+            ],
+            "message.stem": [
+                "Entry with Id:338683 is created"
+            ],
+            "logLevel.delimiter": [
+                "INFO"
+            ],
+            "message.joined": [
+                "Entry with Id:338683 is created"
+            ]
+        },
+        "sort": [
+            "2024-05-13T00:25:09.000Z",
+            562
+        ]
+    },
+    {
+        "_index": "search-smileconnect-log",
+        "_id": "nHpgb48BRCwhtTjkpmom",
+        "_version": 1,
+        "_score": null,
+        "fields": {
+            "eventName.stem": [
+                "portal-entry-created"
+            ],
+            "eventName.enum": [
+                "portal-entry-created"
+            ],
+            "logLevel.joined": [
+                "INFO"
+            ],
+            "message.prefix": [
+                "Entry with Id:338681 is created"
+            ],
+            "userId.delimiter": [
+                "295612"
+            ],
+            "logLevel.enum": [
+                "INFO"
+            ],
+            "message.delimiter": [
+                "Entry with Id:338681 is created"
+            ],
+            "dateCreated": [
+                "2024-05-13T00:23:36.000Z"
+            ],
+            "eventName.joined": [
+                "portal-entry-created"
+            ],
+            "logLevel": [
+                "INFO"
+            ],
+            "userId.joined": [
+                "295612"
+            ],
+            "logLevel.prefix": [
+                "INFO"
+            ],
+            "message.enum": [
+                "Entry with Id:338681 is created"
+            ],
+            "eventName": [
+                "portal-entry-created"
+            ],
+            "logLevel.stem": [
+                "INFO"
+            ],
+            "userId.stem": [
+                "295612"
+            ],
+            "userId.enum": [
+                "295612"
+            ],
+            "message": [
+                "Entry with Id:338681 is created"
+            ],
+            "userId": [
+                "295612"
+            ],
+            "eventName.prefix": [
+                "portal-entry-created"
+            ],
+            "userId.prefix": [
+                "295612"
+            ],
+            "eventName.delimiter": [
+                "portal-entry-created"
+            ],
+            "message.stem": [
+                "Entry with Id:338681 is created"
+            ],
+            "logLevel.delimiter": [
+                "INFO"
+            ],
+            "message.joined": [
+                "Entry with Id:338681 is created"
+            ]
+        },
+        "sort": [
+            "2024-05-13T00:23:36.000Z",
+            586
+        ]
+    },
+    {
+        "_index": "search-smileconnect-log",
+        "_id": "r3r8b48BRCwhtTjk7Go7",
+        "_version": 1,
+        "_score": null,
+        "fields": {
+            "eventName.stem": [
+                "portal-entry-created"
+            ],
+            "eventName.enum": [
+                "portal-entry-created"
+            ],
+            "logLevel.joined": [
+                "INFO"
+            ],
+            "message.prefix": [
+                "Entry with Id:338679 is created"
+            ],
+            "userId.delimiter": [
+                "295612"
+            ],
+            "logLevel.enum": [
+                "INFO"
+            ],
+            "message.delimiter": [
+                "Entry with Id:338679 is created"
+            ],
+            "dateCreated": [
+                "2024-05-13T00:23:35.000Z"
+            ],
+            "eventName.joined": [
+                "portal-entry-created"
+            ],
+            "logLevel": [
+                "INFO"
+            ],
+            "userId.joined": [
+                "295612"
+            ],
+            "logLevel.prefix": [
+                "INFO"
+            ],
+            "message.enum": [
+                "Entry with Id:338679 is created"
+            ],
+            "eventName": [
+                "portal-entry-created"
+            ],
+            "logLevel.stem": [
+                "INFO"
+            ],
+            "userId.stem": [
+                "295612"
+            ],
+            "userId.enum": [
+                "295612"
+            ],
+            "message": [
+                "Entry with Id:338679 is created"
+            ],
+            "userId": [
+                "295612"
+            ],
+            "eventName.prefix": [
+                "portal-entry-created"
+            ],
+            "userId.prefix": [
+                "295612"
+            ],
+            "eventName.delimiter": [
+                "portal-entry-created"
+            ],
+            "message.stem": [
+                "Entry with Id:338679 is created"
+            ],
+            "logLevel.delimiter": [
+                "INFO"
+            ],
+            "message.joined": [
+                "Entry with Id:338679 is created"
+            ]
+        },
+        "sort": [
+            "2024-05-13T00:23:35.000Z",
+            592
+        ]
+    },
+    {
+        "_index": "search-smileconnect-log",
+        "_id": "63r8b48BRCwhtTjk7GrB",
+        "_version": 1,
+        "_score": null,
+        "fields": {
+            "eventName.stem": [
+                "portal-entry-created"
+            ],
+            "eventName.enum": [
+                "portal-entry-created"
+            ],
+            "logLevel.joined": [
+                "INFO"
+            ],
+            "message.prefix": [
+                "Entry with Id:338677 is created"
+            ],
+            "userId.delimiter": [
+                "295612"
+            ],
+            "logLevel.enum": [
+                "INFO"
+            ],
+            "message.delimiter": [
+                "Entry with Id:338677 is created"
+            ],
+            "dateCreated": [
+                "2024-05-13T00:22:22.000Z"
+            ],
+            "eventName.joined": [
+                "portal-entry-created"
+            ],
+            "logLevel": [
+                "INFO"
+            ],
+            "userId.joined": [
+                "295612"
+            ],
+            "logLevel.prefix": [
+                "INFO"
+            ],
+            "message.enum": [
+                "Entry with Id:338677 is created"
+            ],
+            "eventName": [
+                "portal-entry-created"
+            ],
+            "logLevel.stem": [
+                "INFO"
+            ],
+            "userId.stem": [
+                "295612"
+            ],
+            "userId.enum": [
+                "295612"
+            ],
+            "message": [
+                "Entry with Id:338677 is created"
+            ],
+            "userId": [
+                "295612"
+            ],
+            "eventName.prefix": [
+                "portal-entry-created"
+            ],
+            "userId.prefix": [
+                "295612"
+            ],
+            "eventName.delimiter": [
+                "portal-entry-created"
+            ],
+            "message.stem": [
+                "Entry with Id:338677 is created"
+            ],
+            "logLevel.delimiter": [
+                "INFO"
+            ],
+            "message.joined": [
+                "Entry with Id:338677 is created"
+            ]
+        },
+        "sort": [
+            "2024-05-13T00:22:22.000Z",
+            549
+        ]
+    },
+    {
+        "_index": "search-smileconnect-log",
+        "_id": "nXpgb48BRCwhtTjkpmom",
+        "_version": 1,
+        "_score": null,
+        "fields": {
+            "eventName.stem": [
+                "portal-entry-created"
+            ],
+            "eventName.enum": [
+                "portal-entry-created"
+            ],
+            "logLevel.joined": [
+                "INFO"
+            ],
+            "message.prefix": [
+                "Entry with Id:338676 is created"
+            ],
+            "userId.delimiter": [
+                "295612"
+            ],
+            "logLevel.enum": [
+                "INFO"
+            ],
+            "message.delimiter": [
+                "Entry with Id:338676 is created"
+            ],
+            "dateCreated": [
+                "2024-05-13T00:22:05.000Z"
+            ],
+            "eventName.joined": [
+                "portal-entry-created"
+            ],
+            "logLevel": [
+                "INFO"
+            ],
+            "userId.joined": [
+                "295612"
+            ],
+            "logLevel.prefix": [
+                "INFO"
+            ],
+            "message.enum": [
+                "Entry with Id:338676 is created"
+            ],
+            "eventName": [
+                "portal-entry-created"
+            ],
+            "logLevel.stem": [
+                "INFO"
+            ],
+            "userId.stem": [
+                "295612"
+            ],
+            "userId.enum": [
+                "295612"
+            ],
+            "message": [
+                "Entry with Id:338676 is created"
+            ],
+            "userId": [
+                "295612"
+            ],
+            "eventName.prefix": [
+                "portal-entry-created"
+            ],
+            "userId.prefix": [
+                "295612"
+            ],
+            "eventName.delimiter": [
+                "portal-entry-created"
+            ],
+            "message.stem": [
+                "Entry with Id:338676 is created"
+            ],
+            "logLevel.delimiter": [
+                "INFO"
+            ],
+            "message.joined": [
+                "Entry with Id:338676 is created"
+            ]
+        },
+        "sort": [
+            "2024-05-13T00:22:05.000Z",
+            1170
+        ]
+    },
+    {
+        "_index": "search-smileconnect-log",
+        "_id": "4nr8b48BRCwhtTjk7Gqs",
+        "_version": 1,
+        "_score": null,
+        "fields": {
+            "eventName.stem": [
+                "portal-entry-created"
+            ],
+            "eventName.enum": [
+                "portal-entry-created"
+            ],
+            "logLevel.joined": [
+                "INFO"
+            ],
+            "message.prefix": [
+                "Entry with Id:338674 is created"
+            ],
+            "userId.delimiter": [
+                "295612"
+            ],
+            "logLevel.enum": [
+                "INFO"
+            ],
+            "message.delimiter": [
+                "Entry with Id:338674 is created"
+            ],
+            "dateCreated": [
+                "2024-05-13T00:20:19.000Z"
+            ],
+            "eventName.joined": [
+                "portal-entry-created"
+            ],
+            "logLevel": [
+                "INFO"
+            ],
+            "userId.joined": [
+                "295612"
+            ],
+            "logLevel.prefix": [
+                "INFO"
+            ],
+            "message.enum": [
+                "Entry with Id:338674 is created"
+            ],
+            "eventName": [
+                "portal-entry-created"
+            ],
+            "logLevel.stem": [
+                "INFO"
+            ],
+            "userId.stem": [
+                "295612"
+            ],
+            "userId.enum": [
+                "295612"
+            ],
+            "message": [
+                "Entry with Id:338674 is created"
+            ],
+            "userId": [
+                "295612"
+            ],
+            "eventName.prefix": [
+                "portal-entry-created"
+            ],
+            "userId.prefix": [
+                "295612"
+            ],
+            "eventName.delimiter": [
+                "portal-entry-created"
+            ],
+            "message.stem": [
+                "Entry with Id:338674 is created"
+            ],
+            "logLevel.delimiter": [
+                "INFO"
+            ],
+            "message.joined": [
+                "Entry with Id:338674 is created"
+            ]
+        },
+        "sort": [
+            "2024-05-13T00:20:19.000Z",
+            543
+        ]
+    },
+    {
+        "_index": "search-smileconnect-log",
+        "_id": "inpgb48BRCwhtTjkpmol",
+        "_version": 1,
+        "_score": null,
+        "fields": {
+            "eventName.stem": [
+                "portal-entry-created"
+            ],
+            "eventName.enum": [
+                "portal-entry-created"
+            ],
+            "logLevel.joined": [
+                "INFO"
+            ],
+            "message.prefix": [
+                "Entry with Id:338672 is created"
+            ],
+            "userId.delimiter": [
+                "295612"
+            ],
+            "logLevel.enum": [
+                "INFO"
+            ],
+            "message.delimiter": [
+                "Entry with Id:338672 is created"
+            ],
+            "dateCreated": [
+                "2024-05-13T00:19:18.000Z"
+            ],
+            "eventName.joined": [
+                "portal-entry-created"
+            ],
+            "logLevel": [
+                "INFO"
+            ],
+            "userId.joined": [
+                "295612"
+            ],
+            "logLevel.prefix": [
+                "INFO"
+            ],
+            "message.enum": [
+                "Entry with Id:338672 is created"
+            ],
+            "eventName": [
+                "portal-entry-created"
+            ],
+            "logLevel.stem": [
+                "INFO"
+            ],
+            "userId.stem": [
+                "295612"
+            ],
+            "userId.enum": [
+                "295612"
+            ],
+            "message": [
+                "Entry with Id:338672 is created"
+            ],
+            "userId": [
+                "295612"
+            ],
+            "eventName.prefix": [
+                "portal-entry-created"
+            ],
+            "userId.prefix": [
+                "295612"
+            ],
+            "eventName.delimiter": [
+                "portal-entry-created"
+            ],
+            "message.stem": [
+                "Entry with Id:338672 is created"
+            ],
+            "logLevel.delimiter": [
+                "INFO"
+            ],
+            "message.joined": [
+                "Entry with Id:338672 is created"
+            ]
+        },
+        "sort": [
+            "2024-05-13T00:19:18.000Z",
+            1161
+        ]
+    },
+    {
+        "_index": "search-smileconnect-log",
+        "_id": "kXpgb48BRCwhtTjkpmom",
+        "_version": 1,
+        "_score": null,
+        "fields": {
+            "eventName.stem": [
+                "portal-entry-created"
+            ],
+            "eventName.enum": [
+                "portal-entry-created"
+            ],
+            "logLevel.joined": [
+                "INFO"
+            ],
+            "message.prefix": [
+                "Entry with Id:338670 is created"
+            ],
+            "userId.delimiter": [
+                "295612"
+            ],
+            "logLevel.enum": [
+                "INFO"
+            ],
+            "message.delimiter": [
+                "Entry with Id:338670 is created"
+            ],
+            "dateCreated": [
+                "2024-05-13T00:19:16.000Z"
+            ],
+            "eventName.joined": [
+                "portal-entry-created"
+            ],
+            "logLevel": [
+                "INFO"
+            ],
+            "userId.joined": [
+                "295612"
+            ],
+            "logLevel.prefix": [
+                "INFO"
+            ],
+            "message.enum": [
+                "Entry with Id:338670 is created"
+            ],
+            "eventName": [
+                "portal-entry-created"
+            ],
+            "logLevel.stem": [
+                "INFO"
+            ],
+            "userId.stem": [
+                "295612"
+            ],
+            "userId.enum": [
+                "295612"
+            ],
+            "message": [
+                "Entry with Id:338670 is created"
+            ],
+            "userId": [
+                "295612"
+            ],
+            "eventName.prefix": [
+                "portal-entry-created"
+            ],
+            "userId.prefix": [
+                "295612"
+            ],
+            "eventName.delimiter": [
+                "portal-entry-created"
+            ],
+            "message.stem": [
+                "Entry with Id:338670 is created"
+            ],
+            "logLevel.delimiter": [
+                "INFO"
+            ],
+            "message.joined": [
+                "Entry with Id:338670 is created"
+            ]
+        },
+        "sort": [
+            "2024-05-13T00:19:16.000Z",
+            581
+        ]
+    },
+    {
+        "_index": "search-smileconnect-log",
+        "_id": "xHr8b48BRCwhtTjk7GpS",
+        "_version": 1,
+        "_score": null,
+        "fields": {
+            "eventName.stem": [
+                "portal-entry-created"
+            ],
+            "eventName.enum": [
+                "portal-entry-created"
+            ],
+            "logLevel.joined": [
+                "INFO"
+            ],
+            "message.prefix": [
+                "Entry with Id:338665 is created"
+            ],
+            "userId.delimiter": [
+                "295612"
+            ],
+            "logLevel.enum": [
+                "INFO"
+            ],
+            "message.delimiter": [
+                "Entry with Id:338665 is created"
+            ],
+            "dateCreated": [
+                "2024-05-13T00:13:58.000Z"
+            ],
+            "eventName.joined": [
+                "portal-entry-created"
+            ],
+            "logLevel": [
+                "INFO"
+            ],
+            "userId.joined": [
+                "295612"
+            ],
+            "logLevel.prefix": [
+                "INFO"
+            ],
+            "message.enum": [
+                "Entry with Id:338665 is created"
+            ],
+            "eventName": [
+                "portal-entry-created"
+            ],
+            "logLevel.stem": [
+                "INFO"
+            ],
+            "userId.stem": [
+                "295612"
+            ],
+            "userId.enum": [
+                "295612"
+            ],
+            "message": [
+                "Entry with Id:338665 is created"
+            ],
+            "userId": [
+                "295612"
+            ],
+            "eventName.prefix": [
+                "portal-entry-created"
+            ],
+            "userId.prefix": [
+                "295612"
+            ],
+            "eventName.delimiter": [
+                "portal-entry-created"
+            ],
+            "message.stem": [
+                "Entry with Id:338665 is created"
+            ],
+            "logLevel.delimiter": [
+                "INFO"
+            ],
+            "message.joined": [
+                "Entry with Id:338665 is created"
+            ]
+        },
+        "sort": [
+            "2024-05-13T00:13:58.000Z",
+            571
+        ]
+    },
+    {
+        "_index": "search-smileconnect-log",
+        "_id": "oXpgb48BRCwhtTjkpmom",
+        "_version": 1,
+        "_score": null,
+        "fields": {
+            "eventName.stem": [
+                "portal-entry-created"
+            ],
+            "eventName.enum": [
+                "portal-entry-created"
+            ],
+            "logLevel.joined": [
+                "INFO"
+            ],
+            "message.prefix": [
+                "Entry with Id:338664 is created"
+            ],
+            "userId.delimiter": [
+                "295612"
+            ],
+            "logLevel.enum": [
+                "INFO"
+            ],
+            "message.delimiter": [
+                "Entry with Id:338664 is created"
+            ],
+            "dateCreated": [
+                "2024-05-13T00:12:59.000Z"
+            ],
+            "eventName.joined": [
+                "portal-entry-created"
+            ],
+            "logLevel": [
+                "INFO"
+            ],
+            "userId.joined": [
+                "295612"
+            ],
+            "logLevel.prefix": [
+                "INFO"
+            ],
+            "message.enum": [
+                "Entry with Id:338664 is created"
+            ],
+            "eventName": [
+                "portal-entry-created"
+            ],
+            "logLevel.stem": [
+                "INFO"
+            ],
+            "userId.stem": [
+                "295612"
+            ],
+            "userId.enum": [
+                "295612"
+            ],
+            "message": [
+                "Entry with Id:338664 is created"
+            ],
+            "userId": [
+                "295612"
+            ],
+            "eventName.prefix": [
+                "portal-entry-created"
+            ],
+            "userId.prefix": [
+                "295612"
+            ],
+            "eventName.delimiter": [
+                "portal-entry-created"
+            ],
+            "message.stem": [
+                "Entry with Id:338664 is created"
+            ],
+            "logLevel.delimiter": [
+                "INFO"
+            ],
+            "message.joined": [
+                "Entry with Id:338664 is created"
+            ]
+        },
+        "sort": [
+            "2024-05-13T00:12:59.000Z",
+            588
+        ]
+    },
+    {
+        "_index": "search-smileconnect-log",
+        "_id": "rnr8b48BRCwhtTjk7Go6",
+        "_version": 1,
+        "_score": null,
+        "fields": {
+            "eventName.stem": [
+                "portal-entry-created"
+            ],
+            "eventName.enum": [
+                "portal-entry-created"
+            ],
+            "logLevel.joined": [
+                "INFO"
+            ],
+            "message.prefix": [
+                "Entry with Id:338662 is created"
+            ],
+            "userId.delimiter": [
+                "295612"
+            ],
+            "logLevel.enum": [
+                "INFO"
+            ],
+            "message.delimiter": [
+                "Entry with Id:338662 is created"
+            ],
+            "dateCreated": [
+                "2024-05-13T00:10:14.000Z"
+            ],
+            "eventName.joined": [
+                "portal-entry-created"
+            ],
+            "logLevel": [
+                "INFO"
+            ],
+            "userId.joined": [
+                "295612"
+            ],
+            "logLevel.prefix": [
+                "INFO"
+            ],
+            "message.enum": [
+                "Entry with Id:338662 is created"
+            ],
+            "eventName": [
+                "portal-entry-created"
+            ],
+            "logLevel.stem": [
+                "INFO"
+            ],
+            "userId.stem": [
+                "295612"
+            ],
+            "userId.enum": [
+                "295612"
+            ],
+            "message": [
+                "Entry with Id:338662 is created"
+            ],
+            "userId": [
+                "295612"
+            ],
+            "eventName.prefix": [
+                "portal-entry-created"
+            ],
+            "userId.prefix": [
+                "295612"
+            ],
+            "eventName.delimiter": [
+                "portal-entry-created"
+            ],
+            "message.stem": [
+                "Entry with Id:338662 is created"
+            ],
+            "logLevel.delimiter": [
+                "INFO"
+            ],
+            "message.joined": [
+                "Entry with Id:338662 is created"
+            ]
+        },
+        "sort": [
+            "2024-05-13T00:10:14.000Z",
+            591
+        ]
+    },
+    {
+        "_index": "search-smileconnect-log",
+        "_id": "8Hr8b48BRCwhtTjk7GrC",
+        "_version": 1,
+        "_score": null,
+        "fields": {
+            "eventName.stem": [
+                "portal-entry-created"
+            ],
+            "eventName.enum": [
+                "portal-entry-created"
+            ],
+            "logLevel.joined": [
+                "INFO"
+            ],
+            "message.prefix": [
+                "Entry with Id:338661 is created"
+            ],
+            "userId.delimiter": [
+                "295612"
+            ],
+            "logLevel.enum": [
+                "INFO"
+            ],
+            "message.delimiter": [
+                "Entry with Id:338661 is created"
+            ],
+            "dateCreated": [
+                "2024-05-13T00:09:42.000Z"
+            ],
+            "eventName.joined": [
+                "portal-entry-created"
+            ],
+            "logLevel": [
+                "INFO"
+            ],
+            "userId.joined": [
+                "295612"
+            ],
+            "logLevel.prefix": [
+                "INFO"
+            ],
+            "message.enum": [
+                "Entry with Id:338661 is created"
+            ],
+            "eventName": [
+                "portal-entry-created"
+            ],
+            "logLevel.stem": [
+                "INFO"
+            ],
+            "userId.stem": [
+                "295612"
+            ],
+            "userId.enum": [
+                "295612"
+            ],
+            "message": [
+                "Entry with Id:338661 is created"
+            ],
+            "userId": [
+                "295612"
+            ],
+            "eventName.prefix": [
+                "portal-entry-created"
+            ],
+            "userId.prefix": [
+                "295612"
+            ],
+            "eventName.delimiter": [
+                "portal-entry-created"
+            ],
+            "message.stem": [
+                "Entry with Id:338661 is created"
+            ],
+            "logLevel.delimiter": [
+                "INFO"
+            ],
+            "message.joined": [
+                "Entry with Id:338661 is created"
+            ]
+        },
+        "sort": [
+            "2024-05-13T00:09:42.000Z",
+            553
+        ]
+    },
+    {
+        "_index": "search-smileconnect-log",
+        "_id": "vHr8b48BRCwhtTjk7GpQ",
+        "_version": 1,
+        "_score": null,
+        "fields": {
+            "eventName.stem": [
+                "portal-entry-created"
+            ],
+            "eventName.enum": [
+                "portal-entry-created"
+            ],
+            "logLevel.joined": [
+                "INFO"
+            ],
+            "message.prefix": [
+                "Entry with Id:338657 is created"
+            ],
+            "userId.delimiter": [
+                "7544"
+            ],
+            "logLevel.enum": [
+                "INFO"
+            ],
+            "message.delimiter": [
+                "Entry with Id:338657 is created"
+            ],
+            "dateCreated": [
+                "2024-05-13T00:05:31.000Z"
+            ],
+            "eventName.joined": [
+                "portal-entry-created"
+            ],
+            "logLevel": [
+                "INFO"
+            ],
+            "userId.joined": [
+                "7544"
+            ],
+            "logLevel.prefix": [
+                "INFO"
+            ],
+            "message.enum": [
+                "Entry with Id:338657 is created"
+            ],
+            "eventName": [
+                "portal-entry-created"
+            ],
+            "logLevel.stem": [
+                "INFO"
+            ],
+            "userId.stem": [
+                "7544"
+            ],
+            "userId.enum": [
+                "7544"
+            ],
+            "message": [
+                "Entry with Id:338657 is created"
+            ],
+            "userId": [
+                "7544"
+            ],
+            "eventName.prefix": [
+                "portal-entry-created"
+            ],
+            "userId.prefix": [
+                "7544"
+            ],
+            "eventName.delimiter": [
+                "portal-entry-created"
+            ],
+            "message.stem": [
+                "Entry with Id:338657 is created"
+            ],
+            "logLevel.delimiter": [
+                "INFO"
+            ],
+            "message.joined": [
+                "Entry with Id:338657 is created"
+            ]
+        },
+        "sort": [
+            "2024-05-13T00:05:31.000Z",
+            565
+        ]
+    },
+    {
+        "_index": "search-smileconnect-log",
+        "_id": "l3pgb48BRCwhtTjkpmom",
+        "_version": 1,
+        "_score": null,
+        "fields": {
+            "eventName.stem": [
+                "portal-entry-created"
+            ],
+            "eventName.enum": [
+                "portal-entry-created"
+            ],
+            "logLevel.joined": [
+                "INFO"
+            ],
+            "message.prefix": [
+                "Entry with Id:338656 is created"
+            ],
+            "userId.delimiter": [
+                "7544"
+            ],
+            "logLevel.enum": [
+                "INFO"
+            ],
+            "message.delimiter": [
+                "Entry with Id:338656 is created"
+            ],
+            "dateCreated": [
+                "2024-05-13T00:05:14.000Z"
+            ],
+            "eventName.joined": [
+                "portal-entry-created"
+            ],
+            "logLevel": [
+                "INFO"
+            ],
+            "userId.joined": [
+                "7544"
+            ],
+            "logLevel.prefix": [
+                "INFO"
+            ],
+            "message.enum": [
+                "Entry with Id:338656 is created"
+            ],
+            "eventName": [
+                "portal-entry-created"
+            ],
+            "logLevel.stem": [
+                "INFO"
+            ],
+            "userId.stem": [
+                "7544"
+            ],
+            "userId.enum": [
+                "7544"
+            ],
+            "message": [
+                "Entry with Id:338656 is created"
+            ],
+            "userId": [
+                "7544"
+            ],
+            "eventName.prefix": [
+                "portal-entry-created"
+            ],
+            "userId.prefix": [
+                "7544"
+            ],
+            "eventName.delimiter": [
+                "portal-entry-created"
+            ],
+            "message.stem": [
+                "Entry with Id:338656 is created"
+            ],
+            "logLevel.delimiter": [
+                "INFO"
+            ],
+            "message.joined": [
+                "Entry with Id:338656 is created"
+            ]
+        },
+        "sort": [
+            "2024-05-13T00:05:14.000Z",
+            584
+        ]
+    },
+    {
+        "_index": "search-smileconnect-log",
+        "_id": "jnpgb48BRCwhtTjkpmom",
+        "_version": 1,
+        "_score": null,
+        "fields": {
+            "eventName.stem": [
+                "portal-entry-created"
+            ],
+            "eventName.enum": [
+                "portal-entry-created"
+            ],
+            "logLevel.joined": [
+                "INFO"
+            ],
+            "message.prefix": [
+                "Entry with Id:338650 is created"
+            ],
+            "userId.delimiter": [
+                "318779"
+            ],
+            "logLevel.enum": [
+                "INFO"
+            ],
+            "message.delimiter": [
+                "Entry with Id:338650 is created"
+            ],
+            "dateCreated": [
+                "2024-05-13T00:02:31.000Z"
+            ],
+            "eventName.joined": [
+                "portal-entry-created"
+            ],
+            "logLevel": [
+                "INFO"
+            ],
+            "userId.joined": [
+                "318779"
+            ],
+            "logLevel.prefix": [
+                "INFO"
+            ],
+            "message.enum": [
+                "Entry with Id:338650 is created"
+            ],
+            "eventName": [
+                "portal-entry-created"
+            ],
+            "logLevel.stem": [
+                "INFO"
+            ],
+            "userId.stem": [
+                "318779"
+            ],
+            "userId.enum": [
+                "318779"
+            ],
+            "message": [
+                "Entry with Id:338650 is created"
+            ],
+            "userId": [
+                "318779"
+            ],
+            "eventName.prefix": [
+                "portal-entry-created"
+            ],
+            "userId.prefix": [
+                "318779"
+            ],
+            "eventName.delimiter": [
+                "portal-entry-created"
+            ],
+            "message.stem": [
+                "Entry with Id:338650 is created"
+            ],
+            "logLevel.delimiter": [
+                "INFO"
+            ],
+            "message.joined": [
+                "Entry with Id:338650 is created"
+            ]
+        },
+        "sort": [
+            "2024-05-13T00:02:31.000Z",
+            580
+        ]
+    },
+    {
+        "_index": "search-smileconnect-log",
+        "_id": "7nr8b48BRCwhtTjk7GrB",
+        "_version": 1,
+        "_score": null,
+        "fields": {
+            "eventName.stem": [
+                "portal-entry-created"
+            ],
+            "eventName.enum": [
+                "portal-entry-created"
+            ],
+            "logLevel.joined": [
+                "INFO"
+            ],
+            "message.prefix": [
+                "Entry with Id:338645 is created"
+            ],
+            "userId.delimiter": [
+                "318779"
+            ],
+            "logLevel.enum": [
+                "INFO"
+            ],
+            "message.delimiter": [
+                "Entry with Id:338645 is created"
+            ],
+            "dateCreated": [
+                "2024-05-13T00:01:13.000Z"
+            ],
+            "eventName.joined": [
+                "portal-entry-created"
+            ],
+            "logLevel": [
+                "INFO"
+            ],
+            "userId.joined": [
+                "318779"
+            ],
+            "logLevel.prefix": [
+                "INFO"
+            ],
+            "message.enum": [
+                "Entry with Id:338645 is created"
+            ],
+            "eventName": [
+                "portal-entry-created"
+            ],
+            "logLevel.stem": [
+                "INFO"
+            ],
+            "userId.stem": [
+                "318779"
+            ],
+            "userId.enum": [
+                "318779"
+            ],
+            "message": [
+                "Entry with Id:338645 is created"
+            ],
+            "userId": [
+                "318779"
+            ],
+            "eventName.prefix": [
+                "portal-entry-created"
+            ],
+            "userId.prefix": [
+                "318779"
+            ],
+            "eventName.delimiter": [
+                "portal-entry-created"
+            ],
+            "message.stem": [
+                "Entry with Id:338645 is created"
+            ],
+            "logLevel.delimiter": [
+                "INFO"
+            ],
+            "message.joined": [
+                "Entry with Id:338645 is created"
+            ]
+        },
+        "sort": [
+            "2024-05-13T00:01:13.000Z",
+            551
+        ]
+    }
+]
