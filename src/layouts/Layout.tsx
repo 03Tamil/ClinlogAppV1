@@ -16,10 +16,10 @@ export function Layout(props: FlexProps) {
 
   return (
     <Flex direction={"column"} align={"center"} fontFamily={"Inter"}>
-      <LoadingIndicator />
+      {/* <LoadingIndicator /> */}
       <AlwaysScrollToTop />
       <Flex width={"100%"} direction={"column"}>
-        {session &&  <MainNavbar />}
+        {session && <MainNavbar />}
         {props.children}
         {session && <Sidebar />}
         {session && router?.pathname !== "pagesv2/clinlog" && null}

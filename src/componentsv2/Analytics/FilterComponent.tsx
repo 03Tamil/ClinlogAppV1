@@ -12,7 +12,7 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { set } from "date-fns";
-import { de } from "date-fns/locale";
+import { de, se } from "date-fns/locale";
 import { clinlogFilterColumns } from "helpersv2/utils";
 import React, { useEffect } from "react";
 import { IoMdRefresh } from "react-icons/io";
@@ -45,6 +45,7 @@ export default function FilterComponent({
       globalFilter.length === 0
     ) {
       setGlobalFilter([]);
+      setStandardReport(false);
     }
   }, [filterArray]);
 
@@ -53,6 +54,9 @@ export default function FilterComponent({
       globalFilter.length > 0 &&
       (filterArray.length === 0 || standardReport)
     ) {
+      if (filterArray.length === 0) {
+        setStandardReport(true);
+      }
       const updatedFilterArray = globalFilter.map((filter) => {
         const column = clinlogFilterColumns.find(
           (col) => col.key === filter.id,
@@ -72,12 +76,13 @@ export default function FilterComponent({
         };
       });
       setFilterArray(updatedFilterArray);
-      setStandardReport(true);
+
+      //  setStandardReport(true);
     } else if (globalFilter.length === 0 && standardReport) {
       setFilterArray([]);
       setStandardReport(false);
     }
-  }, [globalFilter]);
+  }, [globalFilter, standardReport]);
 
   return (
     <Flex
