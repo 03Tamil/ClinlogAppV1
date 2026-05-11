@@ -90,6 +90,7 @@ function Clinlog() {
   const [filterArray, setFilterArray] = React.useState([]);
   const [openTab, setOpenTab] = useState("allCases");
   const { data: session } = useSession();
+  console.log("session", session);
   const [viewPatient, setViewPatient] = useState(null);
   const [locationArr, setLocationArr] = useState([session?.locationIds?.[0]]);
   const [clinlogStatus, setClinlogStatus] = useState("More Data Required");
@@ -171,12 +172,12 @@ function Clinlog() {
     ["globalIds", locationArr],
     globalIdsQuery,
     {
-      recordClinic: isAdmin
-        ? allClinicsQueryResult?.data?.clinics?.map((clinic) => clinic?.id)
-        : session?.locationIds,
-      // recordClinic: allClinicsQueryResult?.data?.clinics?.map(
-      //   (clinic) => clinic?.id,
-      // ),
+      // recordClinic: isAdmin
+      //   ? allClinicsQueryResult?.data?.clinics?.map((clinic) => clinic?.id)
+      //   : session?.locationIds,
+      recordClinic: allClinicsQueryResult?.data?.clinics?.map(
+        (clinic) => clinic?.id,
+      ),
     },
     { enabled: locationArr?.length > 0 && allClinicsQueryResult?.isSuccess },
   );
