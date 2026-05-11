@@ -3232,7 +3232,6 @@ export const clinlogNotesQuery = gql`
             id
             patientSurveyMatrix {
               ... on patientSurveyMatrix_patientSurvey_BlockType {
-                id
                 surveyDate
                 timeFromSurgery
                 patientSatisfactionAesthetic
@@ -3380,48 +3379,38 @@ export const clinlogDataQuery = gql`
                         boneLoss
                       }
                     }
-                    itemSpecificationMatrix {
-                      ... on itemSpecificationMatrix_itemSpecs_BlockType {
-                        id
-                        implantBrand
-                        implantCategory
-                        implantCategoryLabel: implantCategory(label: true)
-                        implantLine
-                        implantType
-                        implantBaseAndDiameter
-                        surface
-                        implantLength
-                        angleCorrectionAbutment
-                        placement
-                        placementLabel: placement(label: true)
-                        trabecularBoneDensity
-                        boneVascularity
-                        graftingApplied
-                        graftMaterial
-                        intraOperativeSinusComplications
-                        crestalRest
-                        insertionTorque
-                        relevantBoneWidth
-                        preOperativeSinusDisease
-                        preOperativeSinusDiseaseManagement
-                        conformanceWithTreatmentPlan
-                        prf
-                      }
-                    }
-                    abutmentDetailsMatrix {
-                      ... on abutmentDetailsMatrix_abutment_BlockType {
-                        id
-                        abutmentCategory
-                        abutmentCategoryLabel: abutmentCategory(label: true)
-                        abutmentBrand
-                        gingivalHeight
-                        typeAndDiameter
-                        abutmentHeight
-                        angleCorrectionAbutment
-                        abutmentLength
-                        abutmentSerialSequenceBarCode
-                      }
-                    }
+                    implantBrand
+                    implantCategory
+                    implantCategoryLabel: implantCategory(label: true)
+                    implantLine
+                    implantType
+                    implantBaseDiameter
+                    surface
+                    implantLength
+                    angleCorrectionAbutment
+                    placement
+                    placementLabel: placement(label: true)
+                    trabecularBoneDensity
+                    boneVascularity
+                    graftingApplied
+                    graftMaterial
+                    intraOperativeSinusComplications
+                    crestalRest
+                    insertionTorque
+                    relevantBoneWidth
+                    preOperativeSinusDisease
+                    preOperativeSinusDiseaseManagement
+                    conformanceWithTreatmentPlan
+                    prf
+                    abutmentCategory
+                    abutmentCategoryLabel: abutmentCategory(label: true)
+                    abutmentBrand
+                    gingivalHeight
+                    typeAndDiameter
+                    abutmentHeight
+                    angleCorrectionAbutment
+                    abutmentLength
+                    abutmentSerialSequenceBarCode
                   }
                 }
               }

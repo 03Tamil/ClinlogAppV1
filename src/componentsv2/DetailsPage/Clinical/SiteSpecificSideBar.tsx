@@ -64,12 +64,29 @@ export default function SiteSpecificSideBar({
 
   const [abutmentDetailsArray, setAbutmentDetailsArray] = useState<any[]>([]);
 
+  const siteSpecificRecord = selectedSite?.attachedSiteSpecificRecords?.[0];
   const siteSpecificData =
-    selectedSite?.attachedSiteSpecificRecords?.[0]
-      ?.itemSpecificationMatrix?.[0] || null;
-  // abutment matrix for definitive and provisional
+    siteSpecificRecord?.itemSpecificationMatrix?.[0] ||
+    siteSpecificRecord ||
+    null;
+  const directAbutmentDetails =
+    siteSpecificRecord &&
+    [
+      siteSpecificRecord?.abutmentBrand,
+      siteSpecificRecord?.abutmentCategory,
+      siteSpecificRecord?.angleCorrectionAbutment,
+      siteSpecificRecord?.abutmentLength,
+      siteSpecificRecord?.abutmentHeight,
+      siteSpecificRecord?.gingivalHeight,
+      siteSpecificRecord?.typeAndDiameter,
+      siteSpecificRecord?.abutmentSerialSequenceBarCode,
+    ].some((value) => value !== null && value !== undefined && value !== "")
+      ? [siteSpecificRecord]
+      : [];
   const abutmentDetailsData =
-    selectedSite?.attachedSiteSpecificRecords?.[0]?.abutmentDetailsMatrix || [];
+    siteSpecificRecord?.abutmentDetailsMatrix?.length > 0
+      ? siteSpecificRecord.abutmentDetailsMatrix
+      : directAbutmentDetails;
   const barSpecificDetails =
     selectedSite?.treatmentItemNumber === "666"
       ? selectedSite?.attachedSiteSpecificRecords?.[0]
@@ -1264,8 +1281,8 @@ export default function SiteSpecificSideBar({
     siteSpecificData,
     abutmentBrand,
   ]);
-  //start from above memo
 
+  //start from above memo
   useEffect(() => {
     // Combine the data from both queries into
     const components_data = [
@@ -3313,7 +3330,6 @@ export default function SiteSpecificSideBar({
                                     shouldDirty: true,
                                   },
                                 );
-
                                 setValue(
                                   "0_typeAndDiameter",
                                   foundItem?.typeAndDiameter,
@@ -3473,9 +3489,8 @@ export default function SiteSpecificSideBar({
             </Flex>
             <Divider />
             {implantMatrixMemo}
-
             {abutmentMatrixMemo}
-            <Flex justifyContent="flex-start">
+            {/* <Flex justifyContent="flex-start">
               {!addAbutment ? (
                 <Button mt="1" size="sm" onClick={() => setAddAbutment(true)}>
                   + Add Abutment
@@ -3492,7 +3507,7 @@ export default function SiteSpecificSideBar({
                   Remove
                 </Button>
               )}
-            </Flex>
+            </Flex> */}
             <Text
               color="#007AFF"
               fontSize="12px"

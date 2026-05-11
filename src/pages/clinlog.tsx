@@ -1,4 +1,5 @@
 // @ts-nocheck
+import { GraphQLClient } from "graphql-request";
 import {
   Box,
   Flex,
@@ -68,7 +69,7 @@ import { StylesConfig } from "react-select";
 import { clinlogFilterColumns } from "helpersv2/utils";
 import { useSession } from "next-auth/react";
 import {
-  allClinicsQuery,
+  // allClinicsQuery,
   clinlogDataQuery,
   clinlogNotesQuery,
   globalIdsQuery,
@@ -90,7 +91,6 @@ function Clinlog() {
   const [filterArray, setFilterArray] = React.useState([]);
   const [openTab, setOpenTab] = useState("allCases");
   const { data: session } = useSession();
-  console.log("session", session);
   const [viewPatient, setViewPatient] = useState(null);
   const [locationArr, setLocationArr] = useState([session?.locationIds?.[0]]);
   const [clinlogStatus, setClinlogStatus] = useState("More Data Required");
@@ -109,84 +109,69 @@ function Clinlog() {
 
   const [openMenu, setOpenMenu] = useState(true);
   const [patientSurveyData, setPatientSurveyData] = useState(null);
-  const viewerMainNavbarResult = useQueryHook(
-    ["mainViewerQuery"],
-    mainViewerQuery,
-    {},
-    { enabled: !!session },
-  );
-  const viewerValues = useMemo(() => {
-    return viewerMainNavbarResult?.data?.viewer;
-  }, [viewerMainNavbarResult?.data?.viewer]);
+
+  // const viewerMainNavbarResult = useQueryHook(
+  //   ["mainViewerQuery"],
+  //   mainViewerQuery,
+  //   {},
+  //   { enabled: !!session },
+  // );
+
+  // const viewerValues = useMemo(() => {
+  //   return viewerMainNavbarResult?.data?.viewer;
+  // }, [viewerMainNavbarResult?.data?.viewer]);
+
   const [collapseTabs, setCollapseTabs] = useState(true);
   const isAdmin = session?.groups?.includes("Admin");
   const router = useV2Router();
 
-  const allClinicsQueryResult = useQueryHook(
-    ["clinics"],
-    allClinicsQuery,
-    {},
-    {
-      enabled: !!session,
-    },
-  );
-
-  const locationOptions = useMemo(() => {
-    // if (isAdmin) {
-    //   return allClinicsQueryResult?.data?.clinics?.map((clinic) => ({
-    //     value: clinic?.id,
-    //     label: `${clinic?.locationShortName}`,
-    //   }));
-    // } else {
-    //   const allClinicIds = allClinicsQueryResult?.data?.clinics?.map(
-    //     (clinic) => clinic?.id,
-    //   );
-    //   const location = session?.locationIds
-    //     ?.filter((item) => allClinicIds?.includes(item.toString()))
-    //     .map((clinic) => ({
-    //       value: clinic.toString(),
-    //       label: allClinicsQueryResult?.data?.clinics?.find(
-    //         (item) => item.id === clinic.toString(),
-    //       )?.locationShortName,
-    //     }));
-    //   return location || [];
-    // }
-    return allClinicsQueryResult?.data?.clinics?.map((clinic) => ({
-      value: clinic?.id,
-      label: `${clinic?.locationShortName}`,
-    }));
-  }, [allClinicsQueryResult?.data?.clinics, session?.locationIds]);
-
   useEffect(() => {
-    if (!locationArr?.includes("all") && allClinicsQueryResult?.data?.clinics) {
-      const allClinicIds = allClinicsQueryResult?.data?.clinics?.map(
-        (clinic) => clinic.id,
-      );
-      const filteredArr = locationArr.filter((item) =>
-        allClinicIds.includes(item.toString()),
-      );
-      setLocationArr(filteredArr.map((item) => item.toString()));
+    if (
+      session?.locationIds?.[0] &&
+      (!locationArr?.length || locationArr.every((item) => !item))
+    ) {
+      setLocationArr([session.locationIds[0].toString()]);
     }
-  }, [allClinicsQueryResult?.data?.clinics]);
-  const globalIdsResults = useQueryHook(
-    ["globalIds", locationArr],
-    globalIdsQuery,
-    {
-      // recordClinic: isAdmin
-      //   ? allClinicsQueryResult?.data?.clinics?.map((clinic) => clinic?.id)
-      //   : session?.locationIds,
-      recordClinic: allClinicsQueryResult?.data?.clinics?.map(
-        (clinic) => clinic?.id,
-      ),
-    },
-    { enabled: locationArr?.length > 0 && allClinicsQueryResult?.isSuccess },
+  }, [session?.locationIds, locationArr]);
+
+  const locationQueryKey = useMemo(
+    () =>
+      (locationArr ?? [])
+        .filter(Boolean)
+        .map((item) => item.toString())
+        .sort()
+        .join("|"),
+    [locationArr],
   );
-  const clinlogNotesQueryResult = useQueryHook(
-    ["clinlogNotesQueryResult"],
-    clinlogNotesQuery,
-    {},
-    { enabled: !!session },
+
+  const clinlogDataInfiniteQueryKey = useMemo(
+    () => [
+      "clinlogData",
+      "infinite",
+      locationQueryKey,
+      session?.userId ?? null,
+    ],
+    [locationQueryKey, session?.userId],
   );
+
+  // const globalIdsResults = useQueryHook(
+  //   ["globalIds"],
+  //   globalIdsQuery,
+  //   {
+  //     // recordClinic: isAdmin
+  //     //   ? allClinicsQueryResult?.data?.clinics?.map((clinic) => clinic?.id)
+  //     //   : session?.locationIds,
+  //     recordClinic: globalClinicIds,
+  //   },
+  //   {
+  //     enabled: allClinicsQueryResult?.isSuccess && globalClinicIds.length > 0,
+  //     refetchOnMount: false,
+  //     refetchOnReconnect: false,
+  //     refetchOnWindowFocus: false,
+  //     staleTime: Infinity,
+  //   },
+  // );
+
   const {
     data: clinlogDataInfinite,
     fetchNextPage,
@@ -194,24 +179,28 @@ function Clinlog() {
     hasNextPage,
     isFetching,
   } = useInfiniteQuery(
-    ["clinlogData", "infinite"],
+    clinlogDataInfiniteQueryKey,
     async ({ pageParam = 0 }) => {
-      // First page gets 20 items (covers page 1 & 2), subsequent pages get 10
-
-      const limit = 100;
-
+      // First load gets 100 items, subsequent loads get 200
+      // const getDataNew = async (query, variables = {}, sessionToken) => {
+      //   const graphQLClient = new GraphQLClient(
+      //     process.env.NEXT_PUBLIC_ENDPOINT,
+      //     {
+      //       headers: {
+      //         Authorization: `Bearer ZgQbyv8v3C32FKXtCosAAO6FMxvtMjvg`,
+      //       },
+      //     },
+      //   );
+      //   const result = await graphQLClient.request(query, variables);
+      //   return result;
+      // };
+      const limit = pageParam === 0 ? 100 : 160;
       const res = await getData(
         clinlogDataQuery,
         {
-          id:
-            globalIdsResults?.data?.entries
-              ?.map((record) =>
-                record?.attachedRecordsEntry?.map((entry) => entry.id),
-              )
-              .flat() || [],
           offset: pageParam,
+          recordClinic: locationArr,
           limit: limit,
-
           userId: session?.userId,
         },
         session?.accessToken,
@@ -223,14 +212,93 @@ function Clinlog() {
         if (lastPage?.entries?.length === 0) {
           return undefined;
         }
-
-        return allPages.length * 100;
+        // return 200
+        // Set offset for next page
+        if (allPages.length === 1) {
+          // After first, offset is 100 (first page), next fetch for items 100+
+          return 100;
+        }
+        // For page n, offset is 100 + (n-1)*200
+        return 100 + (allPages.length - 1) * 160;
       },
-      enabled:
-        locationArr?.length > 0 &&
-        globalIdsResults?.isSuccess &&
-        clinlogNotesQueryResult?.isSuccess,
+      enabled: locationQueryKey.length > 0 && !!session?.accessToken,
     },
+  );
+
+  const clinlogHasLoadedRecords = useMemo(
+    () =>
+      clinlogDataInfinite?.pages?.some((page) => page?.entries?.length > 0) ??
+      false,
+    [clinlogDataInfinite?.pages],
+  );
+
+  const hasFinishedClinlogDataLoading =
+    (clinlogDataInfinite?.pages?.length ?? 0) > 0 &&
+    !isLoading &&
+    !isFetching &&
+    !hasNextPage;
+
+  const hasLoadedAllClinlogPages =
+    clinlogHasLoadedRecords && hasFinishedClinlogDataLoading;
+
+  // const allClinicsQueryResult = useQueryHook(
+  //   ["clinics"],
+  //   allClinicsQuery,
+  //   {},
+  //   {
+  //     enabled: hasFinishedClinlogDataLoading && !!session,
+  //   },
+  // );
+  //
+  // const locationOptions = useMemo(() => {
+  //   // if (isAdmin) {
+  //   //   return allClinicsQueryResult?.data?.clinics?.map((clinic) => ({
+  //   //     value: clinic?.id,
+  //   //     label: `${clinic?.locationShortName}`,
+  //   //   }));
+  //   // } else {
+  //   //   const allClinicIds = allClinicsQueryResult?.data?.clinics?.map(
+  //   //     (clinic) => clinic?.id,
+  //   //   );
+  //   //   const location = session?.locationIds
+  //   //     ?.filter((item) => allClinicIds?.includes(item.toString()))
+  //   //     .map((clinic) => ({
+  //   //       value: clinic.toString(),
+  //   //       label: allClinicsQueryResult?.data?.clinics?.find(
+  //   //         (item) => item.id === clinic.toString(),
+  //   //       )?.locationShortName,
+  //   //     }));
+  //   //   return location || [];
+  //   // }
+  //   return allClinicsQueryResult?.data?.clinics?.map((clinic) => ({
+  //     value: clinic?.id,
+  //     label: `${clinic?.locationShortName}`,
+  //   }));
+  // }, [allClinicsQueryResult?.data?.clinics, session?.locationIds]);
+  //
+  // useEffect(() => {
+  //   if (!locationArr?.includes("all") && allClinicsQueryResult?.data?.clinics) {
+  //     const allClinicIds = allClinicsQueryResult?.data?.clinics?.map(
+  //       (clinic) => clinic.id,
+  //     );
+  //     const filteredArr = locationArr.filter((item) =>
+  //       allClinicIds.includes(item.toString()),
+  //     );
+  //     setLocationArr(filteredArr.map((item) => item.toString()));
+  //   }
+  // }, [allClinicsQueryResult?.data?.clinics]);
+  //
+  // const globalClinicIds = useMemo(
+  //   () =>
+  //     allClinicsQueryResult?.data?.clinics?.map((clinic) => clinic?.id) ?? [],
+  //   [allClinicsQueryResult?.data?.clinics],
+  // );
+
+  const clinlogNotesQueryResult = useQueryHook(
+    ["clinlogNotesQueryResult", locationQueryKey, session?.userId ?? null],
+    clinlogNotesQuery,
+    {},
+    { enabled: hasLoadedAllClinlogPages },
   );
 
   const clinlogDataQueryResults = useMemo(() => {
@@ -241,35 +309,6 @@ function Clinlog() {
     return allPages?.map((p) => p.entries)?.flat() ?? [];
   }, [clinlogDataInfinite?.pages?.length]);
 
-  // const clinlogDataQueryResults = useQueryHook(
-  //   ["clinlogDataQueryResults", "all"],
-  //   clinlogDataQuery,
-  //   {
-  //     id:
-  //       globalIdsResults?.data?.entries
-  //         ?.map((record) =>
-  //           record?.attachedRecordsEntry?.map((entry) => entry.id)
-  //         )
-  //         .flat() || [],
-  //     limit: 100,
-  //     offset: 0,
-  //   },
-  //   { enabled: globalIdsResults?.isSuccess }
-  // );
-  // const surgeonOptions = useMemo(() => {
-  //   return [
-  //     ...new Set(
-  //       clinlogDataQueryResults?.data?.entries
-  //         ?.map(
-  //           (record) =>
-  //             record["recordTreatmentSurgeons"]?.map(
-  //               (surgeon) => surgeon.fullName
-  //             ) // Extract the IDs of the surgeons
-  //         )
-  //         .flat()
-  //     ),
-  //   ]?.filter((surgeon) => surgeon !== null && surgeon !== undefined);
-  // }, [clinlogDataQueryResults?.data?.entries]);
   const surgeonOptions = useMemo(() => {
     return [
       ...new Set(
@@ -1375,23 +1414,37 @@ function Clinlog() {
     return result;
   }
   const tableData = useMemo(() => {
-    if (clinlogDataQueryResults?.length > 0 && globalIdsResults?.isSuccess) {
-      const data = clinlogDataQueryResults?.map((entry) => {
-        const globaldata = globalIdsResults.data?.entries?.find((global) => {
-          return global.attachedRecordsEntry?.some(
-            (record) => record.id === entry.id,
-          );
+    return clinlogDataQueryResults?.map((entry) => {
+      const lastNamePrefix = entry.recordLastName?.slice(0, 2) || "";
+      const firstNamePrefix = entry.recordFirstName?.slice(0, 2) || "";
+
+      return {
+        ...entry,
+        patientName: `${lastNamePrefix}, ${firstNamePrefix}`,
+      };
+    });
+  }, [clinlogDataQueryResults]);
+
+  const locationOptions = useMemo(() => {
+    const locationMap = new Map();
+
+    tableData?.forEach((entry) => {
+      entry.recordClinic?.forEach((clinic) => {
+        if (!clinic?.id) return;
+
+        locationMap.set(clinic.id.toString(), {
+          value: clinic.id.toString(),
+          label:
+            clinic.locationShortName || clinic.title || clinic.id.toString(),
         });
-        return {
-          ...entry,
-          globalId: globaldata?.id,
-          patientName: globaldata?.patientShortName,
-        };
       });
-      return data;
-    }
-    return [];
-  }, [clinlogDataQueryResults, globalIdsResults?.data?.entries]);
+    });
+
+    return Array.from(locationMap.values()).sort((a, b) =>
+      a.label.localeCompare(b.label),
+    );
+  }, [tableData]);
+
   const globalFilterFunction = (row, columnId, filters) => {
     const conditionChecks = filters.map((filter) => {
       const filterValue = filter.value.value;
@@ -1606,18 +1659,7 @@ function Clinlog() {
       </Flex>
     );
   };
-  const selectedGlobalPatientData = useMemo(() => {
-    if (viewPatient && globalIdsResults?.isSuccess) {
-      const patientData = globalIdsResults?.data?.entries?.find((entry) => {
-        const records = entry?.attachedRecordsEntry?.map(
-          (record) => record?.id,
-        );
-        return records?.includes(viewPatient?.id);
-      });
-      return patientData;
-    }
-    return null;
-  }, [viewPatient, globalIdsResults?.data?.entries]);
+
   const selectedPatientNotes = useMemo(() => {
     if (viewPatient && clinlogNotesQueryResult?.isSuccess) {
       const notes = clinlogNotesQueryResult.data?.recordNotes?.filter(
@@ -1674,6 +1716,7 @@ function Clinlog() {
       },
     },
   );
+
   const handleAddNote = () => {
     const notesData = {
       recordNoteRecord: Number(viewPatient?.id),
@@ -1682,12 +1725,15 @@ function Clinlog() {
     };
     addClinlogNotesMutationFunction.mutate(notesData);
   };
+
   useEffect(() => {
     if (hasNextPage) {
       fetchNextPage();
     }
   }, [hasNextPage, clinlogDataInfinite]);
+
   return clinlogDataQueryResults?.length === 0 ? (
+    // return false ? (
     <Flex h="100vh" w="100%" bgColor="#FCF8FF">
       <InitialLoader />
     </Flex>
@@ -1883,7 +1929,7 @@ function Clinlog() {
                       </Text>
                     </Flex>
                     <Spacer />
-                    {session?.locationIds?.includes(
+                    {/* {session?.locationIds?.includes(
                       Number(selectedGlobalPatientData?.recordClinic?.[0]?.id),
                     ) && (
                       <Link
@@ -1917,7 +1963,7 @@ function Clinlog() {
                           </Text>
                         </Flex>
                       </Link>
-                    )}
+                    )} */}
                   </Flex>
                   <SurgicalDetailsV3_2
                     setClinlogStatus={setClinlogStatus}
@@ -1941,22 +1987,6 @@ function Clinlog() {
                     patientGender={
                       viewPatient?.recordPatient?.[0]?.sex || viewPatient?.sex
                     }
-                    globalPostId={globalIdsResults?.data?.entries
-                      ?.find((entry) => {
-                        const records = entry?.attachedRecordsEntry?.map(
-                          (record) => record?.id,
-                        );
-                        return records?.includes(viewPatient.id.toString());
-                      })
-                      ?.id.toString()}
-                    detailsData={globalIdsResults?.data?.entries?.find(
-                      (entry) => {
-                        const records = entry?.attachedRecordsEntry?.map(
-                          (record) => record?.id,
-                        );
-                        return records?.includes(viewPatient.id.toString());
-                      },
-                    )}
                     fromClinlog={true}
                   />
                 </Flex>
@@ -1980,9 +2010,9 @@ function Clinlog() {
                         className="material-symbols-outlined"
                         fontSize={"28px"}
                       >
-                        {selectedGlobalPatientData?.globalIsFlagged
+                        {/* {selectedGlobalPatientData?.globalIsFlagged
                           ? "toggle_on"
-                          : "toggle_off"}
+                          : "toggle_off"} */}
                       </chakra.span>
                     </Flex>
                     <Flex w="100%" justify="space-between" align="center">
@@ -2835,31 +2865,6 @@ function Clinlog() {
                             <Td textAlign={"center"}>
                               {" "}
                               <Link
-                                //target={"_blank"}
-
-                                //as={NextLink}
-                                // href={{
-                                //   pathname: "/patientdata",
-                                //   query: {
-                                //     postId: encryptId(postId),
-                                //     entryId: encryptId(treatment.id),
-                                //   },
-                                // }}
-                                // href={`/patientdata?postId=${encryptId(
-                                //   globalIdsResults?.data?.entries
-                                //     ?.find((entry) => {
-                                //       const records =
-                                //         entry?.attachedRecordsEntry?.map(
-                                //           (record) => record?.id
-                                //         );
-                                //       return records?.includes(
-                                //         row.original.id.toString()
-                                //       );
-                                //     })
-                                //     ?.id.toString()
-                                // )}&entryId=${encryptId(
-                                //   row.original.id.toString()
-                                // )}&tabName=surgical`}
                                 onClick={() => {
                                   setViewPatient(row.original);
                                 }}

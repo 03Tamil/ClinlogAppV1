@@ -129,129 +129,12 @@ export default function SurgicalDetailsV3_2({
   proposedTreatmentChartIds,
   patientDob,
   patientGender,
-  globalPostId,
   isLoading,
-  detailsData,
   fromClinlog = false,
 }) {
   const router = useV2Router();
   const { query } = router;
-  // Tab state for segmented control
-  const [activeTab, setActiveTab] = useState("THIS TREATMENT");
-  const siteSpecificGlobalQuery = gql`
-    query siteSpecificGlobalQuery($id: [QueryArgument]) {
-      entries(
-        section: "dentalChartRecords"
-        type: "proposedTreatmentChart"
-        patientFormGlobal: $id
-      ) {
-        ... on dentalChartRecords_proposedTreatmentChart_Entry {
-          patientFormRecord {
-            ... on records_records_Entry {
-              dateOfInsertion
-            }
-          }
-          proposedTreatmentToothMatrix {
-            ... on proposedTreatmentToothMatrix_toothDetails_BlockType {
-              id
-              initialDate
-              treatmentItemTitle
-              treatmentItemNumber
-              treatmentItemDescription
-              treatmentFriendlyName
-              toothValue
-              toothPosition
-              completedDate
-              approved
-              completed
-              groupTitle
-              groupTitleParent
-              treatmentPaid
-              groupNumber
-              visitTitle
-              visitNumber
-              patientCost
-              discountReason
-              vgds
-              discount
-              vetAffairs
-              medicare
-              cost
-              recordTreatmentDate
-              attachedSiteSpecificRecords {
-                ... on treatmentItemSpecificationRecord_barSpecifications_Entry {
-                  id
-                  archLocation
-                  barMaterial
-                  barLengthFrom
-                  barLengthTo
-                  barType
-                }
-                ... on treatmentItemSpecificationRecord_itemSpecificationAndDetails_Entry {
-                  id
-                  itemSpecificationMatrix {
-                    ... on itemSpecificationMatrix_itemSpecs_BlockType {
-                      enableInClinlog
-                      implantBrand
-                      implantLength
-                      implantType
-                      angleCorrectionAbutment
-                      serialSequenceBarCode
-                      insertionTorque
-                      insertionTorqueLabel: insertionTorque(label: true)
-                      radiographicTrabecularDensityHu
-                      placement
-                      placementLabel: placement(label: true)
-                      relevantBoneWidth
-                      relevantBoneWidthLabel: relevantBoneWidth(label: true)
-                      trabecularBoneDensity
-                      trabecularBoneDensityLabel: trabecularBoneDensity(
-                        label: true
-                      )
-                      boneVascularity
-                      boneVascularityLabel: boneVascularity(label: true)
-                      crestalRest
-                      crestalRestLabel: crestalRest(label: true)
-                      graftingApplied
-                      graftingAppliedLabel: graftingApplied(label: true)
-                      graftMaterial
-                      graftMaterialLabel: graftMaterial(label: true)
-                      intraOperativeSinusComplications
-                      intraOperativeSinusComplicationsLabel: intraOperativeSinusComplications(
-                        label: true
-                      )
-                      preOperativeSinusDisease
-                      preOperativeSinusDiseaseLabel: preOperativeSinusDisease(
-                        label: true
-                      )
-                      preOperativeSinusDiseaseManagement
-                      preOperativeSinusDiseaseManagementLabel: preOperativeSinusDiseaseManagement(
-                        label: true
-                      )
-                      conformanceWithTreatmentPlan
-                      conformanceWithTreatmentPlanLabel: conformanceWithTreatmentPlan(
-                        label: true
-                      )
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  `;
-
-  const siteSpecificGlobal = useQueryHook(
-    ["siteSpecificGlobal", globalPostId],
-    siteSpecificGlobalQuery,
-    { id: [Number(globalPostId)] },
-    {
-      refetchOnWindowFocus: false,
-      enabled: activeTab === "ALL",
-    },
-  );
+  const activeTab = "THIS TREATMENT";
   const fetchDentalComponentsQuery = gql`
     query fetchDentalComponentsQuery {
       entries(section: "dentalComponents") {
@@ -314,10 +197,9 @@ export default function SurgicalDetailsV3_2({
     patientCharacteristicsQueryFreeform,
     {
       entryId: Number(selectedRecord?.id),
-      // globalId: Number(globalPostId),
     },
     {
-      enabled: !fromClinlog && selectedRecord && detailsData?.recordPatient,
+      enabled: !fromClinlog && selectedRecord,
       refetchOnWindowFocus: false,
     },
   );
@@ -327,7 +209,7 @@ export default function SurgicalDetailsV3_2({
     patientCharacteristicsQuery,
     { entryId: Number(selectedRecord?.id) },
     {
-      enabled: selectedRecord && detailsData?.recordPatient,
+      enabled: selectedRecord,
       refetchOnWindowFocus: false,
     },
   );
@@ -398,83 +280,42 @@ export default function SurgicalDetailsV3_2({
   ];
 
   const sitesWithImplantsMemo = useMemo(() => {
-    let approvedProposal = null;
-    if (activeTab === "THIS TREATMENT") {
-      approvedProposal = proposedTreatmentChartResults?.find(
-        (proposal) =>
-          proposal.chartStatus === "approved" ||
-          proposal.chartStatus === "modified",
-      );
+    const approvedProposal = proposedTreatmentChartResults?.find(
+      (proposal) =>
+        proposal.chartStatus === "approved" ||
+        proposal.chartStatus === "modified",
+    );
 
-      if (approvedProposal) {
-        const filteredSites =
-          approvedProposal?.proposedTreatmentToothMatrix?.filter((item) => {
-            if (statusFilter === "all") {
-              return true;
-            } else if (statusFilter === "completed") {
-              return item?.completed;
-            } else if (statusFilter === "approved") {
-              return item?.approved;
-            } else if (statusFilter === "pending") {
-              return !item?.completed;
-            }
-          });
+    if (approvedProposal) {
+      const filteredSites =
+        approvedProposal?.proposedTreatmentToothMatrix?.filter((item) => {
+          if (statusFilter === "all") {
+            return true;
+          } else if (statusFilter === "completed") {
+            return item?.completed;
+          } else if (statusFilter === "approved") {
+            return item?.approved;
+          } else if (statusFilter === "pending") {
+            return !item?.completed;
+          }
+        });
 
-        return filteredSites
-          ?.filter(
-            (item) =>
-              item?.treatmentItemNumber == "688" ||
-              item?.treatmentItemNumber == "666" ||
-              item?.treatmentItemNumber == "661",
-          )
-          .map((item) => ({
-            ...item,
-            insertionDate:
-              approvedProposal.patientFormRecord?.[0]?.dateOfInsertion,
-          }));
-      }
-    } else {
-      const allSites = siteSpecificGlobal?.data?.entries
-        ?.map((entryItem) => {
-          const addInsertionDate = entryItem?.proposedTreatmentToothMatrix?.map(
-            (item) => {
-              return {
-                ...item,
-                insertionDate:
-                  entryItem.patientFormRecord?.[0]?.dateOfInsertion,
-              };
-            },
-          );
-          return addInsertionDate;
-        })
-        .flat();
-
-      const filteredSites = allSites?.filter((item) => {
-        if (statusFilter === "all") {
-          return true;
-        } else if (statusFilter === "completed") {
-          return item?.completed;
-        } else if (statusFilter === "approved") {
-          return item?.approved;
-        } else if (statusFilter === "pending") {
-          return !item?.completed;
-        }
-      });
-
-      return filteredSites?.filter(
-        (item) =>
-          item?.treatmentItemNumber === "688" ||
-          item?.treatmentItemNumber === "666" ||
-          item?.treatmentItemNumber === "661",
-      );
+      return filteredSites
+        ?.filter(
+          (item) =>
+            item?.treatmentItemNumber == "688" ||
+            item?.treatmentItemNumber == "666" ||
+            item?.treatmentItemNumber == "661",
+        )
+        .map((item) => ({
+          ...item,
+          insertionDate:
+            approvedProposal.patientFormRecord?.[0]?.dateOfInsertion,
+        }));
     }
+
     return [];
-  }, [
-    proposedTreatmentChartResults,
-    statusFilter,
-    activeTab,
-    siteSpecificGlobal?.data?.entries,
-  ]);
+  }, [proposedTreatmentChartResults, statusFilter]);
 
   const { data: session } = useSession();
   const [selectedSite, setSelectedSite] = useState(null);
@@ -1635,7 +1476,6 @@ export default function SurgicalDetailsV3_2({
       // Always refetch after error or success:
       onSettled: (newTodo) => {
         characteristicsMutate.reset();
-        queryClient.invalidateQueries(["detailsPageNew", globalPostId]);
         if (isReviewOpen) {
           // onReviewClose()
         }
@@ -1715,7 +1555,6 @@ export default function SurgicalDetailsV3_2({
       },
       onSettled: () => {
         useEditPatientDetailsMutation.reset();
-        queryClient.invalidateQueries(["detailsPageNew", globalPostId]);
       },
     },
   );
@@ -3459,12 +3298,9 @@ export default function SurgicalDetailsV3_2({
                       fontFamily={"inter"}
                       fontWeight={"500"}
                     >
-                      {siteSpecificGlobal.isFetching ||
-                      siteSpecificGlobal.isLoading
-                        ? "Loading..."
-                        : statusFilter === "completed"
-                          ? "No completed treatments"
-                          : "No pending treatments"}
+                      {statusFilter === "completed"
+                        ? "No completed treatments"
+                        : "No pending treatments"}
                     </Flex>
                   </Td>
                 </Tr>
@@ -3553,9 +3389,6 @@ export default function SurgicalDetailsV3_2({
         onClose={onSidebarClose}
         size="xl"
       >
-        {/* 0107630031736543112310301728102910AWXW9
-        0107630031736543112310301728102910AWXW9
-        0107630031736543112411111729111010JMAK6 */}
         <DrawerOverlay />
         <DrawerContent>
           <DrawerHeader bgColor={"#0E11C7"} fontWeight={"700"}>
@@ -3603,7 +3436,6 @@ export default function SurgicalDetailsV3_2({
                   proposal.chartStatus === "modified",
               )}
               onSidebarClose={onSidebarClose}
-              globalPostId={globalPostId}
               proposedTreatmentChartIds={proposedTreatmentChartIds}
               onSiteSaved={(site) => {
                 const toothVal = String(site ?? "");
@@ -3968,15 +3800,15 @@ export default function SurgicalDetailsV3_2({
         isOpen={isCharcteristicsOpen}
         onClose={() => {
           onCharcteristicsClose();
-          const { drawer, ...restQuery } = router.query;
-          router.replace(
-            {
-              pathname: router.pathname,
-              query: restQuery,
-            },
-            undefined,
-            { shallow: true },
-          );
+          // const { drawer, ...restQuery } = router.query;
+          // router.replace(
+          //   {
+          //     pathname: router.pathname,
+          //     query: restQuery,
+          //   },
+          //   undefined,
+          //   { shallow: true },
+          // );
         }}
         size="lg"
       >
