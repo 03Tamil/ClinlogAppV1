@@ -90,7 +90,6 @@ function Clinlog() {
   const [filterArray, setFilterArray] = React.useState([]);
   const [openTab, setOpenTab] = useState("allCases");
   const { data: session } = useSession();
-  console.log("session", session);
   const [viewPatient, setViewPatient] = useState(null);
   const [locationArr, setLocationArr] = useState([session?.locationIds?.[0]]);
   const [clinlogStatus, setClinlogStatus] = useState("More Data Required");
