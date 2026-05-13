@@ -371,8 +371,8 @@ export default function ClinlogDataTool({
             }
 
             return (
-              record?.attachedSiteSpecificRecords?.[0]
-                ?.itemSpecificationMatrix?.[0]?.[selectedField] === key?.value
+              record?.attachedSiteSpecificRecords?.[0]?.[selectedField] ===
+              key?.value
             );
           }).length;
           result.push({
@@ -492,8 +492,7 @@ export default function ClinlogDataTool({
             );
           }
           return (
-            record.attachedSiteSpecificRecords?.[0]
-              ?.itemSpecificationMatrix?.[0]?.[compareParams.field1] ===
+            record.attachedSiteSpecificRecords?.[0]?.[compareParams.field1] ===
             compareParams.value1
           );
         }).length;
@@ -527,7 +526,7 @@ export default function ClinlogDataTool({
           //       return site.toothValue;
           //     }
           //     return site.attachedSiteSpecificRecords?.[0]
-          //       ?.itemSpecificationMatrix?.[0]?.[compareParams.field1];
+          //       ?.[compareParams.field1];
           //   });
           //   return siteSpecificData?.includes(value1);
           // }
@@ -571,8 +570,7 @@ export default function ClinlogDataTool({
             );
           }
           return (
-            record.attachedSiteSpecificRecords?.[0]
-              ?.itemSpecificationMatrix?.[0]?.[compareParams.field2] ===
+            record.attachedSiteSpecificRecords?.[0]?.[compareParams.field2] ===
             compareParams.value2
           );
         }).length;
@@ -603,7 +601,7 @@ export default function ClinlogDataTool({
           //       return site.toothValue;
           //     }
           //     return site.attachedSiteSpecificRecords?.[0]
-          //       ?.itemSpecificationMatrix?.[0]?.[compareParams.field2];
+          //       ?.[compareParams.field2];
           //   });
           //   return siteSpecificData?.includes(value2);
           // }
@@ -951,6 +949,9 @@ export default function ClinlogDataTool({
     smoking_ps: false,
     implantCategory: false,
     implantLine: false,
+    graftConditionAtFollowUp: false,
+    prostheticUpgrades: false,
+    dateOfProstheticUpgrade: false,
   });
   const [reportType, setReportType] = useState("");
   const reportColumns = {
@@ -1197,8 +1198,8 @@ export default function ClinlogDataTool({
               return site.toothValue;
             } else if (cell.column.id === "implantCategory") {
               return (
-                site.attachedSiteSpecificRecords?.[0]
-                  ?.itemSpecificationMatrix?.[0]?.implantCategoryLabel || ""
+                site.attachedSiteSpecificRecords?.[0]?.implantCategoryLabel ||
+                ""
               );
             } else if (ssFollowUpColumns?.includes(cell.column.id)) {
               const siteFollowUpRecords =
@@ -1210,7 +1211,7 @@ export default function ClinlogDataTool({
               );
             }
             return (
-              site.attachedSiteSpecificRecords?.[0]?.itemSpecificationMatrix?.[0]?.[
+              site.attachedSiteSpecificRecords?.[0]?.[
                 cell.column.id
               ]?.replaceAll(",", "") || ""
             );
@@ -1383,8 +1384,8 @@ export default function ClinlogDataTool({
               return site.toothValue;
             } else if (cell.column.id === "implantCategory") {
               return (
-                site.attachedSiteSpecificRecords?.[0]
-                  ?.itemSpecificationMatrix?.[0]?.implantCategoryLabel || ""
+                site.attachedSiteSpecificRecords?.[0]?.implantCategoryLabel ||
+                ""
               );
             } else if (ssFollowUpColumns?.includes(cell.column.id)) {
               const siteFollowUpRecords =
@@ -1396,7 +1397,7 @@ export default function ClinlogDataTool({
               );
             }
             return (
-              site.attachedSiteSpecificRecords?.[0]?.itemSpecificationMatrix?.[0]?.[
+              site.attachedSiteSpecificRecords?.[0]?.[
                 cell.column.id
               ]?.replaceAll(",", "") || ""
             );

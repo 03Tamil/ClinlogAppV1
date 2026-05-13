@@ -70,8 +70,8 @@ function MyApp({ Component, pageProps }: CustomAppProps) {
   const finalTitle = derivedTitle ?? title;
 
   const pageTitle = finalTitle
-    ? `${finalTitle} | SmileConnect`
-    : "SmileConnect";
+    ? `${finalTitle} | Clinlog`
+    : "Clinlog";
 
   const [needToSignTerms, setNeedToSignTerms] = useAtom(needToSignTermsAtom);
   const isV2 = router.asPath.includes("pagesv2");
@@ -324,19 +324,19 @@ function MyApp({ Component, pageProps }: CustomAppProps) {
           <link
             rel="icon"
             type="image/png"
-            href="/smileconnect-favicon-96x96.png"
+            href="/clinlog_icon.svg"
             sizes="96x96"
           />
           <link
             rel="icon"
             type="image/svg+xml"
-            href="/smileconnect-favicon.svg"
+            href="/clinlog_icon.svg"
           />
-          <link rel="shortcut icon" href="/smileconnect-favicon.ico" />
+          <link rel="shortcut icon" href="/clinlog_icon.svg" />
           <link
             rel="apple-touch-icon"
             sizes="180x180"
-            href="/smileconnect-apple-touch-icon.png"
+            href="/clinlog_icon.svg"
           />
           <link rel="manifest" href="/site.webmanifest" />
         </Head>

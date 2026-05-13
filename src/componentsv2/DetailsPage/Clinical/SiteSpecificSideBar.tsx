@@ -64,12 +64,24 @@ export default function SiteSpecificSideBar({
 
   const [abutmentDetailsArray, setAbutmentDetailsArray] = useState<any[]>([]);
 
-  const siteSpecificData =
-    selectedSite?.attachedSiteSpecificRecords?.[0]
-      ?.itemSpecificationMatrix?.[0] || null;
-  // abutment matrix for definitive and provisional
+  const siteSpecificRecord = selectedSite?.attachedSiteSpecificRecords?.[0];
+  const siteSpecificData = siteSpecificRecord || null;
+  const directAbutmentDetails =
+    siteSpecificRecord &&
+    [
+      siteSpecificRecord?.abutmentBrand,
+      siteSpecificRecord?.abutmentCategory,
+      siteSpecificRecord?.angleCorrectionAbutment,
+      siteSpecificRecord?.abutmentLength,
+      siteSpecificRecord?.abutmentHeight,
+      siteSpecificRecord?.gingivalHeight,
+      siteSpecificRecord?.typeAndDiameter,
+      siteSpecificRecord?.abutmentSerialSequenceBarCode,
+    ].some((value) => value !== null && value !== undefined && value !== "")
+      ? [siteSpecificRecord]
+      : [];
   const abutmentDetailsData =
-    selectedSite?.attachedSiteSpecificRecords?.[0]?.abutmentDetailsMatrix || [];
+    directAbutmentDetails.length > 0 ? directAbutmentDetails : [];
   const barSpecificDetails =
     selectedSite?.treatmentItemNumber === "666"
       ? selectedSite?.attachedSiteSpecificRecords?.[0]
@@ -119,7 +131,7 @@ export default function SiteSpecificSideBar({
 
   const { control, register, handleSubmit, watch, setValue, getValues } =
     useForm();
-  // having dynamic fields created for abutment matrix, so not using default values, instead setting values on data fetch
+  // Having dynamic fields created for abutment details, so not using default values, instead setting values on data fetch.
   // useForm({
   //   defaultValues: {
   //     siteId: selectedSite?.attachedSiteSpecificRecords?.[0]?.id || "new",
@@ -131,7 +143,7 @@ export default function SiteSpecificSideBar({
   //     surface: siteSpecificData?.surface || "",
   //     implantType: siteSpecificData?.implantType || "",
   //     implantLength: siteSpecificData?.implantLength || "",
-  //     implantBaseAndDiameter: siteSpecificData?.implantBaseAndDiameter || "",
+  //     implantBaseDiameter: siteSpecificData?.implantBaseDiameter || "",
 
   //     serialSequenceBarCode: siteSpecificData?.serialSequenceBarCode || "",
   //     lotCode:
@@ -797,14 +809,14 @@ export default function SiteSpecificSideBar({
           </Text>
           {fromClinlog ? (
             <Text sx={selectStyles} textTransform={"uppercase"}>
-              {siteSpecificData?.implantBaseAndDiameter || "N/A"}
+              {siteSpecificData?.implantBaseDiameter || "N/A"}
             </Text>
           ) : (
             <Select
               sx={selectStyles}
-              {...register("implantBaseAndDiameter")}
+              {...register("implantBaseDiameter")}
               disabled={
-                (fromClinlog && !getValues("implantBaseAndDiameter")) ||
+                (fromClinlog && !getValues("implantBaseDiameter")) ||
                 implantBaseAndDiameterOptions?.length === 0
               }
             >
@@ -1264,8 +1276,8 @@ export default function SiteSpecificSideBar({
     siteSpecificData,
     abutmentBrand,
   ]);
-  //start from above memo
 
+  //start from above memo
   useEffect(() => {
     // Combine the data from both queries into
     const components_data = [
@@ -1289,8 +1301,8 @@ export default function SiteSpecificSideBar({
       setValue("implantLine", siteSpecificData?.implantLine);
       setValue("surface", siteSpecificData?.surface);
       setValue(
-        "implantBaseAndDiameter",
-        siteSpecificData?.implantBaseAndDiameter,
+        "implantBaseDiameter",
+        siteSpecificData?.implantBaseDiameter,
       );
       setValue("implantType", siteSpecificData?.implantType);
       setValue("implantLength", siteSpecificData?.implantLength);
@@ -1600,22 +1612,84 @@ export default function SiteSpecificSideBar({
     mutation createSiteSpecificMutation(
       $title: String!
       $attachedSiteSpecificFollowUp: [Int]
-      $itemSpecificationMatrixBlocks: [itemSpecificationMatrix_MatrixBlockContainerInput]
-      $itemSpecificationMatrixSortOrder: [QueryArgument]
-      $abutmentDetailsMatrixBlocks: [abutmentDetailsMatrix_MatrixBlockContainerInput]
-      $abutmentDetailsMatrixSortOrder: [QueryArgument]
+      $enableInClinlog: Boolean
+      $implantBrand: String
+      $implantCategory: String
+      $implantLine: String
+      $surface: String
+      $implantBaseDiameter: String
+      $implantType: String
+      $implantLength: String
+      $serialSequenceBarCode: String
+      $placement: String
+      $trabecularBoneDensity: String
+      $boneVascularity: String
+      $graftingApplied: String
+      $graftMaterial: String
+      $intraOperativeSinusComplications: String
+      $crestalRest: String
+      $insertionTorque: String
+      $radiographicTrabecularDensityHu: String
+      $relevantBoneWidth: String
+      $preOperativeSinusDisease: String
+      $preOperativeSinusDiseaseManagement: String
+      $conformanceWithTreatmentPlan: String
+      $prf: String
+      $lotCode: String
+      $dateOfManufacture: String
+      $dateOfExpiry: String
+      $abutmentBrand: String
+      $abutmentCategory: String
+      $typeAndDiameter: String
+      $gingivalHeight: String
+      $abutmentHeight: String
+      $abutmentLength: String
+      $angleCorrectionAbutment: String
+      $abutmentSerialSequenceBarCode: String
+      $abutmentLotCode: String
+      $abutmentDateOfManufacture: String
+      $abutmentDateOfExpiry: String
     ) {
       save_treatmentItemSpecificationRecord_itemSpecificationAndDetails_Entry(
         title: $title
         attachedSiteSpecificFollowUp: $attachedSiteSpecificFollowUp
-        itemSpecificationMatrix: {
-          blocks: $itemSpecificationMatrixBlocks
-          sortOrder: $itemSpecificationMatrixSortOrder
-        }
-        abutmentDetailsMatrix: {
-          blocks: $abutmentDetailsMatrixBlocks
-          sortOrder: $abutmentDetailsMatrixSortOrder
-        }
+        enableInClinlog: $enableInClinlog
+        implantBrand: $implantBrand
+        implantCategory: $implantCategory
+        implantLine: $implantLine
+        surface: $surface
+        implantBaseDiameter: $implantBaseDiameter
+        implantType: $implantType
+        implantLength: $implantLength
+        serialSequenceBarCode: $serialSequenceBarCode
+        placement: $placement
+        trabecularBoneDensity: $trabecularBoneDensity
+        boneVascularity: $boneVascularity
+        graftingApplied: $graftingApplied
+        graftMaterial: $graftMaterial
+        intraOperativeSinusComplications: $intraOperativeSinusComplications
+        crestalRest: $crestalRest
+        insertionTorque: $insertionTorque
+        radiographicTrabecularDensityHu: $radiographicTrabecularDensityHu
+        relevantBoneWidth: $relevantBoneWidth
+        preOperativeSinusDisease: $preOperativeSinusDisease
+        preOperativeSinusDiseaseManagement: $preOperativeSinusDiseaseManagement
+        conformanceWithTreatmentPlan: $conformanceWithTreatmentPlan
+        prf: $prf
+        lotCode: $lotCode
+        dateOfManufacture: $dateOfManufacture
+        dateOfExpiry: $dateOfExpiry
+        abutmentBrand: $abutmentBrand
+        abutmentCategory: $abutmentCategory
+        typeAndDiameter: $typeAndDiameter
+        gingivalHeight: $gingivalHeight
+        abutmentHeight: $abutmentHeight
+        abutmentLength: $abutmentLength
+        angleCorrectionAbutment: $angleCorrectionAbutment
+        abutmentSerialSequenceBarCode: $abutmentSerialSequenceBarCode
+        abutmentLotCode: $abutmentLotCode
+        abutmentDateOfManufacture: $abutmentDateOfManufacture
+        abutmentDateOfExpiry: $abutmentDateOfExpiry
       ) {
         id
       }
@@ -1626,22 +1700,84 @@ export default function SiteSpecificSideBar({
     mutation siteSpecificMutation(
       $id: ID!
       $attachedSiteSpecificFollowUp: [Int]
-      $itemSpecificationMatrixBlocks: [itemSpecificationMatrix_MatrixBlockContainerInput]
-      $itemSpecificationMatrixSortOrder: [QueryArgument]
-      $abutmentDetailsMatrixBlocks: [abutmentDetailsMatrix_MatrixBlockContainerInput]
-      $abutmentDetailsMatrixSortOrder: [QueryArgument]
+      $enableInClinlog: Boolean
+      $implantBrand: String
+      $implantCategory: String
+      $implantLine: String
+      $surface: String
+      $implantBaseDiameter: String
+      $implantType: String
+      $implantLength: String
+      $serialSequenceBarCode: String
+      $placement: String
+      $trabecularBoneDensity: String
+      $boneVascularity: String
+      $graftingApplied: String
+      $graftMaterial: String
+      $intraOperativeSinusComplications: String
+      $crestalRest: String
+      $insertionTorque: String
+      $radiographicTrabecularDensityHu: String
+      $relevantBoneWidth: String
+      $preOperativeSinusDisease: String
+      $preOperativeSinusDiseaseManagement: String
+      $conformanceWithTreatmentPlan: String
+      $prf: String
+      $lotCode: String
+      $dateOfManufacture: String
+      $dateOfExpiry: String
+      $abutmentBrand: String
+      $abutmentCategory: String
+      $typeAndDiameter: String
+      $gingivalHeight: String
+      $abutmentHeight: String
+      $abutmentLength: String
+      $angleCorrectionAbutment: String
+      $abutmentSerialSequenceBarCode: String
+      $abutmentLotCode: String
+      $abutmentDateOfManufacture: String
+      $abutmentDateOfExpiry: String
     ) {
       save_treatmentItemSpecificationRecord_itemSpecificationAndDetails_Entry(
         id: $id
         attachedSiteSpecificFollowUp: $attachedSiteSpecificFollowUp
-        itemSpecificationMatrix: {
-          blocks: $itemSpecificationMatrixBlocks
-          sortOrder: $itemSpecificationMatrixSortOrder
-        }
-        abutmentDetailsMatrix: {
-          blocks: $abutmentDetailsMatrixBlocks
-          sortOrder: $abutmentDetailsMatrixSortOrder
-        }
+        enableInClinlog: $enableInClinlog
+        implantBrand: $implantBrand
+        implantCategory: $implantCategory
+        implantLine: $implantLine
+        surface: $surface
+        implantBaseDiameter: $implantBaseDiameter
+        implantType: $implantType
+        implantLength: $implantLength
+        serialSequenceBarCode: $serialSequenceBarCode
+        placement: $placement
+        trabecularBoneDensity: $trabecularBoneDensity
+        boneVascularity: $boneVascularity
+        graftingApplied: $graftingApplied
+        graftMaterial: $graftMaterial
+        intraOperativeSinusComplications: $intraOperativeSinusComplications
+        crestalRest: $crestalRest
+        insertionTorque: $insertionTorque
+        radiographicTrabecularDensityHu: $radiographicTrabecularDensityHu
+        relevantBoneWidth: $relevantBoneWidth
+        preOperativeSinusDisease: $preOperativeSinusDisease
+        preOperativeSinusDiseaseManagement: $preOperativeSinusDiseaseManagement
+        conformanceWithTreatmentPlan: $conformanceWithTreatmentPlan
+        prf: $prf
+        lotCode: $lotCode
+        dateOfManufacture: $dateOfManufacture
+        dateOfExpiry: $dateOfExpiry
+        abutmentBrand: $abutmentBrand
+        abutmentCategory: $abutmentCategory
+        typeAndDiameter: $typeAndDiameter
+        gingivalHeight: $gingivalHeight
+        abutmentHeight: $abutmentHeight
+        abutmentLength: $abutmentLength
+        angleCorrectionAbutment: $angleCorrectionAbutment
+        abutmentSerialSequenceBarCode: $abutmentSerialSequenceBarCode
+        abutmentLotCode: $abutmentLotCode
+        abutmentDateOfManufacture: $abutmentDateOfManufacture
+        abutmentDateOfExpiry: $abutmentDateOfExpiry
       ) {
         id
       }
@@ -2242,6 +2378,78 @@ export default function SiteSpecificSideBar({
     },
   );
 
+  const buildSiteSpecificFormData = (data, extraData = {}) => {
+    const implantBarcodeData: any =
+      handleGs1Conversion(data?.serialSequenceBarCode) || {};
+    const abutmentBarcodeData: any =
+      handleGs1Conversion(data?.["0_abutmentSerialSequenceBarCode"]) || {};
+
+    return {
+      ...extraData,
+      attachedSiteSpecificFollowUp: [],
+      enableInClinlog: true,
+      implantBrand: data?.implantBrand,
+      implantCategory: data?.implantCategory,
+      implantLine: data?.implantLine,
+      surface: data?.surface,
+      implantBaseDiameter:
+        data?.implantBaseDiameter,
+      implantType: data?.implantType,
+      implantLength: data?.implantLength,
+      serialSequenceBarCode: data?.serialSequenceBarCode || "",
+      placement: data?.placement,
+      trabecularBoneDensity: data?.trabecularBoneDensity,
+      boneVascularity: data?.boneVascularity,
+      graftingApplied: data?.graftingApplied,
+      graftMaterial: data?.graftMaterial,
+      intraOperativeSinusComplications: data?.intraOperativeSinusComplications,
+      crestalRest: data?.crestalRest,
+      insertionTorque: data?.insertionTorque,
+      radiographicTrabecularDensityHu:
+        data?.radiographicTrabecularDensityHu || "",
+      relevantBoneWidth: data?.relevantBoneWidth,
+      preOperativeSinusDisease: data?.preOperativeSinusDisease,
+      preOperativeSinusDiseaseManagement:
+        data?.preOperativeSinusDiseaseManagement,
+      conformanceWithTreatmentPlan: data?.conformanceWithTreatmentPlan,
+      prf: data?.prf,
+      lotCode: data?.lotCode || implantBarcodeData?.lotCode || "",
+      dateOfManufacture:
+        data?.dateOfManufacture ||
+        parseYYMMDD(implantBarcodeData?.dateOfManufacture) ||
+        "",
+      dateOfExpiry:
+        data?.dateOfExpiry ||
+        parseYYMMDD(implantBarcodeData?.dateOfExpiry) ||
+        "",
+      abutmentBrand: data?.["0_abutmentBrand"] || data?.abutmentBrand || "",
+      abutmentCategory:
+        data?.["0_abutmentCategory"] || data?.abutmentCategory || "",
+      typeAndDiameter: data?.["0_typeAndDiameter"] || data?.typeAndDiameter || "",
+      gingivalHeight: data?.["0_gingivalHeight"] || data?.gingivalHeight || "",
+      abutmentHeight: data?.["0_abutmentHeight"] || data?.abutmentHeight || "",
+      abutmentLength: data?.["0_abutmentLength"] || data?.abutmentLength || "",
+      angleCorrectionAbutment:
+        data?.["0_angleCorrectionAbutment"] ||
+        data?.angleCorrectionAbutment ||
+        "",
+      abutmentSerialSequenceBarCode:
+        data?.["0_abutmentSerialSequenceBarCode"] ||
+        data?.abutmentSerialSequenceBarCode ||
+        "",
+      abutmentLotCode:
+        data?.["0_abutmentLotCode"] || abutmentBarcodeData?.lotCode || "",
+      abutmentDateOfManufacture:
+        data?.["0_abutmentDateOfManufacture"] ||
+        parseYYMMDD(abutmentBarcodeData?.dateOfManufacture) ||
+        "",
+      abutmentDateOfExpiry:
+        data?.["0_abutmentDateOfExpiry"] ||
+        parseYYMMDD(abutmentBarcodeData?.dateOfExpiry) ||
+        "",
+    };
+  };
+
   const onSiteSpecificSubmit = (data) => {
     //check for selected site null or not
 
@@ -2268,7 +2476,7 @@ export default function SiteSpecificSideBar({
           };
           createBarSpecificMutate.mutate(newData);
         } else {
-          const newData = {
+          const newData = buildSiteSpecificFormData(data, {
             title:
               patientName +
               " - " +
@@ -2276,189 +2484,7 @@ export default function SiteSpecificSideBar({
               " - " +
               "Site Specific - " +
               format(new Date(), "dd MMM yyyy HH:mm"),
-            attachedSiteSpecificFollowUp: [],
-            itemSpecificationMatrixBlocks: [
-              {
-                itemSpecs: {
-                  id: "new_0",
-                  enableInClinlog: true,
-                  implantBrand: data?.implantBrand,
-                  implantCategory: data?.implantCategory,
-                  implantLine: data?.implantLine,
-                  surface: data?.surface,
-                  implantBaseAndDiameter: data?.implantBaseAndDiameter,
-                  implantType: data?.implantType,
-                  implantLength: data?.implantLength,
-                  angleCorrectionAbutment: data?.angleCorrectionAbutment,
-                  abutmentBrand: data?.abutmentBrand,
-                  abutmentLength: data?.abutmentLength,
-                  abutmentSerialSequenceBarCode:
-                    data?.abutmentSerialSequenceBarCode || "",
-                  serialSequenceBarCode: data?.serialSequenceBarCode || "",
-                  placement: data?.placement,
-                  trabecularBoneDensity: data?.trabecularBoneDensity,
-                  boneVascularity: data?.boneVascularity,
-                  graftingApplied: data?.graftingApplied,
-                  graftMaterial: data?.graftMaterial,
-                  intraOperativeSinusComplications:
-                    data?.intraOperativeSinusComplications,
-                  crestalRest: data?.crestalRest,
-                  insertionTorque: data?.insertionTorque,
-                  radiographicTrabecularDensityHu:
-                    data?.radiographicTrabecularDensityHu || "",
-                  relevantBoneWidth: data?.relevantBoneWidth,
-                  preOperativeSinusDisease: data?.preOperativeSinusDisease,
-                  preOperativeSinusDiseaseManagement:
-                    data?.preOperativeSinusDiseaseManagement,
-                  conformanceWithTreatmentPlan:
-                    data?.conformanceWithTreatmentPlan,
-                  prf: data?.prf,
-                  lotCode:
-                    data?.lotCode ||
-                    handleGs1Conversion(data?.serialSequenceBarCode)?.lotCode ||
-                    "",
-                  dateOfManufacture:
-                    data?.dateOfManufacture ||
-                    parseYYMMDD(
-                      handleGs1Conversion(data?.serialSequenceBarCode)
-                        ?.dateOfManufacture,
-                    ) ||
-                    "",
-                  dateOfExpiry:
-                    data?.dateOfExpiry ||
-                    parseYYMMDD(
-                      handleGs1Conversion(data?.serialSequenceBarCode)
-                        ?.dateOfExpiry,
-                    ) ||
-                    "",
-                },
-              },
-            ],
-            itemSpecificationMatrixSortOrder: ["new_0"],
-            abutmentDetailsMatrixBlocks: addAbutment
-              ? [
-                  {
-                    abutment: {
-                      id: "new_abutment_0",
-                      abutmentBrand: data?.["0_abutmentBrand"],
-                      abutmentCategory: data?.["0_abutmentCategory"],
-                      typeAndDiameter: data?.["0_typeAndDiameter"],
-                      gingivalHeight: data?.["0_gingivalHeight"],
-                      abutmentHeight: data?.["0_abutmentHeight"],
-                      abutmentLength: data?.["0_abutmentLength"],
-                      angleCorrectionAbutment:
-                        data?.["0_angleCorrectionAbutment"],
-                      abutmentSerialSequenceBarCode:
-                        data?.["0_abutmentSerialSequenceBarCode"] || "",
-                      abutmentLotCode:
-                        data?.["0_abutmentLotCode"] ||
-                        handleGs1Conversion(
-                          data?.["0_abutmentSerialSequenceBarCode"],
-                        )?.lotCode ||
-                        "",
-                      abutmentDateOfManufacture:
-                        data?.["0_abutmentDateOfManufacture"] ||
-                        parseYYMMDD(
-                          handleGs1Conversion(
-                            data?.["0_abutmentSerialSequenceBarCode"],
-                          )?.dateOfManufacture,
-                        ) ||
-                        "",
-                      abutmentDateOfExpiry:
-                        data?.["0_abutmentDateOfExpiry"] ||
-                        parseYYMMDD(
-                          handleGs1Conversion(
-                            data?.["0_abutmentSerialSequenceBarCode"],
-                          )?.dateOfExpiry,
-                        ) ||
-                        "",
-                    },
-                  },
-                  {
-                    abutment: {
-                      id: "new_abutment_1",
-                      abutmentBrand: data?.["1_abutmentBrand"],
-                      abutmentCategory: data?.["1_abutmentCategory"],
-                      typeAndDiameter: data?.["1_typeAndDiameter"],
-                      gingivalHeight: data?.["1_gingivalHeight"],
-                      abutmentHeight: data?.["1_abutmentHeight"],
-                      abutmentLength: data?.["1_abutmentLength"],
-                      angleCorrectionAbutment:
-                        data?.["1_angleCorrectionAbutment"],
-                      abutmentSerialSequenceBarCode:
-                        data?.["1_abutmentSerialSequenceBarCode"] || "",
-                      abutmentLotCode:
-                        data?.["1_abutmentLotCode"] ||
-                        handleGs1Conversion(
-                          data?.["1_abutmentSerialSequenceBarCode"],
-                        )?.lotCode ||
-                        "",
-                      abutmentDateOfManufacture:
-                        data?.["1_abutmentDateOfManufacture"] ||
-                        parseYYMMDD(
-                          handleGs1Conversion(
-                            data?.["1_abutmentSerialSequenceBarCode"],
-                          )?.dateOfManufacture,
-                        ) ||
-                        "",
-                      abutmentDateOfExpiry:
-                        data?.["1_abutmentDateOfExpiry"] ||
-                        parseYYMMDD(
-                          handleGs1Conversion(
-                            data?.["1_abutmentSerialSequenceBarCode"],
-                          )?.dateOfExpiry,
-                        ) ||
-                        "",
-                    },
-                  },
-                ]
-              : data?.["0_abutmentCategory"]?.length > 0
-                ? [
-                    {
-                      abutment: {
-                        id: "new_abutment_0",
-                        abutmentBrand: data?.["0_abutmentBrand"] || "",
-                        abutmentCategory: data?.["0_abutmentCategory"] || "",
-                        typeAndDiameter: data?.["0_typeAndDiameter"] || "",
-                        gingivalHeight: data?.["0_gingivalHeight"] || "",
-                        abutmentHeight: data?.["0_abutmentHeight"] || "",
-                        abutmentLength: data?.["0_abutmentLength"] || "",
-                        angleCorrectionAbutment:
-                          data?.["0_angleCorrectionAbutment"] || "",
-                        abutmentSerialSequenceBarCode:
-                          data?.["0_abutmentSerialSequenceBarCode"] || "",
-                        abutmentLotCode:
-                          data?.["0_abutmentLotCode"] ||
-                          handleGs1Conversion(
-                            data?.["0_abutmentSerialSequenceBarCode"],
-                          )?.lotCode ||
-                          "",
-                        abutmentDateOfManufacture:
-                          data?.["0_abutmentDateOfManufacture"] ||
-                          parseYYMMDD(
-                            handleGs1Conversion(
-                              data?.["0_abutmentSerialSequenceBarCode"],
-                            )?.dateOfManufacture,
-                          ) ||
-                          "",
-                        abutmentDateOfExpiry:
-                          data?.["0_abutmentDateOfExpiry"] ||
-                          parseYYMMDD(
-                            handleGs1Conversion(
-                              data?.["0_abutmentSerialSequenceBarCode"],
-                            )?.dateOfExpiry,
-                          ) ||
-                          "",
-                      },
-                    },
-                  ]
-                : [],
-            abutmentDetailsMatrixSortOrder: addAbutment
-              ? ["new_abutment_0", "new_abutment_1"]
-              : data?.["0_abutmentCategory"]?.length > 0
-                ? ["new_abutment_0"]
-                : [],
-          };
+          });
           //@ts-ignore
           createSiteSpecificMutate.mutate({
             //@ts-ignore
@@ -2484,195 +2510,14 @@ export default function SiteSpecificSideBar({
 
           updateBarSpecificMutate.mutate(newData);
         } else {
-          const newData = {
+          const newData = buildSiteSpecificFormData(data, {
             id: data?.siteId,
-            itemSpecificationMatrixBlocks: [
-              {
-                itemSpecs: {
-                  id: "new_0",
-                  enableInClinlog: true,
-                  implantBrand: data?.implantBrand,
-                  implantCategory: data?.implantCategory,
-                  implantLine: data?.implantLine,
-                  surface: data?.surface,
-                  implantBaseAndDiameter: data?.implantBaseAndDiameter,
-                  implantType: data?.implantType,
-                  implantLength: data?.implantLength,
-                  angleCorrectionAbutment: data?.angleCorrectionAbutment,
-                  abutmentBrand: data?.abutmentBrand,
-                  abutmentLength: data?.abutmentLength,
-                  abutmentSerialSequenceBarCode:
-                    data?.abutmentSerialSequenceBarCode || "",
-                  serialSequenceBarCode: data?.serialSequenceBarCode || "",
-                  placement: data?.placement,
-                  trabecularBoneDensity: data?.trabecularBoneDensity,
-                  boneVascularity: data?.boneVascularity,
-                  graftingApplied: data?.graftingApplied,
-                  graftMaterial: data?.graftMaterial,
-                  intraOperativeSinusComplications:
-                    data?.intraOperativeSinusComplications,
-                  crestalRest: data?.crestalRest,
-                  insertionTorque: data?.insertionTorque,
-                  radiographicTrabecularDensityHu:
-                    data?.radiographicTrabecularDensityHu || "",
-                  relevantBoneWidth: data?.relevantBoneWidth,
-                  preOperativeSinusDisease: data?.preOperativeSinusDisease,
-                  preOperativeSinusDiseaseManagement:
-                    data?.preOperativeSinusDiseaseManagement,
-                  conformanceWithTreatmentPlan:
-                    data?.conformanceWithTreatmentPlan,
-                  prf: data?.prf,
-                  lotCode:
-                    data?.lotCode ||
-                    handleGs1Conversion(data?.serialSequenceBarCode)?.lotCode ||
-                    "",
-                  dateOfManufacture:
-                    data?.dateOfManufacture ||
-                    parseYYMMDD(
-                      handleGs1Conversion(data?.serialSequenceBarCode)
-                        ?.dateOfManufacture,
-                    ) ||
-                    "",
-                  dateOfExpiry:
-                    data?.dateOfExpiry ||
-                    parseYYMMDD(
-                      handleGs1Conversion(data?.serialSequenceBarCode)
-                        ?.dateOfExpiry,
-                    ) ||
-                    "",
-                },
-              },
-            ],
-            itemSpecificationMatrixSortOrder: ["new_0"],
-            abutmentDetailsMatrixBlocks: addAbutment
-              ? [
-                  {
-                    abutment: {
-                      id: "new_abutment_0",
-                      abutmentBrand: data?.["0_abutmentBrand"],
-                      abutmentCategory: data?.["0_abutmentCategory"],
-                      typeAndDiameter: data?.["0_typeAndDiameter"],
-                      gingivalHeight: data?.["0_gingivalHeight"],
-                      abutmentHeight: data?.["0_abutmentHeight"],
-                      abutmentLength: data?.["0_abutmentLength"],
-                      angleCorrectionAbutment:
-                        data?.["0_angleCorrectionAbutment"],
-                      abutmentSerialSequenceBarCode:
-                        data?.["0_abutmentSerialSequenceBarCode"] || "",
-                      abutmentLotCode:
-                        data?.["0_abutmentLotCode"] ||
-                        handleGs1Conversion(
-                          data?.["0_abutmentSerialSequenceBarCode"],
-                        )?.lotCode ||
-                        "",
-                      abutmentDateOfManufacture:
-                        data?.["0_abutmentDateOfManufacture"] ||
-                        parseYYMMDD(
-                          handleGs1Conversion(
-                            data?.["0_abutmentSerialSequenceBarCode"],
-                          )?.dateOfManufacture,
-                        ) ||
-                        "",
-                      abutmentDateOfExpiry:
-                        data?.["0_abutmentDateOfExpiry"] ||
-                        parseYYMMDD(
-                          handleGs1Conversion(
-                            data?.["0_abutmentSerialSequenceBarCode"],
-                          )?.dateOfExpiry,
-                        ) ||
-                        "",
-                    },
-                  },
-                  {
-                    abutment: {
-                      id: "new_abutment_1",
-                      abutmentBrand: data?.["1_abutmentBrand"],
-                      abutmentCategory: data?.["1_abutmentCategory"],
-                      typeAndDiameter: data?.["1_typeAndDiameter"],
-                      gingivalHeight: data?.["1_gingivalHeight"],
-                      abutmentHeight: data?.["1_abutmentHeight"],
-                      abutmentLength: data?.["1_abutmentLength"],
-                      angleCorrectionAbutment:
-                        data?.["1_angleCorrectionAbutment"],
-                      abutmentSerialSequenceBarCode:
-                        data?.["1_abutmentSerialSequenceBarCode"] || "",
-                      abutmentLotCode:
-                        data?.["1_abutmentLotCode"] ||
-                        handleGs1Conversion(
-                          data?.["1_abutmentSerialSequenceBarCode"],
-                        )?.lotCode ||
-                        "",
-                      abutmentDateOfManufacture:
-                        data?.["1_abutmentDateOfManufacture"] ||
-                        parseYYMMDD(
-                          handleGs1Conversion(
-                            data?.["1_abutmentSerialSequenceBarCode"],
-                          )?.dateOfManufacture,
-                        ) ||
-                        "",
-                      abutmentDateOfExpiry:
-                        data?.["1_abutmentDateOfExpiry"] ||
-                        parseYYMMDD(
-                          handleGs1Conversion(
-                            data?.["1_abutmentSerialSequenceBarCode"],
-                          )?.dateOfExpiry,
-                        ) ||
-                        "",
-                    },
-                  },
-                ]
-              : data?.["0_abutmentCategory"]?.length > 0
-                ? [
-                    {
-                      abutment: {
-                        id: "new_abutment_0",
-                        abutmentBrand: data?.["0_abutmentBrand"] || "",
-                        abutmentCategory: data?.["0_abutmentCategory"] || "",
-                        typeAndDiameter: data?.["0_typeAndDiameter"] || "",
-                        gingivalHeight: data?.["0_gingivalHeight"] || "",
-                        abutmentHeight: data?.["0_abutmentHeight"] || "",
-                        abutmentLength: data?.["0_abutmentLength"] || "",
-                        angleCorrectionAbutment:
-                          data?.["0_angleCorrectionAbutment"] || "",
-                        abutmentSerialSequenceBarCode:
-                          data?.["0_abutmentSerialSequenceBarCode"] || "",
-                        abutmentLotCode:
-                          data?.["0_abutmentLotCode"] ||
-                          handleGs1Conversion(
-                            data?.["0_abutmentSerialSequenceBarCode"],
-                          )?.lotCode ||
-                          "",
-                        abutmentDateOfManufacture:
-                          data?.["0_abutmentDateOfManufacture"] ||
-                          parseYYMMDD(
-                            handleGs1Conversion(
-                              data?.["0_abutmentSerialSequenceBarCode"],
-                            )?.dateOfManufacture,
-                          ) ||
-                          "",
-                        abutmentDateOfExpiry:
-                          data?.["0_abutmentDateOfExpiry"] ||
-                          parseYYMMDD(
-                            handleGs1Conversion(
-                              data?.["0_abutmentSerialSequenceBarCode"],
-                            )?.dateOfExpiry,
-                          ) ||
-                          "",
-                      },
-                    },
-                  ]
-                : [],
-            abutmentDetailsMatrixSortOrder: addAbutment
-              ? ["new_abutment_0", "new_abutment_1"]
-              : data?.["0_abutmentCategory"]?.length > 0
-                ? ["new_abutment_0"]
-                : [],
-          };
+          });
           updateSiteSpecificMutate.mutate(newData);
         }
       }
     } else {
-      const newData = {
+      const newData = buildSiteSpecificFormData(data, {
         title:
           patientName +
           " - " +
@@ -2680,186 +2525,7 @@ export default function SiteSpecificSideBar({
           " - " +
           "Site Specific - " +
           format(new Date(), "dd MMM yyyy HH:mm"),
-        attachedSiteSpecificFollowUp: [],
-        itemSpecificationMatrixBlocks: [
-          {
-            itemSpecs: {
-              id: "new_0",
-              enableInClinlog: true,
-              implantBrand: data?.implantBrand,
-              implantCategory: data?.implantCategory,
-              implantLine: data?.implantLine,
-              surface: data?.surface,
-              implantBaseAndDiameter: data?.implantBaseAndDiameter,
-              implantType: data?.implantType,
-              implantLength: data?.implantLength,
-              angleCorrectionAbutment: data?.angleCorrectionAbutment,
-              abutmentBrand: data?.abutmentBrand,
-              abutmentLength: data?.abutmentLength,
-              abutmentSerialSequenceBarCode:
-                data?.abutmentSerialSequenceBarCode || "",
-              serialSequenceBarCode: data?.serialSequenceBarCode || "",
-              placement: data?.placement,
-              trabecularBoneDensity: data?.trabecularBoneDensity,
-              boneVascularity: data?.boneVascularity,
-              graftingApplied: data?.graftingApplied,
-              graftMaterial: data?.graftMaterial,
-              intraOperativeSinusComplications:
-                data?.intraOperativeSinusComplications,
-              crestalRest: data?.crestalRest,
-              insertionTorque: data?.insertionTorque,
-              radiographicTrabecularDensityHu:
-                data?.radiographicTrabecularDensityHu || "",
-              relevantBoneWidth: data?.relevantBoneWidth,
-              preOperativeSinusDisease: data?.preOperativeSinusDisease,
-              preOperativeSinusDiseaseManagement:
-                data?.preOperativeSinusDiseaseManagement,
-              conformanceWithTreatmentPlan: data?.conformanceWithTreatmentPlan,
-              prf: data?.prf,
-              lotCode:
-                data?.lotCode ||
-                handleGs1Conversion(data?.serialSequenceBarCode)?.lotCode ||
-                "",
-              dateOfManufacture:
-                data?.dateOfManufacture ||
-                parseYYMMDD(
-                  handleGs1Conversion(data?.serialSequenceBarCode)
-                    ?.dateOfManufacture,
-                ) ||
-                "",
-              dateOfExpiry:
-                data?.dateOfExpiry ||
-                parseYYMMDD(
-                  handleGs1Conversion(data?.serialSequenceBarCode)
-                    ?.dateOfExpiry,
-                ) ||
-                "",
-            },
-          },
-        ],
-        itemSpecificationMatrixSortOrder: ["new_0"],
-        abutmentDetailsMatrixBlocks: addAbutment
-          ? [
-              {
-                abutment: {
-                  id: "new_abutment_0",
-                  abutmentBrand: data?.["0_abutmentBrand"],
-                  abutmentCategory: data?.["0_abutmentCategory"],
-                  typeAndDiameter: data?.["0_typeAndDiameter"],
-                  gingivalHeight: data?.["0_gingivalHeight"],
-                  abutmentHeight: data?.["0_abutmentHeight"],
-                  abutmentLength: data?.["0_abutmentLength"],
-                  angleCorrectionAbutment: data?.["0_angleCorrectionAbutment"],
-                  abutmentSerialSequenceBarCode:
-                    data?.["0_abutmentSerialSequenceBarCode"] || "",
-                  abutmentLotCode:
-                    data?.["0_abutmentLotCode"] ||
-                    handleGs1Conversion(
-                      data?.["0_abutmentSerialSequenceBarCode"],
-                    )?.lotCode ||
-                    "",
-                  abutmentDateOfManufacture:
-                    data?.["0_abutmentDateOfManufacture"] ||
-                    parseYYMMDD(
-                      handleGs1Conversion(
-                        data?.["0_abutmentSerialSequenceBarCode"],
-                      )?.dateOfManufacture,
-                    ) ||
-                    "",
-                  abutmentDateOfExpiry:
-                    data?.["0_abutmentDateOfExpiry"] ||
-                    parseYYMMDD(
-                      handleGs1Conversion(
-                        data?.["0_abutmentSerialSequenceBarCode"],
-                      )?.dateOfExpiry,
-                    ) ||
-                    "",
-                },
-              },
-              {
-                abutment: {
-                  id: "new_abutment_1",
-                  abutmentBrand: data?.["1_abutmentBrand"],
-                  abutmentCategory: data?.["1_abutmentCategory"],
-                  typeAndDiameter: data?.["1_typeAndDiameter"],
-                  gingivalHeight: data?.["1_gingivalHeight"],
-                  abutmentHeight: data?.["1_abutmentHeight"],
-                  abutmentLength: data?.["1_abutmentLength"],
-                  angleCorrectionAbutment: data?.["1_angleCorrectionAbutment"],
-                  abutmentSerialSequenceBarCode:
-                    data?.["1_abutmentSerialSequenceBarCode"] || "",
-                  abutmentLotCode:
-                    data?.["1_abutmentLotCode"] ||
-                    handleGs1Conversion(
-                      data?.["1_abutmentSerialSequenceBarCode"],
-                    )?.lotCode ||
-                    "",
-                  abutmentDateOfManufacture:
-                    data?.["1_abutmentDateOfManufacture"] ||
-                    parseYYMMDD(
-                      handleGs1Conversion(
-                        data?.["1_abutmentSerialSequenceBarCode"],
-                      )?.dateOfManufacture,
-                    ) ||
-                    "",
-                  abutmentDateOfExpiry:
-                    data?.["1_abutmentDateOfExpiry"] ||
-                    parseYYMMDD(
-                      handleGs1Conversion(
-                        data?.["1_abutmentSerialSequenceBarCode"],
-                      )?.dateOfExpiry,
-                    ) ||
-                    "",
-                },
-              },
-            ]
-          : data?.["0_abutmentCategory"]?.length > 0
-            ? [
-                {
-                  abutment: {
-                    id: "new_abutment_0",
-                    abutmentBrand: data?.["0_abutmentBrand"] || "",
-                    abutmentCategory: data?.["0_abutmentCategory"] || "",
-                    typeAndDiameter: data?.["0_typeAndDiameter"] || "",
-                    gingivalHeight: data?.["0_gingivalHeight"] || "",
-                    abutmentHeight: data?.["0_abutmentHeight"] || "",
-                    abutmentLength: data?.["0_abutmentLength"] || "",
-                    angleCorrectionAbutment:
-                      data?.["0_angleCorrectionAbutment"] || "",
-                    abutmentSerialSequenceBarCode:
-                      data?.["0_abutmentSerialSequenceBarCode"] || "",
-                    abutmentLotCode:
-                      data?.["0_abutmentLotCode"] ||
-                      handleGs1Conversion(
-                        data?.["0_abutmentSerialSequenceBarCode"],
-                      )?.lotCode ||
-                      "",
-                    abutmentDateOfManufacture:
-                      data?.["0_abutmentDateOfManufacture"] ||
-                      parseYYMMDD(
-                        handleGs1Conversion(
-                          data?.["0_abutmentSerialSequenceBarCode"],
-                        )?.dateOfManufacture,
-                      ) ||
-                      "",
-                    abutmentDateOfExpiry:
-                      data?.["0_abutmentDateOfExpiry"] ||
-                      parseYYMMDD(
-                        handleGs1Conversion(
-                          data?.["0_abutmentSerialSequenceBarCode"],
-                        )?.dateOfExpiry,
-                      ) ||
-                      "",
-                  },
-                },
-              ]
-            : [],
-        abutmentDetailsMatrixSortOrder: addAbutment
-          ? ["new_abutment_0", "new_abutment_1"]
-          : data?.["0_abutmentCategory"]?.length > 0
-            ? ["new_abutment_0"]
-            : [],
-      };
+      });
       //@ts-ignore
       createSiteSpecificMutate.mutate({
         formData: newData,
@@ -3270,7 +2936,7 @@ export default function SiteSpecificSideBar({
                                   shouldDirty: true,
                                 });
                                 setValue(
-                                  "implantBaseAndDiameter",
+                                  "implantBaseDiameter",
                                   foundItem?.implantBaseDiameter,
                                   {
                                     shouldValidate: true,
@@ -3313,7 +2979,6 @@ export default function SiteSpecificSideBar({
                                     shouldDirty: true,
                                   },
                                 );
-
                                 setValue(
                                   "0_typeAndDiameter",
                                   foundItem?.typeAndDiameter,
@@ -3473,9 +3138,8 @@ export default function SiteSpecificSideBar({
             </Flex>
             <Divider />
             {implantMatrixMemo}
-
             {abutmentMatrixMemo}
-            <Flex justifyContent="flex-start">
+            {/* <Flex justifyContent="flex-start">
               {!addAbutment ? (
                 <Button mt="1" size="sm" onClick={() => setAddAbutment(true)}>
                   + Add Abutment
@@ -3492,7 +3156,7 @@ export default function SiteSpecificSideBar({
                   Remove
                 </Button>
               )}
-            </Flex>
+            </Flex> */}
             <Text
               color="#007AFF"
               fontSize="12px"

@@ -6,6 +6,9 @@ export default class Document extends NextDocument {
     return (
       <Html>
         <Head>
+          <link rel="icon" type="image/png" href="/clinlog-favicon.png" />
+          <link rel="shortcut icon" type="image/png" href="/clinlog-favicon.png" />
+          <link rel="apple-touch-icon" href="/clinlog-favicon.png" />
           {/* <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link rel="preconnect" href="https://fonts.gstatic.com" /> */}
           {/* <link

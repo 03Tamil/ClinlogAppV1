@@ -46,7 +46,7 @@ import {
 } from "@chakra-ui/react";
 import { FaWandMagicSparkles } from "react-icons/fa6";
 import { MdArrowDropDown } from "react-icons/md";
-import { V2Link as NextLink } from "componentsv2/Dashboard/Helpers/routerHelpers";
+import NextLink from "next/link";
 import { useV2Router } from "componentsv2/Dashboard/Helpers/routerHelpers";
 import useQueryHook, { newLeadApiHook } from "hooks/useQueryHook";
 import { mainViewerQuery, newLeadCountQuery } from "helpersv2/queries";
@@ -218,7 +218,7 @@ export function MainNavbar() {
     // },
     {
       label: "Clinlog",
-      href: "/pagesv2/clinlog",
+      href: "/clinlog",
       icon: "graph_6",
     },
   ];
@@ -442,7 +442,7 @@ export function MainNavbar() {
               transform: "scale(1.1)",
               opacity: "0.7",
             }}
-            href="/pagesv2/clinlog"
+            href="/clinlog"
             as={NextLink}
             target="_blank"
           >
@@ -802,7 +802,7 @@ export function MainNavbar() {
                   transform: "scale(1.1)",
                   opacity: "0.7",
                 }}
-                href="/pagesv2/clinlog"
+                href="/clinlog"
                 as={NextLink}
                 target="_blank"
               >
@@ -940,7 +940,7 @@ export function MainNavbar() {
           w="100%"
           cursor="pointer"
           onClick={() => {
-            router.push("/pagesv2/clinlog");
+            router.push("/clinlog");
           }}
         >
           <Image
@@ -1052,6 +1052,31 @@ export function MainNavbar() {
                       {" "}
                       {`${session && isAdmin ? `(Staff) ` : ``}Support Ticket`}
                     </Text>
+                  </MenuItem>
+                </Link>
+                <MenuDivider />
+                <Link
+                  paddingY="10px"
+                  _hover={{
+                    transform: "scale(1.1)",
+                    bgColor: "gray.200",
+                  }}
+                  href={"https://www.smileconnect.com.au/"}
+                  as={NextLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <MenuItem
+                    icon={
+                      <Image
+                        src="/smileconnectlogoclinlog.png"
+                        alt=""
+                        boxSize="24px"
+                        objectFit="contain"
+                      />
+                    }
+                  >
+                    <Text fontWeight="500">Smileconnect&reg;</Text>
                   </MenuItem>
                 </Link>
                 {/* <MenuDivider /> */}
