@@ -1054,6 +1054,31 @@ export function MainNavbar() {
                     </Text>
                   </MenuItem>
                 </Link>
+                <MenuDivider />
+                <Link
+                  paddingY="10px"
+                  _hover={{
+                    transform: "scale(1.1)",
+                    bgColor: "gray.200",
+                  }}
+                  href={"https://www.clinlog.com.au/clinlog"}
+                  as={NextLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <MenuItem
+                    icon={
+                      <Image
+                        src="/smileconnectlogoclinlog.png"
+                        alt=""
+                        boxSize="24px"
+                        objectFit="contain"
+                      />
+                    }
+                  >
+                    <Text fontWeight="500">Smileconnect&reg;</Text>
+                  </MenuItem>
+                </Link>
                 {/* <MenuDivider /> */}
                 {/* <Link
                       paddingY="10px"
