@@ -683,43 +683,6 @@ export default function SiteSpecificFollowUpV3({
                   })}
                 </SimpleGrid>
               </Flex>
-
-              <Flex
-                w="100%"
-                justifyContent="space-around"
-                gap="1rem"
-                mb="2"
-                mt="2"
-              >
-                <Button
-                  w="30%"
-                  size="md"
-                  bgColor="scBlack"
-                  color="white"
-                  fontFamily={"inter"}
-                  fontSize={"13px"}
-                  fontWeight={"600"}
-                  letterSpacing={"2.24px"}
-                  textTransform={"uppercase"}
-                  onClick={onFollowUpClose}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  w="70%"
-                  size="md"
-                  bgColor="#0E11C7"
-                  color="white"
-                  fontFamily={"inter"}
-                  fontSize={"13px"}
-                  fontWeight={"600"}
-                  letterSpacing={"2.24px"}
-                  textTransform={"uppercase"}
-                  type="submit"
-                >
-                  Save & Close
-                </Button>
-              </Flex>
             </chakra.form>
           </Flex>
         </DrawerBody>
