@@ -1685,56 +1685,46 @@ export const baseChartQuery = gql`
                     boneLossLabel: boneLoss(label: true)
                   }
                 }
-                itemSpecificationMatrix {
-                  ... on itemSpecificationMatrix_itemSpecs_BlockType {
-                    enableInClinlog
-                    implantBrand
-                    implantCategory
-                    implantLine
-                    surface
-                    implantBaseAndDiameter
-                    abutmentBrand
-                    abutmentLength
-                    abutmentSerialSequenceBarCode
-                    implantLength
-                    implantType
-                    angleCorrectionAbutment
-                    serialSequenceBarCode
-                    insertionTorque
-                    radiographicTrabecularDensityHu
-                    placement
-                    relevantBoneWidth
-                    trabecularBoneDensity
-                    boneVascularity
-                    crestalRest
-                    graftingApplied
-                    graftMaterial
-                    intraOperativeSinusComplications
-                    preOperativeSinusDisease
-                    preOperativeSinusDiseaseManagement
-                    prf
-                    conformanceWithTreatmentPlan
-                    lotCode
-                    dateOfManufacture
-                    dateOfExpiry
-                  }
-                }
-                abutmentDetailsMatrix {
-                  ... on abutmentDetailsMatrix_abutment_BlockType {
-                    id
-                    abutmentCategory
-                    abutmentBrand
-                    gingivalHeight
-                    typeAndDiameter
-                    abutmentHeight
-                    angleCorrectionAbutment
-                    abutmentLength
-                    abutmentSerialSequenceBarCode
-                    abutmentLotCode
-                    abutmentDateOfManufacture
-                    abutmentDateOfExpiry
-                  }
-                }
+                enableInClinlog
+                implantBrand
+                implantCategory
+                implantCategoryLabel: implantCategory(label: true)
+                implantLine
+                surface
+                implantBaseDiameter
+                implantLength
+                implantType
+                serialSequenceBarCode
+                insertionTorque
+                radiographicTrabecularDensityHu
+                placement
+                placementLabel: placement(label: true)
+                relevantBoneWidth
+                trabecularBoneDensity
+                boneVascularity
+                crestalRest
+                graftingApplied
+                graftingAppliedLabel: graftingApplied(label: true)
+                graftMaterial
+                intraOperativeSinusComplications
+                preOperativeSinusDisease
+                preOperativeSinusDiseaseManagement
+                prf
+                conformanceWithTreatmentPlan
+                lotCode
+                dateOfManufacture
+                dateOfExpiry
+                abutmentCategory
+                abutmentBrand
+                gingivalHeight
+                typeAndDiameter
+                abutmentHeight
+                angleCorrectionAbutment
+                abutmentLength
+                abutmentSerialSequenceBarCode
+                abutmentLotCode
+                abutmentDateOfManufacture
+                abutmentDateOfExpiry
               }
             }
           }
@@ -2139,78 +2129,64 @@ export const proposedTreatmentChartApprovedQuery = gql`
                     boneLossLabel: boneLoss(label: true)
                   }
                 }
-                itemSpecificationMatrix {
-                  ... on itemSpecificationMatrix_itemSpecs_BlockType {
-                    enableInClinlog
-                    implantBrand
-                    implantCategory
-                    implantLine
-                    surface
-                    implantBaseAndDiameter
-                    abutmentBrand
-                    abutmentLength
-                    abutmentSerialSequenceBarCode
-                    implantLength
-                    implantType
-                    angleCorrectionAbutment
-                    serialSequenceBarCode
-                    insertionTorque
-                    insertionTorqueLabel: insertionTorque(label: true)
-                    radiographicTrabecularDensityHu
-                    placement
-                    placementLabel: placement(label: true)
-                    relevantBoneWidth
-                    relevantBoneWidthLabel: relevantBoneWidth(label: true)
-                    trabecularBoneDensity
-                    trabecularBoneDensityLabel: trabecularBoneDensity(
-                      label: true
-                    )
-                    boneVascularity
-                    boneVascularityLabel: boneVascularity(label: true)
-                    crestalRest
-                    crestalRestLabel: crestalRest(label: true)
-                    graftingApplied
-                    graftingAppliedLabel: graftingApplied(label: true)
-                    graftMaterial
-                    graftMaterialLabel: graftMaterial(label: true)
-                    intraOperativeSinusComplications
-                    intraOperativeSinusComplicationsLabel: intraOperativeSinusComplications(
-                      label: true
-                    )
-                    preOperativeSinusDisease
-                    preOperativeSinusDiseaseLabel: preOperativeSinusDisease(
-                      label: true
-                    )
-                    preOperativeSinusDiseaseManagement
-                    preOperativeSinusDiseaseManagementLabel: preOperativeSinusDiseaseManagement(
-                      label: true
-                    )
-                    conformanceWithTreatmentPlan
-                    conformanceWithTreatmentPlanLabel: conformanceWithTreatmentPlan(
-                      label: true
-                    )
-                    prf
-                    lotCode
-                    dateOfManufacture
-                    dateOfExpiry
-                  }
-                }
-                abutmentDetailsMatrix {
-                  ... on abutmentDetailsMatrix_abutment_BlockType {
-                    id
-                    abutmentBrand
-                    abutmentCategory
-                    typeAndDiameter
-                    gingivalHeight
-                    abutmentHeight
-                    angleCorrectionAbutment
-                    abutmentLength
-                    abutmentSerialSequenceBarCode
-                    abutmentLotCode
-                    abutmentDateOfManufacture
-                    abutmentDateOfExpiry
-                  }
-                }
+                enableInClinlog
+                implantBrand
+                implantCategory
+                implantCategoryLabel: implantCategory(label: true)
+                implantLine
+                surface
+                implantBaseDiameter
+                implantLength
+                implantType
+                serialSequenceBarCode
+                insertionTorque
+                insertionTorqueLabel: insertionTorque(label: true)
+                radiographicTrabecularDensityHu
+                placement
+                placementLabel: placement(label: true)
+                relevantBoneWidth
+                relevantBoneWidthLabel: relevantBoneWidth(label: true)
+                trabecularBoneDensity
+                trabecularBoneDensityLabel: trabecularBoneDensity(label: true)
+                boneVascularity
+                boneVascularityLabel: boneVascularity(label: true)
+                crestalRest
+                crestalRestLabel: crestalRest(label: true)
+                graftingApplied
+                graftingAppliedLabel: graftingApplied(label: true)
+                graftMaterial
+                graftMaterialLabel: graftMaterial(label: true)
+                intraOperativeSinusComplications
+                intraOperativeSinusComplicationsLabel: intraOperativeSinusComplications(
+                  label: true
+                )
+                preOperativeSinusDisease
+                preOperativeSinusDiseaseLabel: preOperativeSinusDisease(
+                  label: true
+                )
+                preOperativeSinusDiseaseManagement
+                preOperativeSinusDiseaseManagementLabel: preOperativeSinusDiseaseManagement(
+                  label: true
+                )
+                conformanceWithTreatmentPlan
+                conformanceWithTreatmentPlanLabel: conformanceWithTreatmentPlan(
+                  label: true
+                )
+                prf
+                lotCode
+                dateOfManufacture
+                dateOfExpiry
+                abutmentBrand
+                abutmentCategory
+                typeAndDiameter
+                gingivalHeight
+                abutmentHeight
+                angleCorrectionAbutment
+                abutmentLength
+                abutmentSerialSequenceBarCode
+                abutmentLotCode
+                abutmentDateOfManufacture
+                abutmentDateOfExpiry
               }
             }
             treatmentFriendlyName
@@ -2778,78 +2754,64 @@ export const proposedTreatmentChartQuery = gql`
                     boneLossLabel: boneLoss(label: true)
                   }
                 }
-                itemSpecificationMatrix {
-                  ... on itemSpecificationMatrix_itemSpecs_BlockType {
-                    enableInClinlog
-                    implantBrand
-                    implantCategory
-                    implantLine
-                    surface
-                    implantBaseAndDiameter
-                    abutmentBrand
-                    abutmentLength
-                    abutmentSerialSequenceBarCode
-                    implantLength
-                    implantType
-                    angleCorrectionAbutment
-                    serialSequenceBarCode
-                    insertionTorque
-                    insertionTorqueLabel: insertionTorque(label: true)
-                    radiographicTrabecularDensityHu
-                    placement
-                    placementLabel: placement(label: true)
-                    relevantBoneWidth
-                    relevantBoneWidthLabel: relevantBoneWidth(label: true)
-                    trabecularBoneDensity
-                    trabecularBoneDensityLabel: trabecularBoneDensity(
-                      label: true
-                    )
-                    boneVascularity
-                    boneVascularityLabel: boneVascularity(label: true)
-                    crestalRest
-                    crestalRestLabel: crestalRest(label: true)
-                    graftingApplied
-                    graftingAppliedLabel: graftingApplied(label: true)
-                    graftMaterial
-                    graftMaterialLabel: graftMaterial(label: true)
-                    intraOperativeSinusComplications
-                    intraOperativeSinusComplicationsLabel: intraOperativeSinusComplications(
-                      label: true
-                    )
-                    preOperativeSinusDisease
-                    preOperativeSinusDiseaseLabel: preOperativeSinusDisease(
-                      label: true
-                    )
-                    preOperativeSinusDiseaseManagement
-                    preOperativeSinusDiseaseManagementLabel: preOperativeSinusDiseaseManagement(
-                      label: true
-                    )
-                    conformanceWithTreatmentPlan
-                    conformanceWithTreatmentPlanLabel: conformanceWithTreatmentPlan(
-                      label: true
-                    )
-                    prf
-                    lotCode
-                    dateOfManufacture
-                    dateOfExpiry
-                  }
-                }
-                abutmentDetailsMatrix {
-                  ... on abutmentDetailsMatrix_abutment_BlockType {
-                    id
-                    abutmentBrand
-                    abutmentCategory
-                    typeAndDiameter
-                    gingivalHeight
-                    abutmentHeight
-                    angleCorrectionAbutment
-                    abutmentLength
-                    abutmentSerialSequenceBarCode
-                    abutmentLotCode
-                    abutmentDateOfManufacture
-                    abutmentDateOfExpiry
-                  }
-                }
+                enableInClinlog
+                implantBrand
+                implantCategory
+                implantCategoryLabel: implantCategory(label: true)
+                implantLine
+                surface
+                implantBaseDiameter
+                implantLength
+                implantType
+                serialSequenceBarCode
+                insertionTorque
+                insertionTorqueLabel: insertionTorque(label: true)
+                radiographicTrabecularDensityHu
+                placement
+                placementLabel: placement(label: true)
+                relevantBoneWidth
+                relevantBoneWidthLabel: relevantBoneWidth(label: true)
+                trabecularBoneDensity
+                trabecularBoneDensityLabel: trabecularBoneDensity(label: true)
+                boneVascularity
+                boneVascularityLabel: boneVascularity(label: true)
+                crestalRest
+                crestalRestLabel: crestalRest(label: true)
+                graftingApplied
+                graftingAppliedLabel: graftingApplied(label: true)
+                graftMaterial
+                graftMaterialLabel: graftMaterial(label: true)
+                intraOperativeSinusComplications
+                intraOperativeSinusComplicationsLabel: intraOperativeSinusComplications(
+                  label: true
+                )
+                preOperativeSinusDisease
+                preOperativeSinusDiseaseLabel: preOperativeSinusDisease(
+                  label: true
+                )
+                preOperativeSinusDiseaseManagement
+                preOperativeSinusDiseaseManagementLabel: preOperativeSinusDiseaseManagement(
+                  label: true
+                )
+                conformanceWithTreatmentPlan
+                conformanceWithTreatmentPlanLabel: conformanceWithTreatmentPlan(
+                  label: true
+                )
+                prf
+                lotCode
+                dateOfManufacture
+                dateOfExpiry
+                abutmentBrand
+                abutmentCategory
+                typeAndDiameter
+                gingivalHeight
+                abutmentHeight
+                angleCorrectionAbutment
+                abutmentLength
+                abutmentSerialSequenceBarCode
+                abutmentLotCode
+                abutmentDateOfManufacture
+                abutmentDateOfExpiry
               }
             }
             treatmentFriendlyName

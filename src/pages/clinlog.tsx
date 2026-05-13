@@ -70,6 +70,7 @@ import { clinlogFilterColumns } from "helpersv2/utils";
 import { useSession } from "next-auth/react";
 import {
   // allClinicsQuery,
+  clinlogDataQueryNew,
   clinlogDataQuery,
   clinlogNotesQuery,
   globalIdsQuery,
@@ -187,7 +188,7 @@ function Clinlog() {
       //     process.env.NEXT_PUBLIC_ENDPOINT,
       //     {
       //       headers: {
-      //         Authorization: `Bearer ZgQbyv8v3C32FKXtCosAAO6FMxvtMjvg`,
+
       //       },
       //     },
       //   );
@@ -201,7 +202,7 @@ function Clinlog() {
           offset: pageParam,
           recordClinic: locationArr,
           limit: limit,
-          userId: session?.userId,
+          collaboratorId: Number(session?.userId),
         },
         session?.accessToken,
       );
@@ -335,8 +336,7 @@ function Clinlog() {
               );
             return allSites?.map(
               (site) =>
-                site.attachedSiteSpecificRecords?.[0]
-                  ?.itemSpecificationMatrix?.[0]?.implantLine,
+                site.attachedSiteSpecificRecords?.[0]?.implantLine,
             );
           })
           .flat(),
@@ -1312,11 +1312,10 @@ function Clinlog() {
                 } else if (column.key === "implantCategory") {
                   const implantCategory =
                     site?.attachedSiteSpecificRecords?.[0]
-                      ?.itemSpecificationMatrix?.[0]?.implantCategoryLabel;
+                      ?.implantCategoryLabel;
                   return implantCategory || "-";
                 }
-                return site.attachedSiteSpecificRecords?.[0]
-                  ?.itemSpecificationMatrix?.[0]?.[column.key];
+                return site.attachedSiteSpecificRecords?.[0]?.[column.key];
               });
 
               return siteSpecificData?.map((data) => {
@@ -1365,8 +1364,7 @@ function Clinlog() {
 
                   return siteFollowUpRecords?.[column.key];
                 }
-                return site.attachedSiteSpecificRecords?.[0]
-                  ?.itemSpecificationMatrix?.[0]?.[column.key];
+                return site.attachedSiteSpecificRecords?.[0]?.[column.key];
               });
               cellValue = siteSpecificData.join(",");
             }
@@ -1484,7 +1482,7 @@ function Clinlog() {
 
             return siteFollowUpRecords?.[filterColumnId]?.replaceAll(",", "");
           }
-          return site.attachedSiteSpecificRecords?.[0]?.itemSpecificationMatrix?.[0]?.[
+          return site.attachedSiteSpecificRecords?.[0]?.[
             filterColumnId
           ]?.replaceAll(",", "");
         });
@@ -1567,7 +1565,6 @@ function Clinlog() {
         };
       }
     });
-
     return evaluateConditions(conditionChecks);
   };
 

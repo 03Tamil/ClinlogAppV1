@@ -108,13 +108,10 @@ type TreatmentToothMatrix = {
       statusOfBar?: string;
       [key: string]: any;
     }>;
-    itemSpecificationMatrix?: Array<{
-      implantTypeLabel?: string;
-      implantLengthLabel?: string;
-      placementLabel?: string;
-      graftingAppliedLabel?: string;
-      [key: string]: any;
-    }>;
+    implantTypeLabel?: string;
+    implantLengthLabel?: string;
+    placementLabel?: string;
+    graftingAppliedLabel?: string;
     [key: string]: any;
   }>;
   [key: string]: any;
@@ -2108,7 +2105,7 @@ export default function SurgicalDetailsV3_2({
               <Text fontSize={"13px"}>
                 {
                   item?.attachedSiteSpecificRecords?.[0]
-                    ?.itemSpecificationMatrix?.[0]?.implantTypeLabel
+                    ?.implantTypeLabel
                 }
               </Text>
             );
@@ -2137,14 +2134,12 @@ export default function SurgicalDetailsV3_2({
           } else if (item?.attachedSiteSpecificRecords?.[0]) {
             return (
               <Text fontSize={"13px"}>
-                {item?.attachedSiteSpecificRecords?.[0]
-                  ?.itemSpecificationMatrix?.[0]?.implantLine ||
-                  item?.attachedSiteSpecificRecords?.[0]
-                    ?.itemSpecificationMatrix?.[0]?.implantType ||
+                {item?.attachedSiteSpecificRecords?.[0]?.implantLine ||
+                  item?.attachedSiteSpecificRecords?.[0]?.implantType ||
                   ""}
                 {" - "}
-                {item?.attachedSiteSpecificRecords?.[0]
-                  ?.itemSpecificationMatrix?.[0]?.implantLength || "N/A"}
+                {item?.attachedSiteSpecificRecords?.[0]?.implantLength ||
+                  "N/A"}
               </Text>
             );
           } else {
@@ -2198,7 +2193,7 @@ export default function SurgicalDetailsV3_2({
               <Text fontSize={"13px"}>
                 {
                   item?.attachedSiteSpecificRecords?.[0]
-                    ?.itemSpecificationMatrix?.[0]?.placementLabel
+                    ?.placementLabel
                 }
               </Text>
             );
@@ -2219,7 +2214,7 @@ export default function SurgicalDetailsV3_2({
               <Text fontSize={"12px"}>
                 {
                   item?.attachedSiteSpecificRecords?.[0]
-                    ?.itemSpecificationMatrix?.[0]?.graftingAppliedLabel
+                    ?.graftingAppliedLabel
                 }
               </Text>
             );
@@ -2369,8 +2364,7 @@ export default function SurgicalDetailsV3_2({
       if (item?.treatmentItemNumber === "666") {
         return true;
       }
-      const fields =
-        item?.attachedSiteSpecificRecords?.[0]?.itemSpecificationMatrix?.[0];
+      const fields = item?.attachedSiteSpecificRecords?.[0];
 
       const allFields = fields
         ? Object.values(fields)?.every(
@@ -3738,9 +3732,9 @@ export default function SurgicalDetailsV3_2({
                                 site?.attachedSiteSpecificRecords?.[0]
                                   ? `${site?.attachedSiteSpecificRecords?.[0]?.barMaterial}`
                                   : site?.attachedSiteSpecificRecords?.[0]
-                                    ? `${site?.attachedSiteSpecificRecords?.[0]?.itemSpecificationMatrix?.[0]?.implantType}, 
-                            ${site?.attachedSiteSpecificRecords?.[0]?.itemSpecificationMatrix?.[0]?.implantLength},
-                            ${site?.attachedSiteSpecificRecords?.[0]?.itemSpecificationMatrix?.[0]?.angleCorrectionAbutment}`
+                                    ? `${site?.attachedSiteSpecificRecords?.[0]?.implantType},
+                            ${site?.attachedSiteSpecificRecords?.[0]?.implantLength},
+                            ${site?.attachedSiteSpecificRecords?.[0]?.angleCorrectionAbutment}`
                                     : "Specifications not available"}
                               </Td>
                               <Td

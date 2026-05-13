@@ -78,8 +78,7 @@ export default function FluidTable({
 
                   return siteFollowUpRecords?.[field];
                 }
-                return site.attachedSiteSpecificRecords?.[0]
-                  ?.itemSpecificationMatrix?.[0]?.[field];
+                return site.attachedSiteSpecificRecords?.[0]?.[field];
               });
               data[field] = siteSpecificData;
             } else if (field === "recordTreatmentDate") {

@@ -335,8 +335,7 @@ function Clinlog() {
               );
             return allSites?.map(
               (site) =>
-                site.attachedSiteSpecificRecords?.[0]
-                  ?.itemSpecificationMatrix?.[0]?.implantLine,
+                site.attachedSiteSpecificRecords?.[0]?.implantLine,
             );
           })
           .flat(),
@@ -1312,11 +1311,10 @@ function Clinlog() {
                 } else if (column.key === "implantCategory") {
                   const implantCategory =
                     site?.attachedSiteSpecificRecords?.[0]
-                      ?.itemSpecificationMatrix?.[0]?.implantCategoryLabel;
+                      ?.implantCategoryLabel;
                   return implantCategory || "-";
                 }
-                return site.attachedSiteSpecificRecords?.[0]
-                  ?.itemSpecificationMatrix?.[0]?.[column.key];
+                return site.attachedSiteSpecificRecords?.[0]?.[column.key];
               });
 
               return siteSpecificData?.map((data) => {
@@ -1365,8 +1363,7 @@ function Clinlog() {
 
                   return siteFollowUpRecords?.[column.key];
                 }
-                return site.attachedSiteSpecificRecords?.[0]
-                  ?.itemSpecificationMatrix?.[0]?.[column.key];
+                return site.attachedSiteSpecificRecords?.[0]?.[column.key];
               });
               cellValue = siteSpecificData.join(",");
             }
@@ -1484,7 +1481,7 @@ function Clinlog() {
 
             return siteFollowUpRecords?.[filterColumnId]?.replaceAll(",", "");
           }
-          return site.attachedSiteSpecificRecords?.[0]?.itemSpecificationMatrix?.[0]?.[
+          return site.attachedSiteSpecificRecords?.[0]?.[
             filterColumnId
           ]?.replaceAll(",", "");
         });
