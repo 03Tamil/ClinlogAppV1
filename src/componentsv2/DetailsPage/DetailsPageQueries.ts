@@ -1683,6 +1683,10 @@ export const baseChartQuery = gql`
                     )
                     boneLoss
                     boneLossLabel: boneLoss(label: true)
+                    graftConditionAtFollowUp
+                    graftConditionAtFollowUpLabel: graftConditionAtFollowUp(
+                      label: true
+                    )
                   }
                 }
                 enableInClinlog
@@ -2127,6 +2131,10 @@ export const proposedTreatmentChartApprovedQuery = gql`
                     )
                     boneLoss
                     boneLossLabel: boneLoss(label: true)
+                    graftConditionAtFollowUp
+                    graftConditionAtFollowUpLabel: graftConditionAtFollowUp(
+                      label: true
+                    )
                   }
                 }
                 enableInClinlog
@@ -2752,6 +2760,10 @@ export const proposedTreatmentChartQuery = gql`
                     )
                     boneLoss
                     boneLossLabel: boneLoss(label: true)
+                    graftConditionAtFollowUp
+                    graftConditionAtFollowUpLabel: graftConditionAtFollowUp(
+                      label: true
+                    )
                   }
                 }
                 enableInClinlog

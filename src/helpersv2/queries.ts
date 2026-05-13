@@ -3250,8 +3250,20 @@ export const clinlogNotesQuery = gql`
 `;
 
 export const clinlogDataQueryNew = gql`
-  query clinlogDataQueryNew($id: [QueryArgument], $limit: Int, $offset: Int, $recordClinic: [QueryArgument], $collaboratorId: Int) {
-    entries: clinlogQuery(id: $id, limit: $limit, offset: $offset, recordClinic: $recordClinic, collaboratorId: $collaboratorId) {
+  query clinlogDataQueryNew(
+    $id: [QueryArgument]
+    $limit: Int
+    $offset: Int
+    $recordClinic: [QueryArgument]
+    $collaboratorId: Int
+  ) {
+    entries: clinlogQuery(
+      id: $id
+      limit: $limit
+      offset: $offset
+      recordClinic: $recordClinic
+      collaboratorId: $collaboratorId
+    ) {
       ... on records_records_Entry {
         id
         recordFirstName
@@ -3327,6 +3339,8 @@ export const clinlogDataQueryNew = gql`
             timeFromSurgery
             zirconiaUpgrade
             smokingAtFollowUp
+            prostheticUpgrades
+            dateOfProstheticUpgrade
           }
         }
         attachedDentalCharts(chartStatus: ["approved", "modified"]) {
@@ -3366,6 +3380,7 @@ export const clinlogDataQueryNew = gql`
                         firstAbutmentLevelComplicationTimeFromSurgery
                         postOperativeSinusDisease
                         boneLoss
+                        graftConditionAtFollowUp
                       }
                     }
                     implantBrand
@@ -3409,7 +3424,6 @@ export const clinlogDataQueryNew = gql`
     }
   }
 `;
-
 
 export const clinlogDataQuery = gql`
   query clinlogDataQuery($id: [QueryArgument], $limit: Int, $offset: Int) {
@@ -3500,6 +3514,8 @@ export const clinlogDataQuery = gql`
             timeFromSurgery
             zirconiaUpgrade
             smokingAtFollowUp
+            prostheticUpgrades
+            dateOfProstheticUpgrade
           }
         }
         attachedDentalCharts(chartStatus: ["approved", "modified"]) {
@@ -3539,6 +3555,7 @@ export const clinlogDataQuery = gql`
                         firstAbutmentLevelComplicationTimeFromSurgery
                         postOperativeSinusDisease
                         boneLoss
+                        graftConditionAtFollowUp
                       }
                     }
                     implantBrand

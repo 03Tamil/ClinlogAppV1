@@ -684,6 +684,7 @@ export const clinlogFilterColumns = [
     options: [
       { name: "Upper", value: "upper" },
       { name: "Lower", value: "lower" },
+      { name: "Upper & Lower", value: "upperAndLower" },
     ],
   },
   {
@@ -1196,6 +1197,35 @@ export const clinlogFilterColumns = [
       },
       { name: "Unknown", value: "unknown" },
     ],
+  },
+  {
+    group: "followUp",
+    label: "Prosthetic Upgrades (Other Than Zirconia)",
+    key: "prostheticUpgrades",
+    type: "select",
+    options: [
+      { name: "--Select an option--", value: "" },
+      {
+        name: "None",
+        value: "None",
+      },
+      {
+        name: "PMMA",
+        value: "PMMA",
+      },
+      {
+        name: "Graphine",
+        value: "Graphine",
+      },
+      { name: "Ambarino", value: "Ambarino" },
+      // {name:"Unknown", value:"unknown"}
+    ],
+  },
+  {
+    group: "followUp",
+    label: "Date of Prosthetic Upgrade",
+    key: "dateOfProstheticUpgrade",
+    type: "date",
   },
   {
     group: "patientSurvey",
@@ -2317,6 +2347,30 @@ export const clinlogFilterColumns = [
         name: "Vertically >4mm, wide defect",
         value: "Vertically >4mm, wide defect",
       },
+      { name: "Unknown", value: "unknown" },
+    ],
+  },
+  {
+    group: "siteSpecificCharacteristics",
+    label: "Graft Condition at Follow Up",
+    key: "graftConditionAtFollowUp",
+    subGroup: "ssFollowUp",
+    type: "select",
+    options: [
+      { name: "N/A", value: "" },
+      {
+        name: "Present and sound at Zygoma Critical Zone (ZCC) only",
+        value: "Present and sound at Zygoma Critical Zone (ZCC) only",
+      },
+      {
+        name: "Present and sound along Zygoma shaft and ZCC",
+        value: "Present and sound along Zygoma shaft and ZCC",
+      },
+      {
+        name: "Absent or poor mineralisation",
+        value: "Absent or poor mineralisation",
+      },
+      { name: "Sound (non-zygoma)", value: "Sound (non-zygoma)" },
       { name: "Unknown", value: "unknown" },
     ],
   },

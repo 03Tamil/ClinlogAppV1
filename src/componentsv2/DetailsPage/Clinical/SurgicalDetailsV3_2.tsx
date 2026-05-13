@@ -112,9 +112,56 @@ type TreatmentToothMatrix = {
     implantLengthLabel?: string;
     placementLabel?: string;
     graftingAppliedLabel?: string;
+    abutmentCategoryLabel?: string;
     [key: string]: any;
   }>;
   [key: string]: any;
+};
+
+const itemSpecificationFields = [
+  "enableClinlog",
+  "implantBrand",
+  "implantLine",
+  "implantLength",
+  "implantType",
+  "angleCorrectionAbutment",
+  "serialSequenceCode",
+  "insertionTorque",
+  "insertionTorqueLabel",
+  "radiographicTrabecularDensityHu",
+  "placement",
+  "placementLabel",
+  "relevantBoneWidth",
+  "relevantBoneWidthLabel",
+  "trabecularBoneDensity",
+  "trabecularBoneDensityLabel",
+  "boneVascularity",
+  "boneVascularityLabel",
+  "crestalRest",
+  "crestalRestLabel",
+  "graftingApplied",
+  "graftingAppliedLabel",
+  "graftMaterial",
+  "graftMaterialLabel",
+  "intraOperativeSinusComplications",
+  "intraOperativeSinusComplicationsLabel",
+  "preOperativeSinusDisease",
+  "preOperativeSinusDiseaseLabel",
+  "preOperativeSinusDiseaseManagement",
+  "preOperativeSinusDiseaseManagementLabel",
+  "conformanceWithTreatmentPlan",
+  "conformanceWithTreatmentPlanLabel",
+];
+
+const getItemSpecification = (siteSpecificRecord?: any) => {
+  if (!siteSpecificRecord) {
+    return null;
+  }
+
+  return itemSpecificationFields.reduce<Record<string, any>>((acc, field) => {
+    acc[field] = siteSpecificRecord?.[field];
+    return acc;
+  }, {});
 };
 
 export default function SurgicalDetailsV3_2({
@@ -126,12 +173,169 @@ export default function SurgicalDetailsV3_2({
   proposedTreatmentChartIds,
   patientDob,
   patientGender,
+  globalPostId,
   isLoading,
+  detailsData,
   fromClinlog = false,
 }) {
   const router = useV2Router();
   const { query } = router;
-  const activeTab = "THIS TREATMENT";
+  // Tab state for segmented control
+  const [activeTab, setActiveTab] = useState("THIS TREATMENT");
+  const siteSpecificGlobalQuery = gql`
+    query siteSpecificGlobalQuery($id: [QueryArgument]) {
+      entries(
+        section: "dentalChartRecords"
+        type: "proposedTreatmentChart"
+        patientFormGlobal: $id
+      ) {
+        ... on dentalChartRecords_proposedTreatmentChart_Entry {
+          patientFormRecord {
+            ... on records_records_Entry {
+              dateOfInsertion
+            }
+          }
+          proposedTreatmentToothMatrix {
+            ... on proposedTreatmentToothMatrix_toothDetails_BlockType {
+              id
+              initialDate
+              treatmentItemTitle
+              treatmentItemNumber
+              treatmentItemDescription
+              treatmentFriendlyName
+              toothValue
+              toothPosition
+              completedDate
+              approved
+              completed
+              groupTitle
+              groupTitleParent
+              treatmentPaid
+              groupNumber
+              visitTitle
+              visitNumber
+              patientCost
+              discountReason
+              vgds
+              discount
+              vetAffairs
+              medicare
+              cost
+              recordTreatmentDate
+              attachedSiteSpecificRecords {
+                ... on treatmentItemSpecificationRecord_barSpecifications_Entry {
+                  id
+                  archLocation
+                  barMaterial
+                  barLengthFrom
+                  barLengthTo
+                  barType
+                }
+                ... on treatmentItemSpecificationRecord_itemSpecificationAndDetails_Entry {
+                  id
+                  attachedSiteSpecificFollowUp(orderBy: "dateCreated ASC") {
+                    ... on siteSpecificFollowUp_default_Entry {
+                      id
+                      title
+                      dateCreated
+                      dateUpdated
+                      recordFollowUpDate
+                      implantFunctionAtFollowUp
+                      abutmentFunctionAtFollowUp
+                      sinusitis
+                      facialSwelling
+                      inflammation
+                      suppuration
+                      pain
+                      recession
+                      midShaftSoftTissueDehiscence
+                      firstAbutmentLevelComplication
+                      otherAbutmentLevelComplications
+                      totalNumberOfAbutmentLevelComplications
+                      dateOfFirstAbutmentLevelComplication
+                      firstAbutmentLevelComplicationTimeFromSurgery
+                      postOperativeSinusDisease
+                      boneLoss
+                      graftConditionAtFollowUp
+                    }
+                  }
+                  enableClinlog
+                  implantBrand
+                  implantCategory
+                  implantCategoryLabel: implantCategory(label: true)
+                  implantLine
+                  surface
+                  implantBaseDiameter
+                  implantLength
+                  implantType
+                  angleCorrectionAbutment
+                  abutmentBrand
+                  abutmentCategory
+                  abutmentCategoryLabel: abutmentCategory(label: true)
+                  typeAndDiameter
+                  gingivalHeight
+                  abutmentHeight
+                  abutmentLength
+                  abutmentSerialSequenceBarCode
+                  abutmentLotCode
+                  abutmentDateOfManufacture
+                  abutmentDateOfExpiry
+                  serialSequenceCode
+                  insertionTorque
+                  insertionTorqueLabel: insertionTorque(label: true)
+                  radiographicTrabecularDensityHu
+                  placement
+                  placementLabel: placement(label: true)
+                  relevantBoneWidth
+                  relevantBoneWidthLabel: relevantBoneWidth(label: true)
+                  trabecularBoneDensity
+                  trabecularBoneDensityLabel: trabecularBoneDensity(label: true)
+                  boneVascularity
+                  boneVascularityLabel: boneVascularity(label: true)
+                  crestalRest
+                  crestalRestLabel: crestalRest(label: true)
+                  graftingApplied
+                  graftingAppliedLabel: graftingApplied(label: true)
+                  graftMaterial
+                  graftMaterialLabel: graftMaterial(label: true)
+                  intraOperativeSinusComplications
+                  intraOperativeSinusComplicationsLabel: intraOperativeSinusComplications(
+                    label: true
+                  )
+                  preOperativeSinusDisease
+                  preOperativeSinusDiseaseLabel: preOperativeSinusDisease(
+                    label: true
+                  )
+                  preOperativeSinusDiseaseManagement
+                  preOperativeSinusDiseaseManagementLabel: preOperativeSinusDiseaseManagement(
+                    label: true
+                  )
+                  conformanceWithTreatmentPlan
+                  conformanceWithTreatmentPlanLabel: conformanceWithTreatmentPlan(
+                    label: true
+                  )
+                  prf
+                  lotCode
+                  dateOfManufacture
+                  dateOfExpiry
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  `;
+
+  const siteSpecificGlobal = useQueryHook(
+    ["siteSpecificGlobal", globalPostId],
+    siteSpecificGlobalQuery,
+    { id: [Number(globalPostId)] },
+    {
+      refetchOnWindowFocus: false,
+      enabled: activeTab === "ALL",
+    },
+  );
   const fetchDentalComponentsQuery = gql`
     query fetchDentalComponentsQuery {
       entries(section: "dentalComponents") {
@@ -194,9 +398,10 @@ export default function SurgicalDetailsV3_2({
     patientCharacteristicsQueryFreeform,
     {
       entryId: Number(selectedRecord?.id),
+      // globalId: Number(globalPostId),
     },
     {
-      enabled: !fromClinlog && selectedRecord,
+      enabled: !fromClinlog && selectedRecord && detailsData?.recordPatient,
       refetchOnWindowFocus: false,
     },
   );
@@ -206,7 +411,7 @@ export default function SurgicalDetailsV3_2({
     patientCharacteristicsQuery,
     { entryId: Number(selectedRecord?.id) },
     {
-      enabled: selectedRecord,
+      enabled: selectedRecord && detailsData?.recordPatient,
       refetchOnWindowFocus: false,
     },
   );
@@ -277,42 +482,84 @@ export default function SurgicalDetailsV3_2({
   ];
 
   const sitesWithImplantsMemo = useMemo(() => {
-    const approvedProposal = proposedTreatmentChartResults?.find(
-      (proposal) =>
-        proposal.chartStatus === "approved" ||
-        proposal.chartStatus === "modified",
-    );
+    let approvedProposal = null;
+    if (activeTab === "THIS TREATMENT") {
+      approvedProposal = proposedTreatmentChartResults?.find(
+        (proposal) =>
+          proposal.chartStatus === "approved" ||
+          proposal.chartStatus === "modified",
+      );
 
-    if (approvedProposal) {
-      const filteredSites =
-        approvedProposal?.proposedTreatmentToothMatrix?.filter((item) => {
-          if (statusFilter === "all") {
-            return true;
-          } else if (statusFilter === "completed") {
-            return item?.completed;
-          } else if (statusFilter === "approved") {
-            return item?.approved;
-          } else if (statusFilter === "pending") {
-            return !item?.completed;
-          }
-        });
+      if (approvedProposal) {
+        const filteredSites =
+          approvedProposal?.proposedTreatmentToothMatrix?.filter((item) => {
+            if (statusFilter === "all") {
+              return true;
+            } else if (statusFilter === "completed") {
+              return item?.completed;
+            } else if (statusFilter === "approved") {
+              return item?.approved;
+            } else if (statusFilter === "pending") {
+              return !item?.completed;
+            }
+          });
 
-      return filteredSites
-        ?.filter(
-          (item) =>
-            item?.treatmentItemNumber == "688" ||
-            item?.treatmentItemNumber == "666" ||
-            item?.treatmentItemNumber == "661",
-        )
-        .map((item) => ({
-          ...item,
-          insertionDate:
-            approvedProposal.patientFormRecord?.[0]?.dateOfInsertion,
-        }));
+        return filteredSites
+          ?.filter(
+            (item) =>
+              item?.treatmentItemNumber == "688" ||
+              item?.treatmentItemNumber == "666" ||
+              item?.treatmentItemNumber == "661",
+          )
+          .map((item) => ({
+            ...item,
+            insertionDate:
+              approvedProposal.patientFormRecord?.[0]?.dateOfInsertion,
+          }));
+      }
+    } else {
+      //@ts-ignore
+      const allSites = siteSpecificGlobal?.data?.entries
+        ?.map((entryItem) => {
+          const addInsertionDate = entryItem?.proposedTreatmentToothMatrix?.map(
+            (item) => {
+              return {
+                ...item,
+                insertionDate:
+                  entryItem.patientFormRecord?.[0]?.dateOfInsertion,
+              };
+            },
+          );
+          return addInsertionDate;
+        })
+        .flat();
+
+      const filteredSites = allSites?.filter((item) => {
+        if (statusFilter === "all") {
+          return true;
+        } else if (statusFilter === "completed") {
+          return item?.completed;
+        } else if (statusFilter === "approved") {
+          return item?.approved;
+        } else if (statusFilter === "pending") {
+          return !item?.completed;
+        }
+      });
+
+      return filteredSites?.filter(
+        (item) =>
+          item?.treatmentItemNumber === "688" ||
+          item?.treatmentItemNumber === "666" ||
+          item?.treatmentItemNumber === "661",
+      );
     }
-
     return [];
-  }, [proposedTreatmentChartResults, statusFilter]);
+  }, [
+    proposedTreatmentChartResults,
+    statusFilter,
+    activeTab,
+    siteSpecificGlobal?.data?.entries,
+  ]);
 
   const { data: session } = useSession();
   const [selectedSite, setSelectedSite] = useState(null);
@@ -497,17 +744,19 @@ export default function SurgicalDetailsV3_2({
     if (selectedFollowUp) {
       setValueFollowUp(
         "examiner",
-        selectedFollowUp?.examiner ? selectedFollowUp?.examiner : "unknown",
+        selectedFollowUp?.examiner
+          ? selectedFollowUp?.examiner
+          : session?.fullName,
       );
       setValueFollowUp(
         "numberOfReviews",
         selectedFollowUp?.numberOfReviews ||
           selectedRecord?.recordFollowUpMatrix?.length ||
-          "unknown",
+          "0",
       );
       setValueFollowUp(
         "numberOfRestorativeBreakages",
-        selectedFollowUp?.numberOfRestorativeBreakages || "unknown",
+        selectedFollowUp?.numberOfRestorativeBreakages || "0",
       );
       setValueFollowUp(
         "zirconiaUpgrade",
@@ -527,6 +776,7 @@ export default function SurgicalDetailsV3_2({
           ? format(new Date(selectedFollowUp?.dateOfFollowUp), "yyyy-MM-dd")
           : null,
       );
+
       const timeFromSurgery = selectedFollowUp?.timeFromSurgery
         ? selectedFollowUp?.timeFromSurgery
         : selectedFollowUp?.dateOfFollowUp &&
@@ -552,9 +802,31 @@ export default function SurgicalDetailsV3_2({
           ? selectedFollowUp?.hygieneAtFollowUp
           : "unknown",
       );
+      setValueFollowUp(
+        "prostheticUpgrades",
+        selectedFollowUp?.prostheticUpgrades || "",
+      );
+      setValueFollowUp(
+        "dateOfProstheticUpgrade",
+        selectedFollowUp?.dateOfProstheticUpgrade
+          ? format(
+              new Date(selectedFollowUp?.dateOfProstheticUpgrade),
+              "yyyy-MM-dd",
+            )
+          : null,
+      );
     } else {
+      const lastFollowUp = selectedRecord?.recordFollowUpMatrix?.sort(
+        (a, b) =>
+          new Date(b.dateOfFollowUp).getTime() -
+          new Date(a.dateOfFollowUp).getTime(),
+      )?.[0];
+
       setValueFollowUp("examiner", session?.fullName);
-      setValueFollowUp("performanceOverFollowUpPeriod", "");
+      setValueFollowUp(
+        "performanceOverFollowUpPeriod",
+        lastFollowUp?.performanceOverFollowUpPeriod || "",
+      );
       setValueFollowUp("dateOfFollowUp", format(new Date(), "yyyy-MM-dd"));
       setValueFollowUp(
         "timeFromSurgery",
@@ -563,10 +835,35 @@ export default function SurgicalDetailsV3_2({
           new Date(selectedRecord?.recordTreatmentDate),
         ),
       );
-      setValueFollowUp("smokingAtFollowUp", "");
-      setValueFollowUp("hygieneAtFollowUp", "");
+      setValueFollowUp(
+        "smokingAtFollowUp",
+        lastFollowUp?.smokingAtFollowUp || "",
+      );
+      setValueFollowUp(
+        "hygieneAtFollowUp",
+        lastFollowUp?.hygieneAtFollowUp || "",
+      );
+      setValueFollowUp("zirconiaUpgrade", lastFollowUp?.zirconiaUpgrade || "");
+      setValueFollowUp(
+        "numberOfRestorativeBreakages",
+        lastFollowUp?.numberOfRestorativeBreakages || "0",
+      );
+
+      setValueFollowUp(
+        "prostheticUpgrades",
+        lastFollowUp?.prostheticUpgrades || "",
+      );
+      setValueFollowUp(
+        "dateOfProstheticUpgrade",
+        lastFollowUp?.dateOfProstheticUpgrade
+          ? format(
+              new Date(lastFollowUp?.dateOfProstheticUpgrade),
+              "yyyy-MM-dd",
+            )
+          : null,
+      );
     }
-  }, [selectedFollowUp]);
+  }, [selectedFollowUp, isReviewOpen]);
 
   useEffect(() => {
     setValue(
@@ -715,7 +1012,6 @@ export default function SurgicalDetailsV3_2({
         new Date(),
         new Date(selectedRecord?.recordTreatmentDate),
       );
-
       setIsWithin24Hours(true);
     }
   }, []);
@@ -1030,7 +1326,16 @@ export default function SurgicalDetailsV3_2({
   const treatmentCharacteristics = useMemo(() => {
     return [
       {
-        label: "Case ID",
+        label: "Patient ID",
+        key: "id",
+        info: "Unique identifier for this patient. Used internally by each clinic to link all related clinical and administrative records.",
+
+        boxColor: "#4ADE80",
+        value: "SC" + globalPostId,
+        edit: false,
+      },
+      {
+        label: "Legacy Case ID",
         key: "caseNumber",
         info:
           getValues("caseNumber") !== ""
@@ -1312,7 +1617,7 @@ export default function SurgicalDetailsV3_2({
         key: "dateOfFollowUp",
         icon: "event",
         info: "Entry by xxxx",
-        value: getValuesFollowUp("dateOfFollowUp") || "N/A",
+        value: getValuesFollowUp("dateOfFollowUp") || "",
       },
       {
         label: "Time from Surgery",
@@ -1358,25 +1663,29 @@ export default function SurgicalDetailsV3_2({
       //   info: "Entry by xxxx",
       //   value: getValues("numberOfReviews"),
       // },
-      // {
-      //   label: "Number Of Restorative Breakages",
-      //   key: "numberOfRestorativeBreakages",
-      //   icon: "oral_disease",
-      //   info: "Entry by xxxx",
-      //   value: getValues("numberOfRestorativeBreakages"),
-      // },
-      // {
-      //   label: "Zirconia Upgrade",
-      //   key: "zirconiaUpgrade",
-      //   icon: "dentistry",
-      //   options: [
-      //     { name: "Yes", value: "Yes" },
-      //     { name: "No", value: "No" },
-      //     { name: "Unknown", value: "unknown" },
-      //   ],
-      //   info: "Entry by xxxx",
-      //   value: getValues("zirconiaUpgrade"),
-      // },
+      {
+        label: "Number Of Restorative Breakages",
+        key: "numberOfRestorativeBreakages",
+        icon: "oral_disease",
+        info: "Entry by xxxx",
+        value: getValues("numberOfRestorativeBreakages"),
+      },
+      {
+        label: "Zirconia Upgrade",
+        key: "zirconiaUpgrade",
+        icon: "dentistry",
+        options: [
+          {
+            name: " --Select an option--",
+            value: "",
+          },
+          { name: "Yes", value: "Yes" },
+          { name: "No", value: "No" },
+          { name: "Unknown", value: "unknown" },
+        ],
+        info: "Entry by xxxx",
+        value: getValues("zirconiaUpgrade"),
+      },
       {
         label: "Performance over follow-up period",
         key: "performanceOverFollowUpPeriod",
@@ -1407,6 +1716,37 @@ export default function SurgicalDetailsV3_2({
       //   info: "Entry by xxxx",
       //   value: getValues("examinerRadiographic"),
       // },
+      {
+        label: "Prosthetic Upgrades (Other Than Zirconia)",
+        key: "prostheticUpgrades",
+        icon: "psychology_alt",
+        options: [
+          { name: "--Select an option--", value: "" },
+          {
+            name: "None",
+            value: "None",
+          },
+          {
+            name: "PMMA",
+            value: "PMMA",
+          },
+          {
+            name: "Graphine",
+            value: "Graphine",
+          },
+          { name: "Ambarino", value: "Ambarino" },
+          // {name:"Unknown", value:"unknown"}
+        ],
+        info: "Entry by xxxx",
+        value: getValuesFollowUp("prostheticUpgrades"),
+      },
+      {
+        label: "Date of Prosthetic Upgrade",
+        key: "dateOfProstheticUpgrade",
+        icon: "event",
+        info: "Entry by xxxx",
+        value: getValuesFollowUp("dateOfProstheticUpgrade") || "",
+      },
     ];
   }, [formValuesFollowUp]);
   useEffect(() => {
@@ -1452,7 +1792,6 @@ export default function SurgicalDetailsV3_2({
           duration: 100000,
           isClosable: true,
         });
-        setShowSiteFollowUp(true);
       },
       onError: (err, newTodo, context) => {
         toast.update(toastIdRef.current, {
@@ -1473,11 +1812,17 @@ export default function SurgicalDetailsV3_2({
       // Always refetch after error or success:
       onSettled: (newTodo) => {
         characteristicsMutate.reset();
+        queryClient.invalidateQueries(["detailsPageNew", globalPostId]);
         if (isReviewOpen) {
           // onReviewClose()
         }
         if (editTreatmentChar) {
           setEditTreatmentChar(false);
+        }
+        if (!showSiteFollowUp) {
+          setTimeout(() => {
+            setShowSiteFollowUp(true);
+          }, 500);
         }
       },
     },
@@ -1552,6 +1897,7 @@ export default function SurgicalDetailsV3_2({
       },
       onSettled: () => {
         useEditPatientDetailsMutation.reset();
+        queryClient.invalidateQueries(["detailsPageNew", globalPostId]);
       },
     },
   );
@@ -1564,12 +1910,12 @@ export default function SurgicalDetailsV3_2({
     base: true,
     md: false,
   });
-  const progressBlocks = useMemo(() => {
-    return [
-      ...selectedRecord?.recordFollowUpMatrix,
-      ...new Array(9 - selectedRecord?.recordFollowUpMatrix?.length).fill(null),
-    ];
-  }, [selectedRecord?.recordFollowUpMatrix]);
+  // const progressBlocks = useMemo(() => {
+  //   return [
+  //     ...selectedRecord?.recordFollowUpMatrix,
+  //     ...new Array(9 - selectedRecord?.recordFollowUpMatrix?.length).fill(null),
+  //   ];
+  // }, [selectedRecord?.recordFollowUpMatrix]);
 
   const siteSpecificMutationFunction = useMutation(
     (siteSpecificData: any) => sendData(siteSpecificMutation, siteSpecificData),
@@ -1641,7 +1987,14 @@ export default function SurgicalDetailsV3_2({
           siteSpecificMutationFunction.mutate(updatedData);
         }
       },
-      onSettled: () => {},
+      onSettled: () => {
+        siteSpecificFollowUpMutationFunction.reset();
+        queryClient.invalidateQueries(["detailsPageNew", globalPostId]);
+        queryClient.invalidateQueries([
+          "proposedTreatmentChartResults",
+          proposedTreatmentChartIds,
+        ]);
+      },
     },
   );
   function getOrdinalSuffix(number: number): string {
@@ -1668,131 +2021,256 @@ export default function SurgicalDetailsV3_2({
     }
   }
   const followUpOnSubmit = async (data) => {
-    const followUpMatrix = selectedRecord?.recordFollowUpMatrix.map((item) => {
-      return {
-        followUp: {
-          id: item.id,
-          examiner: item.examiner,
-          dateOfFollowUp: item.dateOfFollowUp,
-          timeFromSurgery: Number(item.timeFromSurgery),
-          smokingAtFollowUp: item.smokingAtFollowUp,
-          hygieneAtFollowUp: item.hygieneAtFollowUp,
-          performanceOverFollowUpPeriod: item.performanceOverFollowUpPeriod,
-          zirconiaUpgrade: item.zirconiaUpgrade,
-          examinerRadiographic: item.examinerRadiographic,
-          numberOfReviews: item.numberOfReviews,
-          numberOfRestorativeBreakages: item.numberOfRestorativeBreakages,
+    if (followUpId) {
+      //editing existing follow up
+      const followUpMatrix = selectedRecord?.recordFollowUpMatrix?.map(
+        (item) => {
+          if (item.id === followUpId) {
+            return {
+              followUp: {
+                id: item.id,
+                examiner: data.examiner,
+                dateOfFollowUp: new Date(data?.dateOfFollowUp),
+                timeFromSurgery: Number(data?.timeFromSurgery),
+                smokingAtFollowUp: data?.smokingAtFollowUp,
+                hygieneAtFollowUp: data?.hygieneAtFollowUp,
+                performanceOverFollowUpPeriod:
+                  data?.performanceOverFollowUpPeriod,
+                zirconiaUpgrade: data?.zirconiaUpgrade,
+                examinerRadiographic: data?.examinerRadiographic,
+                numberOfReviews: data?.numberOfReviews,
+                numberOfRestorativeBreakages: Number(
+                  data?.numberOfRestorativeBreakages || 0,
+                ),
+                prostheticUpgrades: data?.prostheticUpgrades,
+                dateOfProstheticUpgrade: data?.dateOfProstheticUpgrade
+                  ? new Date(data?.dateOfProstheticUpgrade)
+                  : null,
+              },
+            };
+          }
+          return {
+            followUp: {
+              id: item.id,
+              examiner: item.examiner,
+              dateOfFollowUp: item.dateOfFollowUp,
+              timeFromSurgery: Number(item.timeFromSurgery),
+              smokingAtFollowUp: item.smokingAtFollowUp,
+              hygieneAtFollowUp: item.hygieneAtFollowUp,
+              performanceOverFollowUpPeriod: item.performanceOverFollowUpPeriod,
+              zirconiaUpgrade: item.zirconiaUpgrade,
+              examinerRadiographic: item.examinerRadiographic,
+              numberOfReviews: item.numberOfReviews,
+              numberOfRestorativeBreakages: Number(
+                item?.numberOfRestorativeBreakages || 0,
+              ),
+              prostheticUpgrades: item?.prostheticUpgrades,
+              dateOfProstheticUpgrade: item?.dateOfProstheticUpgrade
+                ? new Date(item?.dateOfProstheticUpgrade)
+                : null,
+            },
+          };
         },
+      );
+      const newData = {
+        id: Number(selectedRecord?.id),
+        recordFollowUpMatrix: followUpMatrix,
+        followUpMatrixSortOrder: followUpMatrix.map((item) => item.followUp.id),
       };
-    });
+
+      await characteristicsMutate.mutate({
+        newData,
+        mutationGql: followUpMatrixMutation,
+      });
+    } else {
+      const followUpMatrix = selectedRecord?.recordFollowUpMatrix?.map(
+        (item) => {
+          return {
+            followUp: {
+              id: item.id,
+              examiner: item.examiner,
+              dateOfFollowUp: item.dateOfFollowUp,
+              timeFromSurgery: Number(item.timeFromSurgery),
+              smokingAtFollowUp: item.smokingAtFollowUp,
+              hygieneAtFollowUp: item.hygieneAtFollowUp,
+              performanceOverFollowUpPeriod: item.performanceOverFollowUpPeriod,
+              zirconiaUpgrade: item.zirconiaUpgrade,
+              examinerRadiographic: item.examinerRadiographic,
+              numberOfReviews: item.numberOfReviews,
+              numberOfRestorativeBreakages: item.numberOfRestorativeBreakages,
+              prostheticUpgrades: item.prostheticUpgrades,
+              dateOfProstheticUpgrade: item.dateOfProstheticUpgrade
+                ? new Date(item.dateOfProstheticUpgrade)
+                : null,
+            },
+          };
+        },
+      );
+
+      const newData = {
+        id: Number(selectedRecord?.id),
+        recordFollowUpMatrix: [
+          ...followUpMatrix,
+          {
+            followUp: {
+              id: "new",
+              examiner: data.examiner,
+              dateOfFollowUp: new Date(data.dateOfFollowUp),
+              timeFromSurgery: Number(data.timeFromSurgery),
+              smokingAtFollowUp: data.smokingAtFollowUp,
+              hygieneAtFollowUp: data.hygieneAtFollowUp,
+              performanceOverFollowUpPeriod: data.performanceOverFollowUpPeriod,
+              zirconiaUpgrade: data.zirconiaUpgrade,
+              examinerRadiographic: data.examinerRadiographic,
+              numberOfReviews: data.numberOfReviews,
+              numberOfRestorativeBreakages: Number(
+                data?.numberOfRestorativeBreakages || 0,
+              ),
+              prostheticUpgrades: data.prostheticUpgrades,
+              dateOfProstheticUpgrade: data.dateOfProstheticUpgrade
+                ? new Date(data.dateOfProstheticUpgrade)
+                : null,
+            },
+          },
+        ],
+
+        followUpMatrixSortOrder: [
+          ...followUpMatrix.map((item) => item.followUp.id),
+          "new",
+        ],
+      };
+
+      await characteristicsMutate.mutate({
+        newData,
+        mutationGql: followUpMatrixMutation,
+      });
+
+      //creating site specific reviews
+      const existingSiteFollowUps = sitesWithImplantsMemo?.map((item) => {
+        return {
+          id: item?.attachedSiteSpecificRecords?.[0]?.id || null,
+          toothValue: item?.toothValue,
+          treatmentItemNumber: item?.treatmentItemNumber,
+          attachedSiteSpecificFollowUp:
+            item?.attachedSiteSpecificRecords?.[0]
+              ?.attachedSiteSpecificFollowUp?.[0] || null,
+          followUpIds:
+            item?.attachedSiteSpecificRecords?.[0]?.attachedSiteSpecificFollowUp?.map(
+              (followUp) => Number(followUp.id),
+            ),
+        };
+      });
+
+      existingSiteFollowUps?.forEach(async (item, index) => {
+        let title = "";
+
+        if (item?.attachedSiteSpecificFollowUp) {
+          title =
+            item?.attachedSiteSpecificFollowUp?.title +
+            " - " +
+            getOrdinalSuffix(item?.followUpIds?.length + 1) +
+            " Review";
+        } else {
+          title =
+            patientName +
+            " - " +
+            item?.toothValue +
+            " - " +
+            getOrdinalSuffix(1) +
+            " Review";
+        }
+
+        if (item?.treatmentItemNumber !== "661" && item?.id) {
+          const siteFollowUpData = {
+            title: title,
+            recordFollowUpDate: new Date(data.dateOfFollowUp),
+            implantFunctionAtFollowUp:
+              item?.attachedSiteSpecificFollowUp?.implantFunctionAtFollowUp,
+            abutmentFunctionAtFollowUp:
+              item?.attachedSiteSpecificFollowUp?.abutmentFunctionAtFollowUp,
+            sinusitis: item?.attachedSiteSpecificFollowUp?.sinusitis,
+            facialSwelling: item?.attachedSiteSpecificFollowUp?.facialSwelling,
+            inflammation: item?.attachedSiteSpecificFollowUp?.inflammation,
+            suppuration: item?.attachedSiteSpecificFollowUp?.suppuration,
+            pain: item?.attachedSiteSpecificFollowUp?.pain,
+            recession: item?.attachedSiteSpecificFollowUp?.recession,
+            midShaftSoftTissueDehiscence:
+              item?.attachedSiteSpecificFollowUp?.midShaftSoftTissueDehiscence,
+            firstAbutmentLevelComplication:
+              item?.attachedSiteSpecificFollowUp
+                ?.firstAbutmentLevelComplication,
+            otherAbutmentLevelComplications:
+              item?.attachedSiteSpecificFollowUp
+                ?.otherAbutmentLevelComplications,
+            dateOfFirstAbutmentLevelComplication: item
+              ?.attachedSiteSpecificFollowUp
+              ?.dateOfFirstAbutmentLevelComplication
+              ? new Date(
+                  item?.attachedSiteSpecificFollowUp
+                    ?.dateOfFirstAbutmentLevelComplication,
+                )
+              : null,
+            firstAbutmentLevelComplicationTimeFromSurgery:
+              item?.attachedSiteSpecificFollowUp
+                ?.firstAbutmentLevelComplicationTimeFromSurgery,
+            postOperativeSinusDisease:
+              item?.attachedSiteSpecificFollowUp?.postOperativeSinusDisease,
+            boneLoss: item?.attachedSiteSpecificFollowUp?.boneLoss,
+            graftConditionAtFollowUp:
+              item?.attachedSiteSpecificFollowUp?.graftConditionAtFollowUp,
+          };
+          const siteSpecificData = {
+            id: item?.id,
+            attachedSiteSpecificFollowUp: item?.followUpIds || [],
+            isBar: item?.treatmentItemNumber === "666",
+          };
+          const updatedData = {
+            siteFollowUpData: siteFollowUpData,
+            siteSpecificData: siteSpecificData,
+          };
+          await siteSpecificFollowUpMutationFunction.mutate(updatedData);
+        }
+      });
+    }
+  };
+  const handleDeleteFollowUp = async () => {
+    const followUpMatrix = selectedRecord?.recordFollowUpMatrix
+      ?.filter((item) => item.id !== followUpId)
+      ?.map((item) => {
+        return {
+          followUp: {
+            id: item.id,
+            examiner: item.examiner,
+            dateOfFollowUp: new Date(item.dateOfFollowUp),
+            timeFromSurgery: Number(item.timeFromSurgery),
+            smokingAtFollowUp: item.smokingAtFollowUp,
+            hygieneAtFollowUp: item.hygieneAtFollowUp,
+            performanceOverFollowUpPeriod: item.performanceOverFollowUpPeriod,
+            zirconiaUpgrade: item.zirconiaUpgrade,
+            examinerRadiographic: item.examinerRadiographic,
+            numberOfReviews: item.numberOfReviews,
+            numberOfRestorativeBreakages: Number(
+              item?.numberOfRestorativeBreakages || 0,
+            ),
+            prostheticUpgrades: item.prostheticUpgrades,
+            dateOfProstheticUpgrade: item.dateOfProstheticUpgrade
+              ? new Date(item.dateOfProstheticUpgrade)
+              : null,
+          },
+        };
+      });
 
     const newData = {
       id: Number(selectedRecord?.id),
-      recordFollowUpMatrix: [
-        ...followUpMatrix,
-        {
-          followUp: {
-            id: "new",
-            examiner: data.examiner,
-            dateOfFollowUp: new Date(data.dateOfFollowUp),
-            timeFromSurgery: Number(data.timeFromSurgery),
-            smokingAtFollowUp: data.smokingAtFollowUp,
-            hygieneAtFollowUp: data.hygieneAtFollowUp,
-            performanceOverFollowUpPeriod: data.performanceOverFollowUpPeriod,
-          },
-        },
-      ],
-
-      followUpMatrixSortOrder: [
-        ...followUpMatrix.map((item) => item.followUp.id),
-        "new",
-      ],
+      recordFollowUpMatrix: followUpMatrix,
+      followUpMatrixSortOrder: followUpMatrix.map((item) => item.followUp?.id),
     };
 
     await characteristicsMutate.mutate({
       newData,
       mutationGql: followUpMatrixMutation,
     });
-
-    //creating site specific reviews
-    const existingSiteFollowUps = sitesWithImplantsMemo?.map((item) => {
-      return {
-        id: item?.attachedSiteSpecificRecords?.[0]?.id || null,
-        toothValue: item?.toothValue,
-        treatmentItemNumber: item?.treatmentItemNumber,
-        attachedSiteSpecificFollowUp:
-          item?.attachedSiteSpecificRecords?.[0]
-            ?.attachedSiteSpecificFollowUp?.[0] || null,
-        followUpIds:
-          item?.attachedSiteSpecificRecords?.[0]?.attachedSiteSpecificFollowUp?.map(
-            (followUp) => Number(followUp.id),
-          ),
-      };
-    });
-
-    existingSiteFollowUps?.forEach(async (item, index) => {
-      let title = "";
-
-      if (item?.attachedSiteSpecificFollowUp) {
-        title =
-          item?.attachedSiteSpecificFollowUp?.title +
-          " - " +
-          getOrdinalSuffix(item?.followUpIds?.length + 1) +
-          " Review";
-      } else {
-        title =
-          patientName +
-          " - " +
-          item?.toothValue +
-          " - " +
-          getOrdinalSuffix(1) +
-          " Review";
-      }
-
-      if (item?.treatmentItemNumber !== "661" && item?.id) {
-        const siteFollowUpData = {
-          title: title,
-          recordFollowUpDate: new Date(data.dateOfFollowUp),
-          implantFunctionAtFollowUp:
-            item?.attachedSiteSpecificFollowUp?.implantFunctionAtFollowUp,
-          sinusitis: item?.attachedSiteSpecificFollowUp?.sinusitis,
-          facialSwelling: item?.attachedSiteSpecificFollowUp?.facialSwelling,
-          inflammation: item?.attachedSiteSpecificFollowUp?.inflammation,
-          suppuration: item?.attachedSiteSpecificFollowUp?.suppuration,
-          pain: item?.attachedSiteSpecificFollowUp?.pain,
-          recession: item?.attachedSiteSpecificFollowUp?.recession,
-          midShaftSoftTissueDehiscence:
-            item?.attachedSiteSpecificFollowUp?.midShaftSoftTissueDehiscence,
-          firstAbutmentLevelComplication:
-            item?.attachedSiteSpecificFollowUp?.firstAbutmentLevelComplication,
-          otherAbutmentLevelComplications:
-            item?.attachedSiteSpecificFollowUp?.otherAbutmentLevelComplications,
-          dateOfFirstAbutmentLevelComplication: item
-            ?.attachedSiteSpecificFollowUp?.dateOfFirstAbutmentLevelComplication
-            ? new Date(
-                item?.attachedSiteSpecificFollowUp
-                  ?.dateOfFirstAbutmentLevelComplication,
-              )
-            : null,
-          firstAbutmentLevelComplicationTimeFromSurgery:
-            item?.attachedSiteSpecificFollowUp
-              ?.firstAbutmentLevelComplicationTimeFromSurgery,
-          postOperativeSinusDisease:
-            item?.attachedSiteSpecificFollowUp?.postOperativeSinusDisease,
-          boneLoss: item?.attachedSiteSpecificFollowUp?.boneLoss,
-        };
-        const siteSpecificData = {
-          id: item?.id,
-          attachedSiteSpecificFollowUp: item?.followUpIds || [],
-          isBar: item?.treatmentItemNumber === "666",
-        };
-        const updatedData = {
-          siteFollowUpData: siteFollowUpData,
-          siteSpecificData: siteSpecificData,
-        };
-        await siteSpecificFollowUpMutationFunction.mutate(updatedData);
-      }
-    });
+    onReviewClose();
   };
   const tHeadCss = {
     fontSize: "12px",
@@ -2101,12 +2579,14 @@ export default function SurgicalDetailsV3_2({
               </Text>
             );
           } else if (item?.attachedSiteSpecificRecords?.[0]) {
+            const itemSpecification = getItemSpecification(
+              item?.attachedSiteSpecificRecords?.[0],
+            );
+
             return (
               <Text fontSize={"13px"}>
-                {
-                  item?.attachedSiteSpecificRecords?.[0]
-                    ?.implantTypeLabel
-                }
+                {itemSpecification?.implantTypeLabel ||
+                  itemSpecification?.implantType}
               </Text>
             );
           } else {
@@ -2132,14 +2612,17 @@ export default function SurgicalDetailsV3_2({
               return <Text fontSize={"13px"}>N/A</Text>;
             }
           } else if (item?.attachedSiteSpecificRecords?.[0]) {
+            const itemSpecification = getItemSpecification(
+              item?.attachedSiteSpecificRecords?.[0],
+            );
+
             return (
               <Text fontSize={"13px"}>
-                {item?.attachedSiteSpecificRecords?.[0]?.implantLine ||
-                  item?.attachedSiteSpecificRecords?.[0]?.implantType ||
+                {itemSpecification?.implantLine ||
+                  itemSpecification?.implantType ||
                   ""}
                 {" - "}
-                {item?.attachedSiteSpecificRecords?.[0]?.implantLength ||
-                  "N/A"}
+                {itemSpecification?.implantLength || "N/A"}
               </Text>
             );
           } else {
@@ -2189,12 +2672,14 @@ export default function SurgicalDetailsV3_2({
               return <Text fontSize={"13px"}>N/A</Text>;
             }
           } else if (item?.attachedSiteSpecificRecords?.[0]) {
+            const itemSpecification = getItemSpecification(
+              item?.attachedSiteSpecificRecords?.[0],
+            );
+
             return (
               <Text fontSize={"13px"}>
-                {
-                  item?.attachedSiteSpecificRecords?.[0]
-                    ?.placementLabel
-                }
+                {itemSpecification?.placementLabel ||
+                  itemSpecification?.placement}
               </Text>
             );
           } else {
@@ -2210,12 +2695,14 @@ export default function SurgicalDetailsV3_2({
           if (item?.treatmentItemNumber === "666") {
             return <Text fontSize={"12px"}>N/A</Text>;
           } else if (item?.attachedSiteSpecificRecords?.[0]) {
+            const itemSpecification = getItemSpecification(
+              item?.attachedSiteSpecificRecords?.[0],
+            );
+
             return (
               <Text fontSize={"12px"}>
-                {
-                  item?.attachedSiteSpecificRecords?.[0]
-                    ?.graftingAppliedLabel
-                }
+                {itemSpecification?.graftingAppliedLabel ||
+                  itemSpecification?.graftingApplied}
               </Text>
             );
           } else {
@@ -2332,7 +2819,22 @@ export default function SurgicalDetailsV3_2({
       return item;
     });
   }, [sitesWithImplantsMemo, optimisticSites]);
+  useEffect(() => {
+    const treatmentDate = approvedTreatments?.recordTreatmentDate
+      ? new Date(approvedTreatments.recordTreatmentDate)
+      : selectedRecord?.recordTreatmentDate
+        ? new Date(selectedRecord.recordTreatmentDate)
+        : null;
+    const followUpDate = getValuesFollowUp("dateOfFollowUp")
+      ? new Date(getValuesFollowUp("dateOfFollowUp"))
+      : null;
+    const timeFromSurgery =
+      treatmentDate && followUpDate
+        ? differenceInDays(followUpDate, treatmentDate)
+        : 0;
 
+    setValueFollowUp("timeFromSurgery", timeFromSurgery);
+  }, [getValuesFollowUp("dateOfFollowUp")]);
   const downloadZip = async () => {
     const zip = new JSZip();
 
@@ -2364,7 +2866,9 @@ export default function SurgicalDetailsV3_2({
       if (item?.treatmentItemNumber === "666") {
         return true;
       }
-      const fields = item?.attachedSiteSpecificRecords?.[0];
+      const fields = getItemSpecification(
+        item?.attachedSiteSpecificRecords?.[0],
+      );
 
       const allFields = fields
         ? Object.values(fields)?.every(
@@ -2423,7 +2927,7 @@ export default function SurgicalDetailsV3_2({
     >
       {!fromClinlog && (
         <Flex w="100%" gap="0.5rem" align="center" mt="3">
-          <Flex flexDirection="column" gap="0" align="flex-start">
+          {/* <Flex flexDirection="column" gap="0" align="flex-start">
             <Text
               fontSize={{ base: "20px", md: "22px" }}
               fontWeight="700"
@@ -2442,6 +2946,37 @@ export default function SurgicalDetailsV3_2({
               seamlessly integrating with Clinlog’s analytics for performance
               and outcome insights.
             </Text>
+          </Flex> */}
+          <Flex gap="0.5rem" align="center">
+            <chakra.span
+              className="material-symbols-outlined"
+              fontSize={{ base: "18px", md: "24px" }}
+              color="#4A4A4A"
+              background="#D9D9D9"
+              p="3"
+              borderRadius={"full"}
+            >
+              graph_6
+            </chakra.span>
+            <Flex flexDirection={"column"} gap="0.1rem">
+              <Text
+                fontSize={{ base: "18px", md: "20px" }}
+                fontWeight="700"
+                color="#007AFF"
+                fontFamily="Inter"
+              >
+                Surgical Details
+              </Text>
+              <Text
+                fontSize={{ base: "10px", md: "12px" }}
+                fontWeight="400"
+                color="gray.600"
+                fontFamily="Inter"
+                mb={{ base: "1rem", lg: "0" }}
+              >
+                Log implant data and sync surgical outcomes with Clinlog.
+              </Text>
+            </Flex>
           </Flex>
           <Spacer />
           {/* <Button
@@ -2763,7 +3298,7 @@ export default function SurgicalDetailsV3_2({
                     {/* You can add more details here about each review, if desired */}
                     {selectedRecord?.recordFollowUpMatrix?.length > 0 ? (
                       <Flex direction="column" gap="0.5rem">
-                        {selectedRecord?.recordFollowUpMatrix.map(
+                        {selectedRecord?.recordFollowUpMatrix?.map(
                           (review, idx) => (
                             <Button
                               key={idx}
@@ -2801,7 +3336,9 @@ export default function SurgicalDetailsV3_2({
                                   mr={2}
                                   color="#222"
                                 >
-                                  Review {idx + 1}
+                                  Review{" "}
+                                  {selectedRecord?.recordFollowUpMatrix
+                                    ?.length - idx}
                                 </Text>
                                 <Text
                                   display="inline"
@@ -3292,9 +3829,12 @@ export default function SurgicalDetailsV3_2({
                       fontFamily={"inter"}
                       fontWeight={"500"}
                     >
-                      {statusFilter === "completed"
-                        ? "No completed treatments"
-                        : "No pending treatments"}
+                      {siteSpecificGlobal.isFetching ||
+                      siteSpecificGlobal.isLoading
+                        ? "Loading..."
+                        : statusFilter === "completed"
+                          ? "No completed treatments"
+                          : "No pending treatments"}
                     </Flex>
                   </Td>
                 </Tr>
@@ -3383,6 +3923,9 @@ export default function SurgicalDetailsV3_2({
         onClose={onSidebarClose}
         size="xl"
       >
+        {/* 0107630031736543112310301728102910AWXW9
+        0107630031736543112310301728102910AWXW9
+        0107630031736543112411111729111010JMAK6 */}
         <DrawerOverlay />
         <DrawerContent>
           <DrawerHeader bgColor={"#0E11C7"} fontWeight={"700"}>
@@ -3430,6 +3973,7 @@ export default function SurgicalDetailsV3_2({
                   proposal.chartStatus === "modified",
               )}
               onSidebarClose={onSidebarClose}
+              globalPostId={globalPostId}
               proposedTreatmentChartIds={proposedTreatmentChartIds}
               onSiteSaved={(site) => {
                 const toothVal = String(site ?? "");
@@ -3517,6 +4061,45 @@ export default function SurgicalDetailsV3_2({
                   >
                     REVIEW CHARACTERISTICS
                   </Text>
+                  {followUpId && (
+                    <Button
+                      borderRadius={"0"}
+                      size="sm"
+                      mr="2"
+                      bg="red.500"
+                      _hover={{
+                        bg: "#DFDFF1",
+                        boxShadow: "0 2px 2px 0 rgba(0, 0, 0, 0.10)",
+                      }}
+                      onClick={() => {
+                        if (
+                          window.confirm(
+                            "Are you sure you want to delete this review? This action cannot be undone.",
+                          )
+                        ) {
+                          handleDeleteFollowUp();
+                        }
+                      }}
+                    >
+                      {/* <Text
+                        fontSize={{ base: "12px", md: "13px" }}
+                        textTransform="uppercase"
+                        //color={"#767171"}
+                        color="white"
+                        fontWeight="700"
+                        letterSpacing={"0.88px"}
+                      >
+                        Delete Review
+                      </Text> */}
+                      <chakra.span
+                        className="material-symbols-outlined"
+                        fontSize="18px"
+                        color="white"
+                      >
+                        delete
+                      </chakra.span>
+                    </Button>
+                  )}
                 </Flex>
                 <Divider />
                 <Input
@@ -3547,107 +4130,50 @@ export default function SurgicalDetailsV3_2({
                             {item.label}
                           </Text>
                         </Flex>
-
-                        {item.options && followUpId === null ? (
-                          <Select
-                            fontSize={{ base: "13px", md: "14px" }}
-                            borderRadius="6px"
-                            border="1px solid #D9D9D9"
-                            _hover={{ border: "1px solid #D9D9D9" }}
-                            _focusVisible={{ border: "1px solid #D9D9D9" }}
-                            defaultValue={item.value}
-                            {...registerFollowUp(item.key)}
-                          >
-                            {item.options.map((option, index) => (
-                              <option
-                                key={option.value + index}
-                                value={option.value}
-                              >
-                                {option.name}
-                              </option>
-                            ))}
-                          </Select>
-                        ) : (
-                          <>
-                            {followUpId ? (
-                              <Text
-                                fontWeight="400"
-                                fontSize={{ base: "13px", md: "14px" }}
-                                border="1px solid #D9D9D9"
-                                borderRadius="6px"
-                                p="2"
-                                textTransform={"capitalize"}
-                                w="100%"
-                                cursor={"not-allowed"}
-                              >
-                                {item.value}
-                              </Text>
-                            ) : item?.key === "dateOfFollowUp" ? (
-                              <Input
-                                type="date"
-                                fontWeight="400"
-                                fontSize={{ base: "13px", md: "14px" }}
-                                borderRadius="6px"
-                                border="1px solid #D9D9D9"
-                                _hover={{ border: "1px solid #D9D9D9" }}
-                                _focusVisible={{ border: "1px solid #D9D9D9" }}
-                                _active={{ border: "1px solid #D9D9D9" }}
-                                defaultValue={item.value}
-                                textTransform={"uppercase"}
-                                {...registerFollowUp(item.key)}
-                              />
-                            ) : (
-                              <Input
-                                fontWeight="400"
-                                fontSize="14px"
-                                borderRadius="6px"
-                                border="1px solid #D9D9D9"
-                                _hover={{ border: "1px solid #D9D9D9" }}
-                                _focusVisible={{ border: "1px solid #D9D9D9" }}
-                                _active={{ border: "1px solid #D9D9D9" }}
-                                defaultValue={item.value}
-                                textTransform={"capitalize"}
-                                {...registerFollowUp(item.key)}
-                              />
-                            )}
-                          </>
-                        )}
+                        <Text
+                          fontWeight="400"
+                          fontSize={{ base: "13px", md: "14px" }}
+                          border="1px solid #D9D9D9"
+                          borderRadius="6px"
+                          p="2"
+                          textTransform={"capitalize"}
+                          w="100%"
+                          cursor={"not-allowed"}
+                        >
+                          {item.value || "N/A"}
+                        </Text>
                       </Flex>
                     );
                   })}
                   <Spacer />
-                  {followUpId === null && (
-                    // <Button
-                    //   type="submit"
-                    //   w="50%"
-                    //   size="sm"
-                    //   bg="#007AFF"
-                    //   color="white"
-                    // >
-                    //   Save
-                    // </Button>
-                    <Button
-                      w="100%"
-                      borderRadius={"0"}
-                      size="lg"
-                      bg="#DFDFF1"
-                      _hover={{
-                        bg: "#DFDFF1",
-                        boxShadow: "0 2px 2px 0 rgba(0, 0, 0, 0.10)",
-                      }}
-                      type="submit"
-                    >
-                      <Text
-                        fontSize={{ base: "12px", md: "13px" }}
-                        textTransform="uppercase"
-                        color={"#767171"}
-                        fontWeight="700"
-                        letterSpacing={"0.88px"}
+                  {/* {followUpId === null && ( */}
+                  {!fromClinlog && (
+                    <Flex w="100%" gap="0.5rem">
+                      <Button
+                        w="30%"
+                        borderRadius={"0"}
+                        size="lg"
+                        bg="scBlue"
+                        _hover={{
+                          bg: "#DFDFF1",
+                          boxShadow: "0 2px 2px 0 rgba(0, 0, 0, 0.10)",
+                        }}
+                        type="submit"
                       >
-                        Save Review
-                      </Text>
-                    </Button>
+                        <Text
+                          fontSize={{ base: "12px", md: "13px" }}
+                          textTransform="uppercase"
+                          // color={"#767171"}
+                          color="white"
+                          fontWeight="700"
+                          letterSpacing={"0.88px"}
+                        >
+                          Save Review
+                        </Text>
+                      </Button>
+                    </Flex>
                   )}
+                  {/* )} */}
                 </SimpleGrid>
 
                 {showSiteFollowUp && sitesWithImplantsMemo?.length > 0 && (
@@ -3686,9 +4212,10 @@ export default function SurgicalDetailsV3_2({
                           if (isAbutment) {
                             return null;
                           }
+                          const siteSpecificRecord =
+                            site?.attachedSiteSpecificRecords?.[0];
                           const siteFollowUpData =
-                            site?.attachedSiteSpecificRecords?.[0]
-                              ?.attachedSiteSpecificFollowUp;
+                            siteSpecificRecord?.attachedSiteSpecificFollowUp;
                           const dateOfReview =
                             getValuesFollowUp("dateOfFollowUp");
 
@@ -3706,80 +4233,88 @@ export default function SurgicalDetailsV3_2({
                           );
                           const completedFollowUpAtDate =
                             foundFollowUpAtDate?.length > 0;
-                          return (
-                            <Tr
-                              key={index}
-                              fontSize="12px"
-                              letterSpacing={"1.3px"}
-                              w="100%"
-                            >
-                              <Td>
-                                {completedFollowUpAtDate ? (
-                                  <MdCheckCircleOutline
-                                    color="#4ADE80"
-                                    fontSize="20px"
-                                  />
-                                ) : (
-                                  <MdIncompleteCircle
-                                    color="#D9D9D9"
-                                    fontSize="20px"
-                                  />
-                                )}
-                              </Td>
-                              <Td>{site?.toothValue}</Td>
-                              <Td>
-                                {site?.treatmentItemNumber === "666" &&
-                                site?.attachedSiteSpecificRecords?.[0]
-                                  ? `${site?.attachedSiteSpecificRecords?.[0]?.barMaterial}`
-                                  : site?.attachedSiteSpecificRecords?.[0]
-                                    ? `${site?.attachedSiteSpecificRecords?.[0]?.implantType},
-                            ${site?.attachedSiteSpecificRecords?.[0]?.implantLength},
-                            ${site?.attachedSiteSpecificRecords?.[0]?.angleCorrectionAbutment}`
-                                    : "Specifications not available"}
-                              </Td>
-                              <Td
-                                color={
-                                  site?.attachedSiteSpecificRecords?.length > 0
-                                    ? "#007AFF"
-                                    : "scBlack"
-                                }
-                                textTransform={"uppercase"}
-                                fontWeight={700}
-                                cursor={"pointer"}
-                                onClick={() => {
-                                  if (
+                          const itemSpecification =
+                            getItemSpecification(siteSpecificRecord);
+                          let siteDescription = "Specifications not available";
+
+                          if (siteSpecificRecord) {
+                            siteDescription =
+                              site?.treatmentItemNumber === "666"
+                                ? `${siteSpecificRecord?.barMaterial}`
+                                : `${itemSpecification?.implantType}, ${itemSpecification?.implantLength}, ${itemSpecification?.angleCorrectionAbutment}`;
+                          }
+                          if (
+                            site?.attachedSiteSpecificRecords?.length > 0 &&
+                            site?.attachedSiteSpecificRecords[0]
+                              ?.attachedSiteSpecificFollowUp?.length > 0
+                          ) {
+                            return (
+                              <Tr
+                                key={index}
+                                fontSize="12px"
+                                letterSpacing={"1.3px"}
+                                w="100%"
+                              >
+                                <Td>
+                                  {completedFollowUpAtDate ? (
+                                    <MdCheckCircleOutline
+                                      color="#4ADE80"
+                                      fontSize="20px"
+                                    />
+                                  ) : (
+                                    <MdIncompleteCircle
+                                      color="#D9D9D9"
+                                      fontSize="20px"
+                                    />
+                                  )}
+                                </Td>
+                                <Td>{site?.toothValue}</Td>
+                                <Td>{siteDescription}</Td>
+                                <Td
+                                  color={
                                     site?.attachedSiteSpecificRecords?.length >
                                     0
-                                  ) {
-                                    setSelectedSite(site);
-                                    onFollowUpOpen();
-                                    // if (followUpId) {
-                                    //   setSelectedSite(site)
-                                    //   onFollowUpOpen()
-                                    // } else {
-                                    //   alert(
-                                    //     "Save the Review Characteristics, before starting with site specific follow up"
-                                    //   )
-                                    // }
-                                  } else {
-                                    setSelectedSite(site);
-                                    onSidebarOpen();
+                                      ? "#007AFF"
+                                      : "scBlack"
                                   }
-                                }}
-                                _hover={{
-                                  color: "#007AFF",
-                                  textDecoration: "underline",
-                                  transform: "scale(1.055)",
-                                  boxShadow: "sm",
-                                }}
-                                transition="all 0.15s"
-                              >
-                                {site?.attachedSiteSpecificRecords?.length > 0
-                                  ? "View Follow Up"
-                                  : "Add Site Details"}
-                              </Td>
-                            </Tr>
-                          );
+                                  textTransform={"uppercase"}
+                                  fontWeight={700}
+                                  cursor={"pointer"}
+                                  onClick={() => {
+                                    if (
+                                      site?.attachedSiteSpecificRecords
+                                        ?.length > 0
+                                    ) {
+                                      setSelectedSite(site);
+                                      onFollowUpOpen();
+                                      // if (followUpId) {
+                                      //   setSelectedSite(site)
+                                      //   onFollowUpOpen()
+                                      // } else {
+                                      //   alert(
+                                      //     "Save the Review Characteristics, before starting with site specific follow up"
+                                      //   )
+                                      // }
+                                    } else {
+                                      setSelectedSite(site);
+                                      onSidebarOpen();
+                                    }
+                                  }}
+                                  _hover={{
+                                    color: "#007AFF",
+                                    textDecoration: "underline",
+                                    transform: "scale(1.055)",
+                                    boxShadow: "sm",
+                                  }}
+                                  transition="all 0.15s"
+                                >
+                                  {site?.attachedSiteSpecificRecords?.length > 0
+                                    ? "View Follow Up"
+                                    : "Add Site Details"}
+                                </Td>
+                              </Tr>
+                            );
+                          }
                         })}
                       </Tbody>
                     </Table>
@@ -3794,15 +4329,15 @@ export default function SurgicalDetailsV3_2({
         isOpen={isCharcteristicsOpen}
         onClose={() => {
           onCharcteristicsClose();
-          // const { drawer, ...restQuery } = router.query;
-          // router.replace(
-          //   {
-          //     pathname: router.pathname,
-          //     query: restQuery,
-          //   },
-          //   undefined,
-          //   { shallow: true },
-          // );
+          const { drawer, ...restQuery } = router.query;
+          router.replace(
+            {
+              pathname: router.pathname,
+              query: restQuery,
+            },
+            undefined,
+            { shallow: true },
+          );
         }}
         size="lg"
       >
@@ -4182,8 +4717,8 @@ export default function SurgicalDetailsV3_2({
                                 </chakra.span>
                               </Tooltip>
                             </Flex>
-                            {editTreatmentChar ? (
-                              item.options ? (
+                            {editTreatmentChar && item?.key !== "id" ? (
+                              item?.options ? (
                                 <Select
                                   fontWeight="500"
                                   w="40%"
@@ -4494,6 +5029,7 @@ export default function SurgicalDetailsV3_2({
         proposedTreatmentChartIds={proposedTreatmentChartIds}
         queryClient={queryClient}
         fromClinlog={fromClinlog}
+        globalPostId={globalPostId}
       />
     </Flex>
   );

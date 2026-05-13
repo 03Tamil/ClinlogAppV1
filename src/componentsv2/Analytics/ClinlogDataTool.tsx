@@ -949,6 +949,9 @@ export default function ClinlogDataTool({
     smoking_ps: false,
     implantCategory: false,
     implantLine: false,
+    graftConditionAtFollowUp: false,
+    prostheticUpgrades: false,
+    dateOfProstheticUpgrade: false,
   });
   const [reportType, setReportType] = useState("");
   const reportColumns = {

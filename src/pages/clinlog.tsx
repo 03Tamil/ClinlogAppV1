@@ -335,8 +335,7 @@ function Clinlog() {
                 (site) => site.treatmentItemNumber === "688",
               );
             return allSites?.map(
-              (site) =>
-                site.attachedSiteSpecificRecords?.[0]?.implantLine,
+              (site) => site.attachedSiteSpecificRecords?.[0]?.implantLine,
             );
           })
           .flat(),
@@ -497,6 +496,9 @@ function Clinlog() {
     smoking_ps: false,
     implantCategory: false,
     implantLine: false,
+    graftConditionAtFollowUp: false,
+    prostheticUpgrades: false,
+    dateOfProstheticUpgrade: false,
   });
   const selectTypeFilterFunction = (actualValue, filterValue, condition) => {
     if (condition === "hasAValue" && actualValue) {
@@ -519,7 +521,10 @@ function Clinlog() {
       );
     }
     if (condition === "isNotOneOf") {
-      return !filterValue.map((val) => val.value).includes(actualValue);
+      // return !filterValue.map((val) => val.value).includes(actualValue);
+      return !filterValue.some((val) =>
+        actualValue?.split(",").includes(val.value?.replaceAll(",", "")),
+      );
     }
     if (condition === "" && filterValue.length === 0) {
       return true;
@@ -543,32 +548,32 @@ function Clinlog() {
     if (condition === "equals") {
       const value = filterValue?.[0];
 
-      return actualValue === value;
+      return actualValue && actualValue === value;
     }
     if (condition === "notEquals") {
       const value = filterValue?.[0];
-      return actualValue !== value;
+      return actualValue && actualValue !== value;
     }
     if (condition === "isGreaterThan") {
       const value = filterValue?.[0];
-      return actualValue > value;
+      return actualValue && actualValue > value;
     }
     if (condition === "isGreaterThanOrEquals") {
       const value = filterValue?.[0];
-      return actualValue >= value;
+      return actualValue && actualValue >= value;
     }
     if (condition === "isLessThan") {
       const value = filterValue?.[0];
-      return actualValue < value;
+      return actualValue && actualValue < value;
     }
     if (condition === "isLessThanOrEquals") {
       const value = filterValue?.[0];
-      return actualValue <= value;
+      return actualValue && actualValue <= value;
     }
     if (condition === "isBetween") {
       const fromValue = filterValue?.[0];
       const toValue_ = toValue?.[0];
-      return actualValue >= fromValue && actualValue <= toValue_;
+      return actualValue && actualValue >= fromValue && actualValue <= toValue_;
     }
     if (condition === "" && filterValue.length === 0) {
       return true;
@@ -1462,10 +1467,10 @@ function Clinlog() {
         const followUpData = row.original.recordFollowUpMatrix?.[0];
         if (filterColumnId === "numberOfReviews") {
           cellValue =
-            followUpData?.[filterColumnId] ||
+            followUpData?.[filterColumnId?.split("_")?.[0]] ||
             row.original?.recordFollowUpMatrix?.length;
         } else {
-          cellValue = followUpData?.[filterColumnId];
+          cellValue = followUpData?.[filterColumnId?.split("_")?.[0]];
         }
       } else if (group === "siteSpecificCharacteristics") {
         const siteDetails =
@@ -1507,6 +1512,16 @@ function Clinlog() {
               : row?.original?.attachedDentalCharts?.[0]?.defaultDentist
                   ?.map((surgeon) => surgeon?.fullName)
                   ?.join(",") || null;
+        } else if (filterColumnId === "recordTreatmentDate") {
+          const chartData = row?.original?.attachedDentalCharts?.[0];
+          cellValue = chartData?.recordTreatmentDate
+            ? format(new Date(chartData?.recordTreatmentDate), "yyyy-MM-dd")
+            : row?.original?.recordTreatmentDate
+              ? format(
+                  new Date(row?.original?.recordTreatmentDate),
+                  "yyyy-MM-dd",
+                )
+              : null;
         } else if (filterColumnId === "timeFromSurgery") {
           const chartData = row?.original?.attachedDentalCharts?.[0];
           const surgeryDate =

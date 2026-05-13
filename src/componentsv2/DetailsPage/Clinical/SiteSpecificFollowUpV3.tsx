@@ -30,6 +30,64 @@ import {
 import { title } from "process";
 import { differenceInDays, format, set } from "date-fns";
 
+const hasSiteFollowUpValue = (value) =>
+  value !== undefined && value !== null && value !== "";
+
+const getFollowUpTimestamp = (followUp) => {
+  const rawDate =
+    followUp?.recordFollowUpDate ||
+    followUp?.dateCreated ||
+    followUp?.dateUpdated;
+
+  if (!rawDate) {
+    return 0;
+  }
+
+  const timestamp = new Date(rawDate).getTime();
+  return Number.isNaN(timestamp) ? 0 : timestamp;
+};
+
+const isSameReviewDate = (followUpDate, reviewDate) => {
+  if (!followUpDate || !reviewDate) {
+    return false;
+  }
+
+  const parsedFollowUpDate = new Date(followUpDate);
+  const parsedReviewDate = new Date(reviewDate);
+
+  if (
+    Number.isNaN(parsedFollowUpDate.getTime()) ||
+    Number.isNaN(parsedReviewDate.getTime())
+  ) {
+    return false;
+  }
+
+  return (
+    format(parsedFollowUpDate, "dd MMM yyyy") ===
+    format(parsedReviewDate, "dd MMM yyyy")
+  );
+};
+
+const getPreviousRecordedValue = (followUps, currentFollowUp, key) => {
+  const currentValue = currentFollowUp?.[key];
+
+  if (hasSiteFollowUpValue(currentValue)) {
+    return currentValue;
+  }
+
+  const currentTimestamp = getFollowUpTimestamp(currentFollowUp);
+  const previousFollowUp = followUps
+    ?.filter((item) => item?.id !== currentFollowUp?.id)
+    ?.filter((item) => {
+      const timestamp = getFollowUpTimestamp(item);
+      return currentTimestamp ? timestamp <= currentTimestamp : true;
+    })
+    ?.sort((a, b) => getFollowUpTimestamp(b) - getFollowUpTimestamp(a))
+    ?.find((item) => hasSiteFollowUpValue(item?.[key]));
+
+  return previousFollowUp?.[key] ?? currentValue;
+};
+
 export default function SiteSpecificFollowUpV3({
   dateOfReview,
   selectedSite,
@@ -42,6 +100,7 @@ export default function SiteSpecificFollowUpV3({
   proposedTreatmentChartIds,
   queryClient,
   fromClinlog = false,
+  globalPostId,
 }) {
   const { toast, toastIdRef } = toastData;
   const {
@@ -49,8 +108,8 @@ export default function SiteSpecificFollowUpV3({
     register: siteFollowUpRegister,
     handleSubmit: siteFollowUpSubmit,
     watch: siteFollowUpWatch,
-    setValue: setSiteFollowUpValues,
-    getValues: geSiteFollowUpValues,
+    getValues: getSiteFollowUpValues,
+    reset: resetSiteFollowUpValues,
   } = useForm({});
 
   const siteFollowUpFormValues = siteFollowUpWatch();
@@ -70,72 +129,62 @@ export default function SiteSpecificFollowUpV3({
   const [followUpDate, setFollowUpDate] = useState(null);
 
   useEffect(() => {
+    const followUps = Array.isArray(siteFollowUpData)
+      ? [...siteFollowUpData].sort(
+          (a, b) => getFollowUpTimestamp(a) - getFollowUpTimestamp(b),
+        )
+      : [];
+
     const followUpDetails =
-      selectedSite?.attachedSiteSpecificRecords?.[0]?.attachedSiteSpecificFollowUp?.filter(
-        (item) =>
-          item?.recordFollowUpDate &&
-          dateOfReview &&
-          format(new Date(item?.recordFollowUpDate), "dd MMM yyyy") ===
-            format(new Date(dateOfReview), "dd MMM yyyy")
-      )?.[0] ||
-      selectedSite?.attachedSiteSpecificRecords?.[0]
-        ?.attachedSiteSpecificFollowUp?.[0];
+      followUps?.find((item) =>
+        isSameReviewDate(item?.recordFollowUpDate, dateOfReview),
+      ) || followUps?.[followUps.length - 1];
 
     setFollowUpDate(followUpDetails?.recordFollowUpDate);
     setSiteFollowUpId(followUpDetails?.id);
     const diff = differenceInDays(
       new Date(),
-      new Date(followUpDetails?.dateCreated)
+      new Date(followUpDetails?.dateCreated),
     );
 
-    const siteFollowUp = { ...followUpDetails, isWithin24Hours: diff < 1 };
+    const siteFollowUp = {
+      ...followUpDetails,
+      abutmentFunctionAtFollowUp: getPreviousRecordedValue(
+        followUps,
+        followUpDetails,
+        "abutmentFunctionAtFollowUp",
+      ),
+      isWithin24Hours: diff < 1,
+    };
 
-    setSiteFollowUpValues("isWithin24Hours", siteFollowUp?.isWithin24Hours);
-    setSiteFollowUpValues(
-      "implantFunctionAtFollowUp",
-      siteFollowUp?.implantFunctionAtFollowUp
-    );
-    setSiteFollowUpValues(
-      "abutmentFunctionAtFollowUp",
-      siteFollowUp?.abutmentFunctionAtFollowUp
-    );
-
-    setSiteFollowUpValues("sinusitis", siteFollowUp?.sinusitis);
-    setSiteFollowUpValues("facialSwelling", siteFollowUp?.facialSwelling);
-    setSiteFollowUpValues("inflammation", siteFollowUp?.inflammation);
-    setSiteFollowUpValues("suppuration", siteFollowUp?.suppuration);
-    setSiteFollowUpValues("pain", siteFollowUp?.pain);
-    setSiteFollowUpValues("recession", siteFollowUp?.recession);
-    setSiteFollowUpValues(
-      "midShaftSoftTissueDehiscence",
-      siteFollowUp?.midShaftSoftTissueDehiscence || "N/A"
-    );
-    setSiteFollowUpValues(
-      "firstAbutmentLevelComplication",
-      siteFollowUp?.firstAbutmentLevelComplication
-    );
-    setSiteFollowUpValues(
-      "otherAbutmentLevelComplications",
-      siteFollowUp?.otherAbutmentLevelComplications
-    );
-    setSiteFollowUpValues(
-      "totalNumberOfAbutmentLevelComplications",
-      siteFollowUp?.totalNumberOfAbutmentLevelComplications
-    );
-    setSiteFollowUpValues(
-      "dateOfFirstAbutmentLevelComplication",
-      siteFollowUp?.dateOfFirstAbutmentLevelComplication
-    );
-    setSiteFollowUpValues(
-      "firstAbutmentLevelComplicationTimeFromSurgery",
-      siteFollowUp?.firstAbutmentLevelComplicationTimeFromSurgery
-    );
-    setSiteFollowUpValues(
-      "postOperativeSinusDisease",
-      siteFollowUp?.postOperativeSinusDisease
-    );
-    setSiteFollowUpValues("boneLoss", siteFollowUp?.boneLoss);
-  }, [siteFollowUpData, dateOfReview, selectedSite]);
+    resetSiteFollowUpValues({
+      isWithin24Hours: siteFollowUp?.isWithin24Hours,
+      implantFunctionAtFollowUp: siteFollowUp?.implantFunctionAtFollowUp,
+      abutmentFunctionAtFollowUp: siteFollowUp?.abutmentFunctionAtFollowUp,
+      sinusitis: siteFollowUp?.sinusitis,
+      facialSwelling: siteFollowUp?.facialSwelling,
+      inflammation: siteFollowUp?.inflammation,
+      suppuration: siteFollowUp?.suppuration,
+      pain: siteFollowUp?.pain,
+      recession: siteFollowUp?.recession,
+      midShaftSoftTissueDehiscence:
+        siteFollowUp?.midShaftSoftTissueDehiscence || "N/A",
+      firstAbutmentLevelComplication:
+        siteFollowUp?.firstAbutmentLevelComplication,
+      otherAbutmentLevelComplications:
+        siteFollowUp?.otherAbutmentLevelComplications,
+      totalNumberOfAbutmentLevelComplications:
+        siteFollowUp?.totalNumberOfAbutmentLevelComplications,
+      dateOfFirstAbutmentLevelComplication: new Date(
+        siteFollowUp?.dateOfFirstAbutmentLevelComplication,
+      ),
+      firstAbutmentLevelComplicationTimeFromSurgery:
+        siteFollowUp?.firstAbutmentLevelComplicationTimeFromSurgery,
+      postOperativeSinusDisease: siteFollowUp?.postOperativeSinusDisease,
+      boneLoss: siteFollowUp?.boneLoss,
+      graftConditionAtFollowUp: siteFollowUp?.graftConditionAtFollowUp,
+    });
+  }, [siteFollowUpData, dateOfReview, resetSiteFollowUpValues]);
 
   const siteFollowUpFields = useMemo(() => {
     return [
@@ -149,7 +198,7 @@ export default function SiteSpecificFollowUpV3({
           { name: "Sleeper", value: "Sleeper" },
           { name: "Unknown", value: "unknown" },
         ],
-        value: geSiteFollowUpValues("implantFunctionAtFollowUp"),
+        value: getSiteFollowUpValues("implantFunctionAtFollowUp"),
       },
       {
         label: "Abutment Function at Follow Up",
@@ -161,7 +210,7 @@ export default function SiteSpecificFollowUpV3({
           { name: "Sleeper", value: "Sleeper" },
           { name: "Unknown", value: "unknown" },
         ],
-        value: geSiteFollowUpValues("abutmentFunctionAtFollowUp"),
+        value: getSiteFollowUpValues("abutmentFunctionAtFollowUp"),
       },
       {
         label: "Sinusitis",
@@ -173,7 +222,7 @@ export default function SiteSpecificFollowUpV3({
           { name: "Unknown", value: "unknown" },
           { name: "Unknown", value: "unknown" },
         ],
-        value: geSiteFollowUpValues("sinusitis"),
+        value: getSiteFollowUpValues("sinusitis"),
       },
       {
         label: "Facial Swelling",
@@ -184,7 +233,7 @@ export default function SiteSpecificFollowUpV3({
           { name: "No", value: "No" },
           { name: "Unknown", value: "unknown" },
         ],
-        value: geSiteFollowUpValues("facialSwelling"),
+        value: getSiteFollowUpValues("facialSwelling"),
       },
       {
         label: "Inflammation",
@@ -195,7 +244,7 @@ export default function SiteSpecificFollowUpV3({
           { name: "No", value: "No" },
           { name: "Unknown", value: "unknown" },
         ],
-        value: geSiteFollowUpValues("inflammation"),
+        value: getSiteFollowUpValues("inflammation"),
       },
       {
         label: "Suppuration",
@@ -206,7 +255,7 @@ export default function SiteSpecificFollowUpV3({
           { name: "No", value: "No" },
           { name: "Unknown", value: "unknown" },
         ],
-        value: geSiteFollowUpValues("suppuration"),
+        value: getSiteFollowUpValues("suppuration"),
       },
       {
         label: "Pain",
@@ -217,7 +266,7 @@ export default function SiteSpecificFollowUpV3({
           { name: "No", value: "No" },
           { name: "Unknown", value: "unknown" },
         ],
-        value: geSiteFollowUpValues("pain"),
+        value: getSiteFollowUpValues("pain"),
       },
       {
         label: "Recession",
@@ -233,14 +282,24 @@ export default function SiteSpecificFollowUpV3({
           { name: "Advanced (Shaft)", value: "Advanced (Shaft)" },
           { name: "Unknown", value: "unknown" },
         ],
-        value: geSiteFollowUpValues("recession"),
+        value: getSiteFollowUpValues("recession"),
       },
       {
         label: "Mid-shaft Soft tissue dehiscence",
         key: "midShaftSoftTissueDehiscence",
+        options: [
+          { name: "-- Select --", value: "" },
+          { name: "Yes", value: "Yes" },
+          { name: "No", value: "No" },
+          {
+            name: "N/A",
+            value: "N/A",
+          },
+          { name: "Unknown", value: "unknown" },
+        ],
         icon: "timer_arrow_up",
         info: "Entry by xxxx",
-        value: geSiteFollowUpValues("timeFromSurgery"),
+        value: getSiteFollowUpValues("midShaftSoftTissueDehiscence"),
       },
       {
         label: "First abutment-level complication",
@@ -264,28 +323,28 @@ export default function SiteSpecificFollowUpV3({
           { name: "Unknown", value: "unknown" },
         ],
 
-        value: geSiteFollowUpValues("firstAbutmentLevelComplication"),
+        value: getSiteFollowUpValues("firstAbutmentLevelComplication"),
       },
       {
         label: "Other abutment-level complications",
         key: "otherAbutmentLevelComplications",
-        value: geSiteFollowUpValues("otherAbutmentLevelComplications"),
+        value: getSiteFollowUpValues("otherAbutmentLevelComplications"),
       },
       {
         label: "Total number of abutment level complications",
         key: "totalNumberOfAbutmentLevelComplications",
-        value: geSiteFollowUpValues("totalNumberOfAbutmentLevelComplications"),
+        value: getSiteFollowUpValues("totalNumberOfAbutmentLevelComplications"),
       },
       {
         label: "Date of First Abutment-level Complication",
         key: "dateOfFirstAbutmentLevelComplication",
-        value: geSiteFollowUpValues("dateOfFirstAbutmentLevelComplication"),
+        value: getSiteFollowUpValues("dateOfFirstAbutmentLevelComplication"),
       },
       {
         label: "First Abutment-level complication Time from Surgery",
         key: "firstAbutmentLevelComplicationTimeFromSurgery",
-        value: geSiteFollowUpValues(
-          "firstAbutmentLevelComplicationTimeFromSurgery"
+        value: getSiteFollowUpValues(
+          "firstAbutmentLevelComplicationTimeFromSurgery",
         ),
       },
       {
@@ -299,7 +358,7 @@ export default function SiteSpecificFollowUpV3({
           { name: "Total opacification", value: "Total opacification" },
           { name: "Unknown", value: "unknown" },
         ],
-        value: geSiteFollowUpValues("postOperativeSinusDisease"),
+        value: getSiteFollowUpValues("postOperativeSinusDisease"),
       },
       {
         label: "Bone Loss",
@@ -333,7 +392,29 @@ export default function SiteSpecificFollowUpV3({
           },
           { name: "Unknown", value: "unknown" },
         ],
-        value: geSiteFollowUpValues("boneLoss"),
+        value: getSiteFollowUpValues("boneLoss"),
+      },
+      {
+        label: "Graft Condition at Follow Up",
+        key: "graftConditionAtFollowUp",
+        options: [
+          { name: "-- Select --", value: "" },
+          {
+            name: "Present and sound at Zygoma Critical Zone (ZCC) only",
+            value: "Present and sound at Zygoma Critical Zone (ZCC) only",
+          },
+          {
+            name: "Present and sound along Zygoma shaft and ZCC",
+            value: "Present and sound along Zygoma shaft and ZCC",
+          },
+          {
+            name: "Absent or poor mineralisation",
+            value: "Absent or poor mineralisation",
+          },
+          { name: "Sound (non-zygoma)", value: "Sound (non-zygoma)" },
+          { name: "Unknown", value: "unknown" },
+        ],
+        value: getSiteFollowUpValues("graftConditionAtFollowUp"),
       },
     ];
   }, [siteFollowUpFormValues]);
@@ -378,17 +459,18 @@ export default function SiteSpecificFollowUpV3({
       onSettled: () => {
         onFollowUpClose();
         siteSpecificFollowUpMutationFunction.reset();
+        queryClient.invalidateQueries(["detailsPageNew", globalPostId]);
         queryClient.invalidateQueries([
           "proposedTreatmentChartResults",
           proposedTreatmentChartIds,
         ]);
       },
-    }
+    },
   );
   const onSiteFollowUpSubmit = (data) => {
     let newData = null;
     // if (data?.isWithin24Hours === true) {
-    console.log(siteFollowUpId);
+
     newData = {
       id: siteFollowUpId,
       recordFollowUpDate: new Date(dateOfReview),
@@ -500,7 +582,7 @@ export default function SiteSpecificFollowUpV3({
                   {followUpDate || dateOfReview
                     ? format(
                         new Date(followUpDate || dateOfReview),
-                        "dd MMMM yyyy"
+                        "dd MMMM yyyy",
                       )
                     : "N/A"}
                 </Text>
@@ -536,7 +618,7 @@ export default function SiteSpecificFollowUpV3({
                         align="center"
                         p="2"
                         flexDirection={"column"}
-                        key={item.key + index}
+                        key={`${siteFollowUpId || "new"}-${item.key}`}
                       >
                         <Text
                           fontSize="10px"
@@ -550,7 +632,7 @@ export default function SiteSpecificFollowUpV3({
                         {item.options ? (
                           <Select
                             sx={selectStyles}
-                            defaultValue={item.value}
+                            defaultValue={item.value || ""}
                             {...siteFollowUpRegister(item.key)}
                           >
                             {item.options.map((option, index) => (
@@ -564,7 +646,7 @@ export default function SiteSpecificFollowUpV3({
                           </Select>
                         ) : (
                           <>
-                            {[
+                            {/* {[
                               "otherAbutmentLevelComplications",
                               "totalNumberOfAbutmentLevelComplications",
                               "firstAbutmentLevelComplicationTimeFromSurgery",
@@ -572,8 +654,9 @@ export default function SiteSpecificFollowUpV3({
                               <Text sx={selectStyles} w="100%" p="3">
                                 {item.value || "N/A"}
                               </Text>
-                            ) : item?.key ===
-                              "dateOfFirstAbutmentLevelComplication" ? (
+                            ) :  */}
+                            {item?.key ===
+                            "dateOfFirstAbutmentLevelComplication" ? (
                               <Input
                                 type="date"
                                 sx={selectStyles}
@@ -586,6 +669,7 @@ export default function SiteSpecificFollowUpV3({
                               <Input
                                 fontWeight="600"
                                 sx={selectStyles}
+                                placeholder={`Enter ${item.label}`}
                                 w="100%"
                                 p="3"
                                 defaultValue={item.value}

@@ -9,6 +9,7 @@ import {
   NumberInputStepper,
   Select,
   SimpleGrid,
+  Spacer,
   Text,
 } from "@chakra-ui/react";
 import { set } from "date-fns";
@@ -75,6 +76,7 @@ export default function FilterComponent({
       setStandardReport(true);
     } else if (globalFilter.length === 0 && standardReport) {
       setFilterArray([]);
+
       setStandardReport(false);
     }
   }, [globalFilter]);
@@ -164,11 +166,16 @@ export default function FilterComponent({
                     <option value="">-- Select Field --</option>
                     {clinlogFilterColumns
                       .filter((column) => column.group === item.group)
-                      .map((column) => (
-                        <option key={column.key + index} value={column.key}>
-                          {column.label}
-                        </option>
-                      ))}
+                      .map(
+                        (column) =>
+                          !["examinerRadiographic", "examiner"]?.includes(
+                            column.key,
+                          ) && (
+                            <option key={column.key + index} value={column.key}>
+                              {column.label}
+                            </option>
+                          ),
+                      )}
                   </Select>
                   {item.key && item.type && (
                     <>
@@ -392,7 +399,7 @@ export default function FilterComponent({
                     !["hasAValue", "isEmpty"].includes(item.condition) && (
                       <>
                         {item.condition === "isBetween" ? (
-                          <Flex gap="0.2rem" align={"center"} w="30%">
+                          <Flex gap="0.2rem" align={"center"}>
                             <Input
                               type="date"
                               fontSize={"13px"}
@@ -609,6 +616,35 @@ export default function FilterComponent({
           </Button>
         )}
       </Flex>
+      {filterArray?.length > 0 && (
+        <Flex gap="0.5rem">
+          <Button
+            py="4"
+            px="8"
+            fontWeight={"700"}
+            bgColor="red.500"
+            fontSize={"10px"}
+            borderRadius={"10px"}
+            color="white"
+            _hover={{
+              bgColor: "#007AFF",
+            }}
+            disabled={
+              (filterArray?.[0]?.value?.length === 0 &&
+                filterArray?.[0]?.condition !== "hasAValue" &&
+                filterArray?.[0]?.condition !== "isEmpty") ||
+              standardReport
+            }
+            textTransform={"uppercase"}
+            onClick={() => {
+              setFilterArray([]);
+              setGlobalFilter([]);
+            }}
+          >
+            Clear All
+          </Button>
+        </Flex>
+      )}
     </Flex>
   );
 }
