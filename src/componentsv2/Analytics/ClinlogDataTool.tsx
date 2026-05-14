@@ -351,35 +351,49 @@ export default function ClinlogDataTool({
             );
           })
           ?.flat();
-
-        options?.forEach((key) => {
-          const value = siteDetails?.filter((record) => {
-            // if (key.value === "N/A") return record?.[selectedField] === null;
-            if (selectedField === "toothValue") {
-              return record?.toothValue === key?.value;
-            } else if (
-              record?.attachedSiteSpecificRecords?.[0]
-                ?.attachedSiteSpecificFollowUp?.length > 0 &&
-              clinlogFilterColumns?.find((col) => col.key === selectedField)
-                ?.subGroup === "ssFollowUp"
-            ) {
+        if (selectedField === "implantLine") {
+          implantLineOptions?.forEach((key) => {
+            const value = siteDetails?.filter((record) => {
               return (
+                record?.attachedSiteSpecificRecords?.[0]?.[selectedField] ===
+                key
+              );
+            }).length;
+            result.push({
+              x: key,
+              y: value,
+            });
+          });
+        } else {
+          options?.forEach((key) => {
+            const value = siteDetails?.filter((record) => {
+              // if (key.value === "N/A") return record?.[selectedField] === null;
+              if (selectedField === "toothValue") {
+                return record?.toothValue === key?.value;
+              } else if (
                 record?.attachedSiteSpecificRecords?.[0]
-                  ?.attachedSiteSpecificFollowUp?.[0]?.[selectedField] ===
+                  ?.attachedSiteSpecificFollowUp?.length > 0 &&
+                clinlogFilterColumns?.find((col) => col.key === selectedField)
+                  ?.subGroup === "ssFollowUp"
+              ) {
+                return (
+                  record?.attachedSiteSpecificRecords?.[0]
+                    ?.attachedSiteSpecificFollowUp?.[0]?.[selectedField] ===
+                  key?.value
+                );
+              }
+
+              return (
+                record?.attachedSiteSpecificRecords?.[0]?.[selectedField] ===
                 key?.value
               );
-            }
-
-            return (
-              record?.attachedSiteSpecificRecords?.[0]?.[selectedField] ===
-              key?.value
-            );
-          }).length;
-          result.push({
-            x: key?.name,
-            y: value,
+            }).length;
+            result.push({
+              x: key?.name,
+              y: value,
+            });
           });
-        });
+        }
       }
     }
     return result;
@@ -1565,6 +1579,7 @@ export default function ClinlogDataTool({
                 surgeonOptions={recordTreatmentSurgeonOptions}
                 selectCustomStyle={selectCustomStyle}
                 locationOptions={locationOptions}
+                implantLineOptions={implantLineOptions}
               />
               <SimpleGrid
                 columns={{ base: 1, md: 1, lg: 2, xl: 3 }}
@@ -1844,14 +1859,16 @@ export default function ClinlogDataTool({
                               (column.type !== "number" ||
                                 column.key === "ageAtTimeOfSurgery"),
                           )
-                          .map((column) => (
-                            <option
-                              key={column.key + "field"}
-                              value={column.key}
-                            >
-                              {column.label}
-                            </option>
-                          ))}
+                          .map((column) => {
+                            return (
+                              <option
+                                key={column.key + "field"}
+                                value={column.key}
+                              >
+                                {column.label}
+                              </option>
+                            );
+                          })}
                       </Select>{" "}
                     </>
                   )}
@@ -2160,6 +2177,7 @@ export default function ClinlogDataTool({
                 surgeonOptions={recordTreatmentSurgeonOptions}
                 selectCustomStyle={selectCustomStyle}
                 locationOptions={locationOptions}
+                implantLineOptions={implantLineOptions}
               />
               <Tabs colorScheme={"purple"}>
                 <TabList>

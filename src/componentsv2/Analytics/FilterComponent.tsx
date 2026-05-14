@@ -105,6 +105,7 @@ export default function FilterComponent({
               <Select
                 value={item.group}
                 fontSize={"13px"}
+                disabled={standardReport}
                 onChange={(e) => {
                   const group = e.target.value;
                   setFilterArray(
@@ -141,6 +142,7 @@ export default function FilterComponent({
                 <>
                   <Select
                     fontSize={"13px"}
+                    disabled={standardReport}
                     onChange={(e) => {
                       const key = e.target.value;
 
@@ -182,6 +184,7 @@ export default function FilterComponent({
                       <Select
                         fontSize={"13px"}
                         value={item.condition}
+                        disabled={standardReport}
                         onChange={(e) => {
                           const condition = e.target.value;
                           setFilterArray(
@@ -256,6 +259,7 @@ export default function FilterComponent({
                         <ReactSelect
                           placeholder="-- Select value -- "
                           isMulti
+                          isDisabled={standardReport}
                           value={item.value}
                           onChange={(value) => {
                             setFilterArray(
@@ -276,13 +280,13 @@ export default function FilterComponent({
                                   value: option,
                                   label: option,
                                 }))
-                              : item?.key === "recordClinic"
-                                ? locationOptions
-                                : item?.key === "implantLine"
-                                  ? implantLineOptions?.map((option) => ({
-                                      value: option,
-                                      label: option,
-                                    }))
+                              : item?.key === "implantLine"
+                                ? implantLineOptions?.map((option) => ({
+                                    value: option,
+                                    label: option,
+                                  }))
+                                : item?.key === "recordClinic"
+                                  ? locationOptions
                                   : clinlogFilterColumns
                                       .find((column) => column.key === item.key)
                                       ?.options?.map((option) => ({
@@ -302,7 +306,9 @@ export default function FilterComponent({
                           <Flex gap="0.2rem" align={"center"}>
                             <NumberInput
                               min={1}
-                              value={item?.value}
+                              //value={item?.value}
+                              isDisabled={standardReport}
+                              defaultValue={standardReport ? item?.value : 0}
                               onChange={(val) => {
                                 if (
                                   val !== undefined &&
@@ -331,7 +337,9 @@ export default function FilterComponent({
                             <Text mx="1">and</Text>
                             <NumberInput
                               min={1}
-                              value={item?.toValue}
+                              isDisabled={standardReport}
+                              //value={item?.toValue}
+                              defaultValue={standardReport ? item?.toValue : 0}
                               onChange={(val) => {
                                 if (
                                   val !== undefined &&
@@ -351,7 +359,7 @@ export default function FilterComponent({
                                         return item;
                                       }),
                                     );
-                                  }, 1000);
+                                  }, 100);
                                 }
                               }}
                             >
@@ -360,8 +368,10 @@ export default function FilterComponent({
                           </Flex>
                         ) : (
                           <NumberInput
-                            min={1}
-                            value={item?.value}
+                            min={0}
+                            //value={item?.value}
+                            isDisabled={standardReport}
+                            defaultValue={standardReport ? item?.value : 0}
                             onChange={(val) => {
                               if (
                                 val !== undefined &&
@@ -369,6 +379,7 @@ export default function FilterComponent({
                                 val !== ""
                               ) {
                                 const value = [Number(val)];
+
                                 setTimeout(() => {
                                   setFilterArray(
                                     filterArray.map((item, i) => {
@@ -381,7 +392,7 @@ export default function FilterComponent({
                                       return item;
                                     }),
                                   );
-                                }, 1000);
+                                }, 100);
                               }
                             }}
                           >
@@ -470,6 +481,7 @@ export default function FilterComponent({
                     item.operation && (
                       <Select
                         fontSize={"13px"}
+                        disabled={standardReport}
                         value={item.operation || "AND"}
                         onChange={(e) => {
                           const operation = e.target.value;
@@ -499,6 +511,9 @@ export default function FilterComponent({
                 setFilterArray(
                   filterArray.filter((item, i) => i !== index) || [],
                 );
+                setGlobalFilter(
+                  globalFilter.filter((filter, i) => i !== index) || [],
+                );
               }}
               rightIcon={<MdDelete color="red" fontSize={"26px"} />}
               bg="none"
@@ -526,6 +541,9 @@ export default function FilterComponent({
                     }
                     return item;
                   }),
+                );
+                setGlobalFilter(
+                  globalFilter.filter((filter, i) => i !== index) || [],
                 );
               }}
               leftIcon={<IoMdRefresh fontSize={"26px"} />}

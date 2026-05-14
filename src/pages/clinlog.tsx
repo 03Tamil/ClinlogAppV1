@@ -514,16 +514,16 @@ function Clinlog() {
 
     if (condition === "isOneOf") {
       return (
-        filterValue.map((val) => val.value).includes(actualValue) ||
+        filterValue.map((val) => val?.value).includes(actualValue) ||
         filterValue.some((val) =>
-          actualValue?.split(",").includes(val.value?.replaceAll(",", "")),
+          actualValue?.split(",")?.includes(val?.value?.replaceAll(",", "")),
         )
       );
     }
     if (condition === "isNotOneOf") {
       // return !filterValue.map((val) => val.value).includes(actualValue);
       return !filterValue.some((val) =>
-        actualValue?.split(",").includes(val.value?.replaceAll(",", "")),
+        actualValue?.split(",").includes(val?.value?.replaceAll(",", "")),
       );
     }
     if (condition === "" && filterValue.length === 0) {
@@ -1916,7 +1916,10 @@ function Clinlog() {
                         <chakra.span
                           className="material-symbols-outlined"
                           fontSize="36px"
-                          onClick={() => setViewPatient(null)}
+                          onClick={() => {
+                            setViewPatient(null);
+                            setGlobalFilter([]);
+                          }}
                           cursor="pointer"
                         >
                           arrow_circle_left
@@ -2011,7 +2014,7 @@ function Clinlog() {
                     border="1px solid #F7F0F0"
                     bg="white"
                   >
-                    <Flex w="100%" justify="space-between" align="center">
+                    {/* <Flex w="100%" justify="space-between" align="center">
                       <Text
                         fontSize={{ base: "12px", md: "13px" }}
                         fontWeight="700"
@@ -2022,11 +2025,11 @@ function Clinlog() {
                         className="material-symbols-outlined"
                         fontSize={"28px"}
                       >
-                        {/* {selectedGlobalPatientData?.globalIsFlagged
+                        {selectedGlobalPatientData?.globalIsFlagged
                           ? "toggle_on"
-                          : "toggle_off"} */}
+                          : "toggle_off"}
                       </chakra.span>
-                    </Flex>
+                    </Flex> */}
                     <Flex w="100%" justify="space-between" align="center">
                       <Text
                         fontSize={{ base: "12px", md: "13px" }}
