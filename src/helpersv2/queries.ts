@@ -3272,20 +3272,10 @@ export const clinlogDataQueryNew = gql`
           ... on locations_locations_Entry {
             id
             locationShortName
-            locationOtherName
           }
         }
         caseNumber
         recordTreatmentDate
-        attachedAppointments {
-          ... on caseAppointments_default_Entry {
-            id
-            appointmentType
-            recordConsultationDate
-          }
-        }
-        dateCreated
-        dateUpdated
         sex
         recordDateOfBirth
         ageAtTimeOfSurgery
@@ -3303,8 +3293,6 @@ export const clinlogDataQueryNew = gql`
         lowerArchCondition
         oestrogen
         oralHygiene
-        recordEnquiryType
-        recordEnquiryTypeLabel: recordEnquiryType(label: true)
         treatmentTitle
         treatmentPlannedBy
         upperArchCondition
@@ -3317,12 +3305,9 @@ export const clinlogDataQueryNew = gql`
         postOp2DOpg
         postOp3DOpg
         recordTreatmentRestorative {
-          id
-          firstName
-          lastName
+          fullName
         }
         recordTreatmentSurgeons {
-          id
           fullName
         }
         smoking
@@ -3348,7 +3333,6 @@ export const clinlogDataQueryNew = gql`
             id
             chartStatus
             defaultDentist {
-              id
               fullName
             }
             recordTreatmentDate
@@ -3445,20 +3429,10 @@ export const clinlogDataQuery = gql`
           ... on locations_locations_Entry {
             id
             locationShortName
-            locationOtherName
           }
         }
         caseNumber
         recordTreatmentDate
-        attachedAppointments {
-          ... on caseAppointments_default_Entry {
-            id
-            appointmentType
-            recordConsultationDate
-          }
-        }
-        dateCreated
-        dateUpdated
         sex
         recordDateOfBirth
         ageAtTimeOfSurgery
@@ -3476,8 +3450,6 @@ export const clinlogDataQuery = gql`
         lowerArchCondition
         oestrogen
         oralHygiene
-        recordEnquiryType
-        recordEnquiryTypeLabel: recordEnquiryType(label: true)
         treatmentTitle
         treatmentPlannedBy
         upperArchCondition
@@ -3492,12 +3464,9 @@ export const clinlogDataQuery = gql`
         # preOpImaging
         # postOpImaging
         recordTreatmentRestorative {
-          id
-          firstName
-          lastName
+          fullName
         }
         recordTreatmentSurgeons {
-          id
           fullName
         }
         smoking
@@ -3523,7 +3492,6 @@ export const clinlogDataQuery = gql`
             id
             chartStatus
             defaultDentist {
-              id
               fullName
             }
             recordTreatmentDate
@@ -3587,7 +3555,6 @@ export const clinlogDataQuery = gql`
                     gingivalHeight
                     typeAndDiameter
                     abutmentHeight
-                    angleCorrectionAbutment
                     abutmentLength
                     abutmentSerialSequenceBarCode
                   }

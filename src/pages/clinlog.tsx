@@ -34,6 +34,7 @@ import {
   Textarea,
   Spinner,
 } from "@chakra-ui/react";
+import { CheckIcon } from "@chakra-ui/icons";
 import NextLink from "next/link";
 import {
   createColumnHelper,
@@ -88,6 +89,25 @@ import { clinlogNoteMutation } from "componentsv2/DetailsPage/detailsPageMutatio
 import { useV2Router } from "componentsv2/Dashboard/Helpers/routerHelpers";
 
 const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
+
+const formatClinlogLoadDuration = (milliseconds: number) => {
+  const safeMilliseconds = Number.isFinite(milliseconds)
+    ? Math.max(milliseconds, 0)
+    : 0;
+  const totalSeconds = safeMilliseconds / 1000;
+
+  if (totalSeconds < 60) {
+    return `${totalSeconds.toFixed(1)}s`;
+  }
+
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = Math.floor(totalSeconds % 60)
+    .toString()
+    .padStart(2, "0");
+
+  return `${minutes}m ${seconds}s`;
+};
+
 function Clinlog() {
   const [filterArray, setFilterArray] = React.useState([]);
   const [openTab, setOpenTab] = useState("allCases");
@@ -110,6 +130,15 @@ function Clinlog() {
 
   const [openMenu, setOpenMenu] = useState(true);
   const [patientSurveyData, setPatientSurveyData] = useState(null);
+  const [clinlogLoadStartedAt, setClinlogLoadStartedAt] = useState<
+    number | null
+  >(null);
+  const [clinlogLoadElapsedMs, setClinlogLoadElapsedMs] = useState(0);
+  const [clinlogFullLoadDurationMs, setClinlogFullLoadDurationMs] = useState<
+    number | null
+  >(null);
+  const [clinlogLastRecordBatchLoadedAt, setClinlogLastRecordBatchLoadedAt] =
+    useState<number | null>(null);
 
   // const viewerMainNavbarResult = useQueryHook(
   //   ["mainViewerQuery"],
@@ -124,6 +153,7 @@ function Clinlog() {
 
   const [collapseTabs, setCollapseTabs] = useState(true);
   const isAdmin = session?.groups?.includes("Admin");
+  const shouldShowClinlogLoadTimer = Boolean(isAdmin);
   const router = useV2Router();
 
   useEffect(() => {
@@ -183,21 +213,21 @@ function Clinlog() {
     clinlogDataInfiniteQueryKey,
     async ({ pageParam = 0 }) => {
       // First load gets 100 items, subsequent loads get 200
-      // const getDataNew = async (query, variables = {}, sessionToken) => {
-      //   const graphQLClient = new GraphQLClient(
-      //     process.env.NEXT_PUBLIC_ENDPOINT,
-      //     {
-      //       headers: {
-
-      //       },
-      //     },
-      //   );
-      //   const result = await graphQLClient.request(query, variables);
-      //   return result;
-      // };
+      const getDataNew = async (query, variables = {}, sessionToken) => {
+        const graphQLClient = new GraphQLClient(
+          process.env.NEXT_PUBLIC_ENDPOINT,
+          {
+            headers: {
+              Authorization: process.env.CLINGLOG_QUERY_TOKEN,
+            },
+          },
+        );
+        const result = await graphQLClient.request(query, variables);
+        return result;
+      };
       const limit = pageParam === 0 ? 100 : 160;
-      const res = await getData(
-        clinlogDataQuery,
+      const res = await getDataNew(
+        clinlogDataQueryNew,
         {
           offset: pageParam,
           recordClinic: locationArr,
@@ -223,6 +253,7 @@ function Clinlog() {
         return 100 + (allPages.length - 1) * 160;
       },
       enabled: locationQueryKey.length > 0 && !!session?.accessToken,
+      retry: 0,
     },
   );
 
@@ -241,6 +272,105 @@ function Clinlog() {
 
   const hasLoadedAllClinlogPages =
     clinlogHasLoadedRecords && hasFinishedClinlogDataLoading;
+
+  const clinlogLoadDurationText = formatClinlogLoadDuration(
+    clinlogFullLoadDurationMs ?? clinlogLoadElapsedMs,
+  );
+
+  useEffect(() => {
+    setClinlogLoadStartedAt(null);
+    setClinlogLoadElapsedMs(0);
+    setClinlogFullLoadDurationMs(null);
+    setClinlogLastRecordBatchLoadedAt(null);
+  }, [locationQueryKey, session?.userId, shouldShowClinlogLoadTimer]);
+
+  useEffect(() => {
+    if (
+      !shouldShowClinlogLoadTimer ||
+      !locationQueryKey ||
+      !session?.accessToken ||
+      hasFinishedClinlogDataLoading
+    ) {
+      return;
+    }
+
+    setClinlogLoadStartedAt((currentStartedAt) => {
+      return currentStartedAt ?? Date.now();
+    });
+  }, [
+    hasFinishedClinlogDataLoading,
+    locationQueryKey,
+    session?.accessToken,
+    shouldShowClinlogLoadTimer,
+  ]);
+
+  useEffect(() => {
+    if (
+      !shouldShowClinlogLoadTimer ||
+      !clinlogLoadStartedAt ||
+      hasFinishedClinlogDataLoading
+    ) {
+      return;
+    }
+
+    const updateElapsedTime = () => {
+      setClinlogLoadElapsedMs(Date.now() - clinlogLoadStartedAt);
+    };
+
+    updateElapsedTime();
+    const timerId = window.setInterval(updateElapsedTime, 250);
+
+    return () => {
+      window.clearInterval(timerId);
+    };
+  }, [
+    clinlogLoadStartedAt,
+    hasFinishedClinlogDataLoading,
+    shouldShowClinlogLoadTimer,
+  ]);
+
+  useEffect(() => {
+    const pages = clinlogDataInfinite?.pages ?? [];
+    const lastPage = pages[pages.length - 1];
+
+    if (
+      !shouldShowClinlogLoadTimer ||
+      !clinlogLoadStartedAt ||
+      !lastPage?.entries?.length
+    ) {
+      return;
+    }
+
+    const loadedAt = Date.now();
+    setClinlogLastRecordBatchLoadedAt(loadedAt);
+    setClinlogLoadElapsedMs(loadedAt - clinlogLoadStartedAt);
+  }, [
+    clinlogDataInfinite?.pages?.length,
+    clinlogLoadStartedAt,
+    shouldShowClinlogLoadTimer,
+  ]);
+
+  useEffect(() => {
+    if (
+      !shouldShowClinlogLoadTimer ||
+      !hasFinishedClinlogDataLoading ||
+      !clinlogLoadStartedAt
+    ) {
+      return;
+    }
+
+    const finishedAt = clinlogLastRecordBatchLoadedAt ?? Date.now();
+    const duration = finishedAt - clinlogLoadStartedAt;
+    setClinlogFullLoadDurationMs((currentDuration) => {
+      return currentDuration ?? duration;
+    });
+    setClinlogLoadElapsedMs(duration);
+  }, [
+    hasFinishedClinlogDataLoading,
+    clinlogLastRecordBatchLoadedAt,
+    clinlogLoadStartedAt,
+    shouldShowClinlogLoadTimer,
+  ]);
 
   // const allClinicsQueryResult = useQueryHook(
   //   ["clinics"],
@@ -1852,14 +1982,107 @@ function Clinlog() {
                 ))}
               </TabList>
             </Tabs>
-            {hasNextPage && (
-              <Flex align="center" mt="2" gap={"1rem"} w="15%">
-                <Spinner size="sm" color="#351361" />
-                <Text fontSize={"14px"} fontWeight="600" color="#351361">
-                  Loading more records...
-                </Text>
-              </Flex>
-            )}
+            <Flex
+              align="center"
+              mt="2"
+              minH="34px"
+              w={{ base: "100%", md: "auto" }}
+              aria-live="polite"
+            >
+              {hasNextPage ? (
+                <Flex
+                  align="center"
+                  gap="0.6rem"
+                  px="3"
+                  py="1.5"
+                  border="1px solid"
+                  borderColor="#DDD6FE"
+                  borderRadius="8px"
+                  bgColor="#F7F3FF"
+                >
+                  <Spinner size="xs" thickness="2px" color="#351361" />
+                  <Text
+                    fontSize="13px"
+                    fontWeight="700"
+                    color="#351361"
+                    whiteSpace="nowrap"
+                  >
+                    Loading records
+                  </Text>
+                  {shouldShowClinlogLoadTimer && (
+                    <Text
+                      fontSize="12px"
+                      fontWeight="700"
+                      color="#351361"
+                      fontVariantNumeric="tabular-nums"
+                      whiteSpace="nowrap"
+                    >
+                      {clinlogLoadDurationText}
+                    </Text>
+                  )}
+                  <Text
+                    fontSize="12px"
+                    fontWeight="600"
+                    color="#5B4B77"
+                    fontVariantNumeric="tabular-nums"
+                    whiteSpace="nowrap"
+                  >
+                    {clinlogDataQueryResults.length} loaded
+                  </Text>
+                </Flex>
+              ) : hasLoadedAllClinlogPages ? (
+                <Flex
+                  align="center"
+                  gap="0.6rem"
+                  px="3"
+                  py="1.5"
+                  border="1px solid"
+                  borderColor="#BBF7D0"
+                  borderRadius="8px"
+                  bgColor="#F0FDF4"
+                >
+                  <Flex
+                    align="center"
+                    justify="center"
+                    w="18px"
+                    h="18px"
+                    borderRadius="full"
+                    bgColor="#16A34A"
+                    color="white"
+                  >
+                    <CheckIcon boxSize="9px" />
+                  </Flex>
+                  <Text
+                    fontSize="13px"
+                    fontWeight="700"
+                    color="#166534"
+                    whiteSpace="nowrap"
+                  >
+                    All records loaded
+                  </Text>
+                  {shouldShowClinlogLoadTimer && (
+                    <Text
+                      fontSize="12px"
+                      fontWeight="700"
+                      color="#166534"
+                      fontVariantNumeric="tabular-nums"
+                      whiteSpace="nowrap"
+                    >
+                      Loaded in {clinlogLoadDurationText}
+                    </Text>
+                  )}
+                  <Text
+                    fontSize="12px"
+                    fontWeight="600"
+                    color="#3F7F52"
+                    fontVariantNumeric="tabular-nums"
+                    whiteSpace="nowrap"
+                  >
+                    {clinlogDataQueryResults.length} records
+                  </Text>
+                </Flex>
+              ) : null}
+            </Flex>
           </Flex>
         </Flex>
       </Flex>
@@ -2920,9 +3143,57 @@ function Clinlog() {
                     <Text fontSize="14px">
                       {table.getFilteredRowModel().rows.length}
                     </Text>
-                    {hasNextPage && (
-                      <Spinner ml="10px" size="sm" color="#351361" />
-                    )}
+                    {hasNextPage ? (
+                      <Flex
+                        align="center"
+                        gap="0.4rem"
+                        ml="10px"
+                        px="2"
+                        py="1"
+                        borderRadius="8px"
+                        bgColor="#F7F3FF"
+                        color="#351361"
+                      >
+                        <Spinner size="xs" thickness="2px" />
+                        <Text fontSize="12px" fontWeight="700">
+                          Loading
+                        </Text>
+                        {shouldShowClinlogLoadTimer && (
+                          <Text
+                            fontSize="12px"
+                            fontWeight="600"
+                            fontVariantNumeric="tabular-nums"
+                          >
+                            {clinlogLoadDurationText}
+                          </Text>
+                        )}
+                      </Flex>
+                    ) : hasLoadedAllClinlogPages ? (
+                      <Flex
+                        align="center"
+                        gap="0.35rem"
+                        ml="10px"
+                        px="2"
+                        py="1"
+                        borderRadius="8px"
+                        bgColor="#F0FDF4"
+                        color="#166534"
+                      >
+                        <CheckIcon boxSize="10px" />
+                        <Text fontSize="12px" fontWeight="700">
+                          Complete
+                        </Text>
+                        {shouldShowClinlogLoadTimer && (
+                          <Text
+                            fontSize="12px"
+                            fontWeight="600"
+                            fontVariantNumeric="tabular-nums"
+                          >
+                            {clinlogLoadDurationText}
+                          </Text>
+                        )}
+                      </Flex>
+                    ) : null}
                     <Spacer />
                     <Button
                       onClick={
