@@ -944,24 +944,12 @@ export function MainNavbar() {
           }}
         >
           <Image
-            src="../../clinlog_icon.svg"
-            alt="CLINLOG"
-            width={"36px"}
-            height="39px"
+            src="/newclinloglogo.png"
+            alt="clinlog"
+            h="39px"
+            w="auto"
+            objectFit="contain"
           />
-          <Text
-            fontSize={"30px"}
-            fontWeight="700"
-            color="#F1EFE0"
-            marginLeft={"12px"}
-            fontFamily="Avenir"
-            letterSpacing={"1.24px"}
-          >
-            clinlog
-          </Text>
-          <Text fontSize={"11px"} fontWeight="800" color="#F1EFE0" mb="3">
-            ®
-          </Text>
         </Flex>
         <Spacer />
         <Flex
