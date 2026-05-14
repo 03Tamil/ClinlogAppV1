@@ -2357,7 +2357,6 @@ export const clinlogFilterColumns = [
     subGroup: "ssFollowUp",
     type: "select",
     options: [
-      { name: "N/A", value: "" },
       {
         name: "Present and sound at Zygoma Critical Zone (ZCC) only",
         value: "Present and sound at Zygoma Critical Zone (ZCC) only",

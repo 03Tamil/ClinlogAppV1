@@ -175,9 +175,10 @@ export default function SiteSpecificFollowUpV3({
         siteFollowUp?.otherAbutmentLevelComplications,
       totalNumberOfAbutmentLevelComplications:
         siteFollowUp?.totalNumberOfAbutmentLevelComplications,
-      dateOfFirstAbutmentLevelComplication: new Date(
-        siteFollowUp?.dateOfFirstAbutmentLevelComplication,
-      ),
+      dateOfFirstAbutmentLevelComplication:
+        siteFollowUp?.dateOfFirstAbutmentLevelComplication
+          ? new Date(siteFollowUp?.dateOfFirstAbutmentLevelComplication)
+          : null,
       firstAbutmentLevelComplicationTimeFromSurgery:
         siteFollowUp?.firstAbutmentLevelComplicationTimeFromSurgery,
       postOperativeSinusDisease: siteFollowUp?.postOperativeSinusDisease,
@@ -198,7 +199,7 @@ export default function SiteSpecificFollowUpV3({
           { name: "Sleeper", value: "Sleeper" },
           { name: "Unknown", value: "unknown" },
         ],
-        value: getSiteFollowUpValues("implantFunctionAtFollowUp"),
+        value: getSiteFollowUpValues("implantFunctionAtFollowUp") || "N/A",
       },
       {
         label: "Abutment Function at Follow Up",
@@ -219,7 +220,6 @@ export default function SiteSpecificFollowUpV3({
           { name: "-- Select --", value: "" },
           { name: "Yes", value: "Yes" },
           { name: "No", value: "No" },
-          { name: "Unknown", value: "unknown" },
           { name: "Unknown", value: "unknown" },
         ],
         value: getSiteFollowUpValues("sinusitis"),
@@ -629,55 +629,22 @@ export default function SiteSpecificFollowUpV3({
                         >
                           {item.label}
                         </Text>
-                        {item.options ? (
-                          <Select
-                            sx={selectStyles}
-                            defaultValue={item.value || ""}
-                            {...siteFollowUpRegister(item.key)}
-                          >
-                            {item.options.map((option, index) => (
-                              <option
-                                key={option.value + index}
-                                value={option.value}
-                              >
-                                {option.name}
-                              </option>
-                            ))}
-                          </Select>
-                        ) : (
-                          <>
-                            {/* {[
-                              "otherAbutmentLevelComplications",
-                              "totalNumberOfAbutmentLevelComplications",
-                              "firstAbutmentLevelComplicationTimeFromSurgery",
-                            ]?.includes(item?.key) ? (
-                              <Text sx={selectStyles} w="100%" p="3">
-                                {item.value || "N/A"}
-                              </Text>
-                            ) :  */}
-                            {item?.key ===
-                            "dateOfFirstAbutmentLevelComplication" ? (
-                              <Input
-                                type="date"
-                                sx={selectStyles}
-                                w="100%"
-                                p="3"
-                                defaultValue={item.value}
-                                {...siteFollowUpRegister(item.key)}
-                              />
-                            ) : (
-                              <Input
-                                fontWeight="600"
-                                sx={selectStyles}
-                                placeholder={`Enter ${item.label}`}
-                                w="100%"
-                                p="3"
-                                defaultValue={item.value}
-                                {...siteFollowUpRegister(item.key)}
-                              />
-                            )}
-                          </>
-                        )}
+
+                        <Text
+                          alignSelf={"flex-start"}
+                          border="1px solid #D9D9D9"
+                          borderRadius="6px"
+                          fontSize="11px"
+                          w="100%"
+                          p="3"
+                          textTransform={"uppercase"}
+                        >
+                          {item?.key ===
+                            "dateOfFirstAbutmentLevelComplication" &&
+                          item?.value
+                            ? format(new Date(item.value), "dd MMM yyyy")
+                            : item?.value || "N/A"}
+                        </Text>
                       </Flex>
                     );
                   })}
