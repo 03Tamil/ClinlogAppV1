@@ -108,7 +108,17 @@ const formatClinlogLoadDuration = (milliseconds: number) => {
   return `${minutes}m ${seconds}s`;
 };
 
-function Clinlog() {
+export async function getServerSideProps() {
+  const clinlogQueryToken = process.env.CLINLOG_QUERY_TOKEN;
+
+  return {
+    props: {
+      clinlogQueryToken,
+    },
+  };
+}
+
+function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
   const [filterArray, setFilterArray] = React.useState([]);
   const [openTab, setOpenTab] = useState("allCases");
   const { data: session } = useSession();
@@ -218,7 +228,7 @@ function Clinlog() {
           process.env.NEXT_PUBLIC_ENDPOINT,
           {
             headers: {
-              Authorization: process.env.CLINGLOG_QUERY_TOKEN,
+              Authorization: clinlogQueryToken,
             },
           },
         );
