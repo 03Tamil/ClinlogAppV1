@@ -51,7 +51,7 @@ export function AccountWrapper({
           {/* <Container size={"main"}> */}
           <Breadcrumbs
             breadcrumbs={(
-              [{ title: "Account", url: "/pagesv2/account" }] as Breadcrumb[]
+              [{ title: "Account", url: "/account" }] as Breadcrumb[]
             ).concat(breadcrumbs ?? [])}
             color={"scBlue"}
           />

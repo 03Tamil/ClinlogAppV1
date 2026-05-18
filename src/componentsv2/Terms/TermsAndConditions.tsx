@@ -354,7 +354,7 @@ export const TermsAndConditions = () => {
               By agreeing to these Terms, you consent to our handling of your
               personal information (including sensitive information) in
               accordance with our Privacy Policy and Sensitive Information
-              Policy, which can be found <a href={"/pagesv2/privacy"}>here</a>.
+              Policy, which can be found <a href={"/privacy"}>here</a>.
             </li>
           </ol>
         </div>

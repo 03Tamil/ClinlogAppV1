@@ -11,7 +11,7 @@ import {
 import { info } from "console"
 import { motion } from "framer-motion"
 import { useAtom } from "jotai"
-import { useV2Router } from "componentsv2/Dashboard/Helpers/routerHelpers"
+import { useRouter } from "next/router"
 import React from "react"
 import { ImTable } from "react-icons/im"
 import { RiDashboardFill } from "react-icons/ri"
@@ -71,7 +71,7 @@ function Logos({ data }) {
 export default function Navbar() {
   const [sidebarOpen, sidebarToggle] = useAtom(sidebarToggleAtom)
   const { isLoading, data, error } = useQueryHook(["loc"], logosQuery, {})
-  const router = useV2Router()
+  const router = useRouter()
 
   return (
     <Flex
@@ -101,7 +101,7 @@ export default function Navbar() {
             size="md"
             // color="white"
             ml="10px"
-            onClick={() => router.push("/pagesv2/table")}
+            onClick={() => router.push("/table")}
           >
             All Records
           </Button>
@@ -112,7 +112,7 @@ export default function Navbar() {
             size="md"
             // color="white"
             ml="10px"
-            onClick={() => router.push("/pagesv2/dashboard")}
+            onClick={() => router.push("/dashboard")}
           >
             Dashboard
           </Button>

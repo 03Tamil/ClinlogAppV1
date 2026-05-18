@@ -11,7 +11,7 @@ import {
 } from "@chakra-ui/react";
 import { isPatient, isStaff } from "helpersv2/Permissions";
 import { useSession } from "next-auth/react";
-import { V2Link } from "../Dashboard/Helpers/routerHelpers";
+import NextLink from "next/link";
 import { IoHomeSharp } from "react-icons/io5";
 
 export type Breadcrumb = {
@@ -43,8 +43,8 @@ export default function Breadcrumbs({
       align="center"
     >
       <Link
-        href={userIsStaff && !userIsPatient ? `/pagesv2/dashboard` : `/pagesv2`}
-        as={V2Link}
+        href={userIsStaff && !userIsPatient ? `/dashboard` : `/`}
+        as={NextLink}
         _hover={{
           opacity: 0.8,
           scale: 1.05,
@@ -74,7 +74,7 @@ export default function Breadcrumbs({
             ) : (
               <Link
                 href={breadcrumb.url}
-                as={V2Link}
+                as={NextLink}
                 mb={0}
                 _hover={{
                   opacity: 0.8,

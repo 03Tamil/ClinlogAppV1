@@ -89,7 +89,7 @@ import {
   patientCharacteristicsQuery,
   patientCharacteristicsQueryFreeform,
 } from "../DetailsPageQueries";
-import { useV2Router } from "componentsv2/Dashboard/Helpers/routerHelpers";
+import { useRouter } from "next/router";
 
 type TreatmentToothMatrix = {
   id: string;
@@ -178,7 +178,7 @@ export default function SurgicalDetailsV3_2({
   detailsData,
   fromClinlog = false,
 }) {
-  const router = useV2Router();
+  const router = useRouter();
   const { query } = router;
   // Tab state for segmented control
   const [activeTab, setActiveTab] = useState("THIS TREATMENT");
@@ -3928,7 +3928,15 @@ export default function SurgicalDetailsV3_2({
         0107630031736543112411111729111010JMAK6 */}
         <DrawerOverlay />
         <DrawerContent>
-          <DrawerHeader bgColor={"#0E11C7"} fontWeight={"700"}>
+          <DrawerHeader
+            bg={
+              fromClinlog
+                ? "linear-gradient(90deg, var(--clinlog-purple, #452A7E) 25%, #612ECC 100%)"
+                : "#0E11C7"
+            }
+            fontWeight={"700"}
+            p="6"
+          >
             <Flex align={"center"} gap="0.5rem">
               <chakra.span
                 className="material-symbols-outlined"
@@ -3940,20 +3948,14 @@ export default function SurgicalDetailsV3_2({
                 arrow_back_ios
               </chakra.span>
               <Spacer />
-              {/* <chakra.span
-                          className="material-symbols-outlined"
-                          fontSize={{ base: "18px", md: "23px" }}
-                          color="#91C1F5"
-                        >
-                          graph_6
-                        </chakra.span> */}
               <Text
                 fontSize="14px"
                 color="white"
                 fontFamily={"inter"}
                 letterSpacing={"1.3px"}
+                textTransform={"uppercase"}
               >
-                {selectedSite
+               {selectedSite
                   ? selectedSite?.treatmentItemNumber === "666"
                     ? "RETAINER DETAILS"
                     : `SITE SPECIFIC DETAILS | SITE ${selectedSite?.toothValue}`
@@ -4330,14 +4332,14 @@ export default function SurgicalDetailsV3_2({
         onClose={() => {
           onCharcteristicsClose();
           const { drawer, ...restQuery } = router.query;
-          router.replace(
-            {
-              pathname: router.pathname,
-              query: restQuery,
-            },
-            undefined,
-            { shallow: true },
-          );
+          // router.replace(
+          //   {
+          //     pathname: router.pathname,
+          //     query: restQuery,
+          //   },
+          //   undefined,
+          //   { shallow: true },
+          // );
         }}
         size="lg"
       >

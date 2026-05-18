@@ -215,7 +215,7 @@ export function MainNavbar({}) {
             transform: "scale(1.1)",
             opacity: "0.7",
           }}
-          href={userShouldUseV2 ? "/pagesv2/newleadinfo" : "/newleadinfo"}
+          href="/newleadinfo"
           as={NextLink}
         >
           <Button variant={"clear"} px={"0.4rem"} hidden={needToSignTerms}>
@@ -574,7 +574,7 @@ export function MainNavbar({}) {
                             }}
                             background="gray.200"
                             color={"#343CFF"}
-                            href={"/pagesv2/patienttable"}
+                            href={"/patienttable"}
                             as={NextLink}
                           >
                             <MenuItem
@@ -584,7 +584,7 @@ export function MainNavbar({}) {
                                 </chakra.span>
                               }
                             >
-                              Try V2
+                              Patients
                             </MenuItem>
                           </Link>
                         ) : null}

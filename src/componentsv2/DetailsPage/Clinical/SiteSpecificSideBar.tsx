@@ -34,7 +34,7 @@ import ScannerV2 from "componentsv2/ScannerV2";
 //import query from "devextreme/data/query";
 import { fr, id } from "date-fns/locale";
 import { parseYYMMDD } from "helpersv2/utils";
-import { V2Link } from "../../Dashboard/Helpers/routerHelpers";
+import NextLink from "next/link";
 import { on } from "events";
 
 export default function SiteSpecificSideBar({
@@ -3129,11 +3129,11 @@ export default function SiteSpecificSideBar({
                 </Flex>
               </Flex>
               {!fromClinlog && userIsClinlogOverseer && (
-                <V2Link href={`/pagesv2/account/dental-components-management`}>
+                <NextLink href={`/account/dental-components-management`}>
                   <Button variant="outline" colorScheme="blue">
                     <Text>Add Additional Components</Text>
                   </Button>
-                </V2Link>
+                </NextLink>
               )}
             </Flex>
             <Divider />

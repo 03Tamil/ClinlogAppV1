@@ -22,7 +22,7 @@ export function Layout(props: FlexProps) {
         {session &&  <MainNavbar />}
         {props.children}
         {session && <Sidebar />}
-        {session && router?.pathname !== "pagesv2/clinlog" && null}
+        {session && router?.pathname !== "/clinlog" && null}
       </Flex>
     </Flex>
   );

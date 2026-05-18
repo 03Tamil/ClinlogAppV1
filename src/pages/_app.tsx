@@ -13,7 +13,6 @@ import {
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Router, useRouter } from "next/router";
 import { Layout } from "layouts/Layout";
-import { LayoutV2 } from "layouts/LayoutV2";
 import { SessionProvider, signOut, useSession } from "next-auth/react";
 import { NextComponentType } from "next/types";
 import FullscreenLoadingSpinner from "componentsv2/FullscreenLoadingSpinner";
@@ -60,13 +59,9 @@ function MyApp({ Component, pageProps }: CustomAppProps) {
   const router = useRouter();
   const title = (Component as any).title as string | undefined;
 
-  const onPagesV2 = router.asPath.includes("pagesv2");
-
   const derivedTitle = Object.entries(pageTitles)
     .sort(([a], [b]) => b.length - a.length)
-    .find(([key, value]) =>
-      router.asPath.includes(`${onPagesV2 ? "pagesv2/" : ""}${key}`),
-    )?.[1];
+    .find(([key, value]) => router.asPath.includes(key))?.[1];
   const finalTitle = derivedTitle ?? title;
 
   const pageTitle = finalTitle
@@ -74,7 +69,6 @@ function MyApp({ Component, pageProps }: CustomAppProps) {
     : "Clinlog";
 
   const [needToSignTerms, setNeedToSignTerms] = useAtom(needToSignTermsAtom);
-  const isV2 = router.asPath.includes("pagesv2");
   // useEffect(() => {
   //   socket.connect()
   //   // Listen for chat messages
@@ -92,8 +86,8 @@ function MyApp({ Component, pageProps }: CustomAppProps) {
   //           </div>
   //           <div className="ml-5 shrink-0 rounded-md text-sm font-medium text-indigo-600 hover:text-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden">
   //             <Link
-  //               // href={`/pagesv2/patientglobal?postId=${message?.id}&method=sms`}
-  //               href={`/pagesv2/patientdata?postId=${message?.id}&method=sms`}
+  //               // href={`/patientglobal?postId=${message?.id}&method=sms`}
+  //               href={`/patientdata?postId=${message?.id}&method=sms`}
   //               className="rounded bg-indigo-50 px-3 py-1 text-sm font-semibold text-indigo-600 hover:bg-indigo-100"
   //             >
   //               View Patient
@@ -122,7 +116,7 @@ function MyApp({ Component, pageProps }: CustomAppProps) {
   //           </div>
   //           <div className="ml-5 shrink-0 rounded-md text-sm font-medium text-indigo-600 hover:text-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden">
   //             <Link
-  //               href={`/pagesv2/patientglobal?postId=${message?.id}&method=voice`}
+  //               href={`/patientglobal?postId=${message?.id}&method=voice`}
   //               className="rounded bg-indigo-50 px-3 py-1 text-sm font-semibold text-indigo-600 hover:bg-indigo-100"
   //             >
   //               View Patient
@@ -150,8 +144,8 @@ function MyApp({ Component, pageProps }: CustomAppProps) {
   //         //   </div>
   //         //   <div className="ml-5 shrink-0 rounded-md text-sm font-medium text-indigo-600 hover:text-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden">
   //         //     <Link
-  //         //       // href={`/pagesv2/patientglobal?postId=${message?.id}&method=sms`}
-  //         //       href={`/pagesv2/patienttable`}
+  //         //       // href={`/patientglobal?postId=${message?.id}&method=sms`}
+  //         //       href={`/patienttable`}
   //         //       className="rounded bg-indigo-50 px-3 py-1 text-sm font-semibold text-indigo-600 hover:bg-indigo-100"
   //         //     >
   //         //       Go To Dashboard
@@ -190,7 +184,7 @@ function MyApp({ Component, pageProps }: CustomAppProps) {
   //           </div>
   //           <div className="ml-5 shrink-0 rounded-md text-sm font-medium text-indigo-600 hover:text-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden">
   //             <Link
-  //               href={`/pagesv2/patienttable`}
+  //               href={`/patienttable`}
   //               className="rounded bg-indigo-50 px-3 py-1 text-sm font-semibold text-indigo-600 hover:bg-indigo-100"
   //             >
   //               Go To Dashboard
@@ -214,20 +208,6 @@ function MyApp({ Component, pageProps }: CustomAppProps) {
   //     socket.disconnect()
   //   }
   // }, [])
-  useEffect(() => {
-    const markV2 = (url: string) => {
-      if (url.includes("/pagesv2")) {
-        sessionStorage.setItem("pagesv2", "1");
-      }
-    };
-    // initial
-    markV2(router.asPath);
-
-    // on navigation
-    router.events.on("routeChangeComplete", markV2);
-    return () => router.events.off("routeChangeComplete", markV2);
-  }, [router]);
-
   const [queryClient] = useState(
     () =>
       new QueryClient({
@@ -256,14 +236,9 @@ function MyApp({ Component, pageProps }: CustomAppProps) {
               });
               queryClient.removeQueries();
               queryClient.clear();
-              // router.push("/pagesv2/404?error=Login%20Timed%20Out")
             }
             if (isPermissionError) {
-              if (isV2) {
-                router.push("/pagesv2/403");
-              } else {
-                router.push("/403");
-              }
+              router.push("/403");
             }
           },
         }),
@@ -293,23 +268,14 @@ function MyApp({ Component, pageProps }: CustomAppProps) {
 
       if (needToSignTerms) {
         if (!pathsNotToRedirect.includes(router.pathname)) {
-          if (isV2) {
-            router.push("/pagesv2/setup-account/terms");
-          } else {
-            router.push("/setup-account/terms");
-          }
+          router.push("/setup-account/terms");
         }
       } else if (router.pathname === "/setup-account/terms") {
-        if (isV2) {
-          router.push("/pagesv2/");
-        } else {
-          router.push("/");
-        }
+        router.push("/");
       }
     }
   }, [needToSignTerms, router.pathname]);
   const showMaintenanceBar = false;
-  const LayoutComponent = isV2 ? LayoutV2 : Layout;
   return (
     <SessionProvider
       session={pageProps.session}
@@ -340,12 +306,12 @@ function MyApp({ Component, pageProps }: CustomAppProps) {
           />
           <link rel="manifest" href="/site.webmanifest" />
         </Head>
-        {showMaintenanceBar && !isV2 && <MaintenanceBar />}
+        {showMaintenanceBar && <MaintenanceBar />}
         <QueryClientProvider client={queryClient}>
           {/* @ts-ignore*/}
           {/* <Hydrate state={pageProps?.dehydratedState}> */}
-          <Box pt={showMaintenanceBar && !isV2 ? "40px" : "0"}>
-            <LayoutComponent>
+          <Box pt={showMaintenanceBar ? "40px" : "0"}>
+            <Layout>
               <Toaster position="top-right" richColors expand={true} />
               {!Component.auth?.public ? (
                 <Auth component={Component}>
@@ -354,7 +320,7 @@ function MyApp({ Component, pageProps }: CustomAppProps) {
               ) : (
                 <Component {...pageProps} />
               )}
-            </LayoutComponent>
+            </Layout>
           </Box>
           <ReactQueryDevtools />
           {/* </Hydrate> */}
@@ -378,46 +344,12 @@ function Auth({ component, children }: AuthProps) {
   const { status, data: session } = useSession({
     required: true,
     onUnauthenticated() {
-      // if (router.asPath.includes("pagesv2")) {
-      //   const locationAccessArray = [186, 196, 215, 199, 160733];
-      //   if (
-      //     session?.locationIds?.some((id: number) =>
-      //       locationAccessArray.includes(id),
-      //     )
-      //   ) {
-      //   } else {
-      //     if (typeof window !== "undefined") {
-      //       router.push("/403");
-      //     }
-      //   }
-      //   const currentPath = router.asPath;
-      //   router.push(
-      //     `/pagesv2/signin?redirect=${encodeURIComponent(currentPath)}`,
-      //   );
-      // } else {
-      //   const currentPath = router.asPath;
-      //   router.push(`/signin?redirect=${encodeURIComponent(currentPath)}`);
-      // }
       router.push("/");
     },
   });
 
   if (status === "loading") {
     return <FullscreenLoadingSpinner />;
-  }
-  // If the route contains "pagesv2", always redirect to 403
-  if (router.asPath.includes("pagesv2")) {
-    const locationAccessArray = [186, 196, 215, 199, 160733];
-    if (
-      session?.locationIds?.some((id: number) =>
-        locationAccessArray.includes(id),
-      )
-    ) {
-    } else {
-      if (typeof window !== "undefined") {
-        router.push("/403");
-      }
-    }
   }
   const role = component?.auth?.role;
   if (role === "Patient" && !session.groups?.includes("Patient")) {

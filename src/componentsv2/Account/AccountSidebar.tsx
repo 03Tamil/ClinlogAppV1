@@ -23,7 +23,7 @@ import {
   useDisclosure,
   useMediaQuery,
 } from "@chakra-ui/react";
-import { V2Link as NextLink } from "componentsv2/Dashboard/Helpers/routerHelpers";
+import NextLink from "next/link";
 import {
   HiOutlineBell,
   HiOutlineBuildingOffice2,
@@ -49,7 +49,7 @@ import { MdArrowDownward, MdMenu, MdSettings } from "react-icons/md";
 import React, { useEffect } from "react";
 import { IconType } from "react-icons/lib";
 import { useSession } from "next-auth/react";
-import { useV2Router } from "componentsv2/Dashboard/Helpers/routerHelpers";
+import { useRouter } from "next/router";
 import { ChevronDownIcon } from "@chakra-ui/icons";
 import { isAdmin, isPatient, isStaff } from "helpersv2/Permissions";
 
@@ -76,13 +76,13 @@ export default function AccountSidebar({
   slug,
   sidebar,
 }: AccountSidebarProps) {
-  const router = useV2Router();
+  const router = useRouter();
   const { status, data: session } = useSession({
     required: true,
     onUnauthenticated() {
       const currentPath = router.asPath;
       router.push(
-        `/pagesv2/signin?redirect=${encodeURIComponent(currentPath)}`,
+        `/signin?redirect=${encodeURIComponent(currentPath)}`,
       );
     },
   });

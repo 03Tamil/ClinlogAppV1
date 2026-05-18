@@ -35,7 +35,6 @@ import {
   Spinner,
 } from "@chakra-ui/react";
 import { CheckIcon } from "@chakra-ui/icons";
-import NextLink from "next/link";
 import {
   createColumnHelper,
   useReactTable,
@@ -51,7 +50,6 @@ import animationData from "../animationsv2/clinlog_loading.json";
 import useQueryHook, { getData, sendData } from "hooks/useQueryHook";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { encryptId } from "helpersv2/Auth";
 import {
   differenceInDays,
   format,
@@ -86,7 +84,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { clinlogNoteMutation } from "componentsv2/DetailsPage/detailsPageMutations";
-import { useV2Router } from "componentsv2/Dashboard/Helpers/routerHelpers";
+import { useRouter } from "next/router";
 
 const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
 
@@ -164,7 +162,7 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
   const [collapseTabs, setCollapseTabs] = useState(true);
   const isAdmin = session?.groups?.includes("Admin");
   const shouldShowClinlogLoadTimer = Boolean(isAdmin);
-  const router = useV2Router();
+  const router = useRouter();
 
   useEffect(() => {
     if (
@@ -1891,23 +1889,23 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
     </Flex>
   ) : (
     <Flex w="100%" flexDirection={"column"} bgColor="#FCF8FF" minH="100vh">
-      <Flex
-        w="100%"
-        flexDirection={"column"}
-        position={"sticky"}
-        top="0"
-        zIndex={"99"}
-      >
         <Flex
           w="100%"
-          bgColor="white"
-          align="center"
-          justify={"center"}
-          position="sticky"
-          p="2"
+          flexDirection={"column"}
+          position={"sticky"}
+          top="0"
+          zIndex={"99"}
         >
-          <Flex w="100%" align="start" py="10px" maxW="2000px" mx="auto">
-            <Tabs
+          <Flex
+            w="100%"
+            bgColor="white"
+            align="center"
+            justify={"center"}
+            position="sticky"
+            p="2"
+          >
+            <Flex w="100%" align="start" py="10px" maxW="2000px" mx="auto">
+              <Tabs
               variant="unstyled"
               w="100%"
               align={"start"}
@@ -2177,41 +2175,6 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
                       </Text>
                     </Flex>
                     <Spacer />
-                    {/* {session?.locationIds?.includes(
-                      Number(selectedGlobalPatientData?.recordClinic?.[0]?.id),
-                    ) && (
-                      <Link
-                        as={NextLink}
-                        target="_blank"
-                        bgColor="scBlack"
-                        color={"white"}
-                        fontWeight={700}
-                        borderRadius={"25px"}
-                        _hover={{ bgColor: "scBlack" }}
-                        href={`/pagesv2/patientdata?postId=${encryptId(
-                          selectedGlobalPatientData?.id?.toString(),
-                        )}&entryId=${encryptId(
-                          viewPatient?.id?.toString(),
-                        )}&tabName=surgical`}
-                      >
-                        <Flex align="center" p="3">
-                          <chakra.span
-                            className="material-symbols-outlined"
-                            fontSize={"24px"}
-                          >
-                            account_circle
-                          </chakra.span>
-                          <Text
-                            ml="2"
-                            mr="3"
-                            fontSize={"12px"}
-                            textTransform={"uppercase"}
-                          >
-                            View Patient
-                          </Text>
-                        </Flex>
-                      </Link>
-                    )} */}
                   </Flex>
                   <SurgicalDetailsV3_2
                     setClinlogStatus={setClinlogStatus}
@@ -2239,47 +2202,6 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
                   />
                 </Flex>
                 <Flex direction={"column"} w="20%" p="4" gap="1rem">
-                  <Flex
-                    flexDirection={"column"}
-                    gap="0.5rem"
-                    p="4"
-                    borderRadius={"6px"}
-                    border="1px solid #F7F0F0"
-                    bg="white"
-                  >
-                    {/* <Flex w="100%" justify="space-between" align="center">
-                      <Text
-                        fontSize={{ base: "12px", md: "13px" }}
-                        fontWeight="700"
-                      >
-                        Marked for attention
-                      </Text>
-                      <chakra.span
-                        className="material-symbols-outlined"
-                        fontSize={"28px"}
-                      >
-                        {selectedGlobalPatientData?.globalIsFlagged
-                          ? "toggle_on"
-                          : "toggle_off"}
-                      </chakra.span>
-                    </Flex> */}
-                    <Flex w="100%" justify="space-between" align="center">
-                      <Text
-                        fontSize={{ base: "12px", md: "13px" }}
-                        fontWeight="700"
-                      >
-                        Included in Analysis{" "}
-                      </Text>
-                      <chakra.span
-                        className="material-symbols-outlined"
-                        fontSize={"28px"}
-                      >
-                        {viewPatient?.enableClinlog
-                          ? "toggle_on"
-                          : "toggle_off"}
-                      </chakra.span>
-                    </Flex>
-                  </Flex>
                   <Flex
                     flexDirection={"column"}
                     borderRadius={"6px"}

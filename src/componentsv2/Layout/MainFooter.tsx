@@ -9,7 +9,7 @@ import {
   Spacer,
   Divider,
 } from "@chakra-ui/react";
-import { V2Link as NextLink } from "componentsv2/Dashboard/Helpers/routerHelpers";
+import NextLink from "next/link";
 
 export default function MainFooter() {
   return (
@@ -36,7 +36,7 @@ export default function MainFooter() {
         align={"center"}
       >
         <Link
-          href="/pagesv2/"
+          href="/"
           as={NextLink}
           transition={"0.2s ease-in-out"}
           _hover={{
@@ -61,7 +61,7 @@ export default function MainFooter() {
           <Link
             //className={"link"}
             as={NextLink}
-            href={"/pagesv2/terms"}
+            href={"/terms"}
           >
             Terms &amp; Conditions
           </Link>
@@ -69,7 +69,7 @@ export default function MainFooter() {
           <Link
             //className={"link"}
             as={NextLink}
-            href={"/pagesv2/privacy"}
+            href={"/privacy"}
             //textTransform={"uppercase"}
           >
             Privacy Policy
@@ -78,7 +78,7 @@ export default function MainFooter() {
           <Link
             //className={"link"}
             as={NextLink}
-            href={"/pagesv2/sensitive-information"}
+            href={"/sensitive-information"}
             //textTransform={"uppercase"}
           >
             Sensitive Information Policy

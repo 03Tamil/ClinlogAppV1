@@ -8,7 +8,7 @@ import {
   customIncludesStringFunction,
   fuzzyFilter,
 } from "./filterFns"
-import { V2Link } from "./Dashboard/Helpers/routerHelpers"
+import NextLink from "next/link"
 import { recordStringHandles } from "../helpersv2/utils"
 import { decryptId, encryptId } from "helpersv2/Auth"
 import { isPast, format } from "date-fns"
@@ -47,7 +47,7 @@ export const columnData = (sessionGroups) =>
           // const encryptedData = encryptId(encryptJson);
 
           return (
-            <V2Link
+            <NextLink
               target={newTabSetting ? "_blank" : ""}
               prefetch={false}
               href={{
@@ -78,7 +78,7 @@ export const columnData = (sessionGroups) =>
                   </Box>
                 )}
               </Flex>
-            </V2Link>
+            </NextLink>
           )
         },
         footer: (info) => info.column.id,

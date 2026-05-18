@@ -23,9 +23,9 @@ import {
 } from "@chakra-ui/react";
 import { useForm } from "react-hook-form";
 import { useEffect, useState } from "react";
-import { useV2Router } from "componentsv2/Dashboard/Helpers/routerHelpers";
 import { signIn, useSession } from "next-auth/react";
-import { V2Link as NextLink } from "componentsv2/Dashboard/Helpers/routerHelpers";
+import NextLink from "next/link";
+import { useRouter } from "next/router";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { object, string } from "yup";
 import { useQueryClient } from "@tanstack/react-query";
@@ -55,7 +55,7 @@ export default function SignInFormV2({ styling, ...rest }: SigninFormProps) {
 
   const [status, setStatus] = useState("idle");
   const [loginError, setLoginError] = useState(null);
-  const router = useV2Router();
+  const router = useRouter();
 
   async function onSubmit({ username, password }) {
     setStatus("isLoading");
@@ -140,7 +140,7 @@ export default function SignInFormV2({ styling, ...rest }: SigninFormProps) {
           >
             <Link
               className={"link"}
-              href={"/pagesv2/forgot-password"}
+              href={"/forgot-password"}
               as={NextLink}
             >
               <chakra.span
@@ -239,7 +239,7 @@ export default function SignInFormV2({ styling, ...rest }: SigninFormProps) {
                 >
                   <Link
                     className={"link"}
-                    href={"/pagesv2/forgot-password"}
+                    href={"/forgot-password"}
                     as={NextLink}
                   >
                     <chakra.span
@@ -285,7 +285,7 @@ export default function SignInFormV2({ styling, ...rest }: SigninFormProps) {
                     color: "#1331DC",
                     textDecoration: "underline",
                   }}
-                  href={"/pagesv2/support"}
+                  href={"/support"}
                   as={NextLink}
                 >
                   Click here
