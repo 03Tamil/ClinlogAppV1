@@ -161,7 +161,7 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
 
   const [collapseTabs, setCollapseTabs] = useState(true);
   const isAdmin = session?.groups?.includes("Admin");
-  const shouldShowClinlogLoadTimer = Boolean(isAdmin);
+  const shouldShowClinlogLoadTimer = true;
   const router = useRouter();
 
   useEffect(() => {
