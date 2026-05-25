@@ -97,7 +97,7 @@ export default function SignInFormV2({ styling, ...rest }: SigninFormProps) {
     } catch (err) {
       setStatus("error");
       setLoginError(
-        "The Details You Provided Are Incorrect. If you have forgotten your password please use Forgot Password."
+        "The Details You Provided Are Incorrect. If you have forgotten your password please use Forgot Password.",
       );
     }
   }
@@ -261,7 +261,9 @@ export default function SignInFormV2({ styling, ...rest }: SigninFormProps) {
               >
                 <Button
                   type={"submit"}
-                  bg={"linear-gradient(90deg, var(--clinlog-purple, #452A7E) 25%, #612ECC 100%)"}
+                  bg={
+                    "linear-gradient(90deg, var(--clinlog-purple, #452A7E) 25%, #612ECC 100%)"
+                  }
                   color={"white"}
                   width={"100%"}
                   p={{ base: "4", md: "6", lg: "9" }}
@@ -273,7 +275,7 @@ export default function SignInFormV2({ styling, ...rest }: SigninFormProps) {
               </Flex>
               {/* </GridItem>
               <GridItem colSpan={{ base: 12, lg: 12 }}> */}
-              <Text
+              {/* <Text
                 fontSize={{ base: "12px", md: "14px", lg: "16px" }}
                 fontWeight={"700"}
               >
@@ -290,7 +292,7 @@ export default function SignInFormV2({ styling, ...rest }: SigninFormProps) {
                 >
                   Click here
                 </Link>
-              </Text>
+              </Text> */}
 
               <Text
                 bgColor={"white"}
@@ -305,7 +307,7 @@ export default function SignInFormV2({ styling, ...rest }: SigninFormProps) {
                 w="100%"
                 justifyContent={"center"}
               >
-                SmileConnect® All Rights Reserved
+                Clinlog® All Rights Reserved
               </Text>
               {/* </GridItem>
             </Grid> */}

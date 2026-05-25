@@ -140,14 +140,39 @@ export default function ClinlogDataTool({
     field2: "",
     value2: "",
   });
+
   const implantsData = useMemo(() => {
     const result = [];
     const regularImplants = filteredData?.reduce((acc, record) => {
-      const count = acc + Number(record?.regularImplants || 0);
+      const siteDetails =
+        record?.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+          (site) =>
+            site.treatmentItemNumber === "688" &&
+            site?.attachedSiteSpecificRecords?.length > 0,
+        );
+      const regularImplants = siteDetails?.filter((site) => {
+        const implantCategory =
+          site?.attachedSiteSpecificRecords?.[0]?.implantCategory || "";
+        return !implantCategory.includes("zygomatic");
+      })?.length;
+      //  const count = acc + Number(record?.regularImplants || 0);
+      const count = acc + (regularImplants || 0);
       return count;
     }, 0);
     const zygomaImplants = filteredData?.reduce((acc, record) => {
-      const count = acc + Number(record?.zygomaImplants || 0);
+      const siteDetails =
+        record?.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+          (site) =>
+            site.treatmentItemNumber === "688" &&
+            site?.attachedSiteSpecificRecords?.length > 0,
+        );
+      const zygomaImplants = siteDetails?.filter((site) => {
+        const implantCategory =
+          site?.attachedSiteSpecificRecords?.[0]?.implantCategory || "";
+        return implantCategory.includes("zygomatic");
+      })?.length;
+      //const count = acc + Number(record?.zygomaImplants || 0);
+      const count = acc + (zygomaImplants || 0);
       return count;
     }, 0);
 
@@ -161,6 +186,7 @@ export default function ClinlogDataTool({
     });
     return result;
   }, [filteredData]);
+
   const implantsData_state: {
     options: ApexOptions;
     series: any[];
@@ -1169,10 +1195,52 @@ export default function ClinlogDataTool({
             " " +
             cell.row.original.recordLastName
           );
+        } else if (cell.column.id === "regularImplants") {
+          const siteDetails =
+            cell.row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+              (site) => site.treatmentItemNumber === "688",
+            );
+          const zygomaImplants =
+            siteDetails?.filter(
+              (site) =>
+                !site?.attachedSiteSpecificRecords?.[0]?.implantCategory?.includes(
+                  "zygomatic",
+                ),
+            )?.length || 0;
+          return zygomaImplants;
+        } else if (cell.column.id === "zygomaImplants") {
+          const siteDetails =
+            cell.row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+              (site) => site.treatmentItemNumber === "688",
+            );
+          const zygomaImplants =
+            siteDetails?.filter((site) =>
+              site?.attachedSiteSpecificRecords?.[0]?.implantCategory?.includes(
+                "zygomatic",
+              ),
+            )?.length || 0;
+          return zygomaImplants;
         } else if (cell.column.id === "totalImplants") {
+          // const regularImplants =
+          //   Number(cell.row.original?.regularImplants) || 0;
+          // const zygomaImplants = Number(cell.row.original?.zygomaImplants) || 0;
+          const siteDetails =
+            cell.row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+              (site) => site.treatmentItemNumber === "688",
+            );
           const regularImplants =
-            Number(cell.row.original?.regularImplants) || 0;
-          const zygomaImplants = Number(cell.row.original?.zygomaImplants) || 0;
+            siteDetails?.filter(
+              (site) =>
+                !site?.attachedSiteSpecificRecords?.[0]?.implantCategory?.includes(
+                  "zygomatic",
+                ),
+            )?.length || 0;
+          const zygomaImplants =
+            siteDetails?.filter((site) =>
+              site?.attachedSiteSpecificRecords?.[0]?.implantCategory?.includes(
+                "zygomatic",
+              ),
+            )?.length || 0;
           return regularImplants + zygomaImplants;
         } else if (cell.column.id === "recordTreatmentSurgeons") {
           const surgeons = cell.row.original?.recordTreatmentSurgeons || [];
@@ -1355,6 +1423,30 @@ export default function ClinlogDataTool({
             " " +
             cell.row.original.recordLastName
           );
+        } else if (cell.column.id === "zygomaImplants") {
+          const siteDetails =
+            cell.row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+              (site) => site.treatmentItemNumber === "688",
+            );
+          const zygomaImplants =
+            siteDetails?.filter((site) =>
+              site?.attachedSiteSpecificRecords?.[0]?.implantCategory?.includes(
+                "zygomatic",
+              ),
+            )?.length || 0;
+          return zygomaImplants;
+        } else if (cell.column.id === "regularImplants") {
+          const siteDetails =
+            cell.row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+              (site) => site.treatmentItemNumber === "688",
+            );
+          const regularImplants =
+            siteDetails?.filter((site) => {
+              const implantCategory =
+                site?.attachedSiteSpecificRecords?.[0]?.implantCategory || "";
+              return !implantCategory.includes("zygomatic");
+            })?.length || 0;
+          return regularImplants;
         } else if (cell.column.id === "totalImplants") {
           const regularImplants =
             Number(cell.row.original?.regularImplants) || 0;
@@ -1591,12 +1683,13 @@ export default function ClinlogDataTool({
                   fromReports={true}
                 />
 
-                <Card className="flex flex-col justify-center w-auto p-2">
+                <Card className="flex flex-col justify-center w-full p-2">
                   <ReactApexChart
+                    key={filteredData?.length + "_key"}
                     series={implantsData_state.series}
                     options={implantsData_state.options}
                     type="pie"
-                    width="340"
+                    width="100%"
                     height={390}
                   />
                 </Card>

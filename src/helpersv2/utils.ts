@@ -2258,7 +2258,7 @@ export const clinlogFilterColumns = [
   {
     group: "siteSpecificCharacteristics",
     key: "firstAbutmentLevelComplication",
-    label: "First Abutment-level Complication",
+    label: "Abutment-level Complication",
     subGroup: "ssFollowUp",
     type: "select",
     options: [
@@ -2290,7 +2290,7 @@ export const clinlogFilterColumns = [
   {
     group: "siteSpecificCharacteristics",
     key: "dateOfFirstAbutmentLevelComplication",
-    label: "Date Of First Abutment-level Complication",
+    label: "Date Of Abutment-level Complication",
     subGroup: "ssFollowUp",
     type: "date",
   },

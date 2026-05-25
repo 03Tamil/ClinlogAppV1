@@ -90,7 +90,7 @@ export default function MainPage() {
                 fontWeight={"700"}
                 fontFamily="Avenir"
               >
-                Login to your Clinlog® account
+                Login to your Clinlog® Analytics account
               </Text>
             </Flex>
             <Spacer display={{ base: "none", md: "flex" }} />
@@ -102,7 +102,7 @@ export default function MainPage() {
               fontSize={"13px"}
               fontWeight={"500"}
             >
-              SmileConnect® All Rights Reserved
+              Clinlog® All Rights Reserved
             </Text>
           </Flex>
         </Flex>

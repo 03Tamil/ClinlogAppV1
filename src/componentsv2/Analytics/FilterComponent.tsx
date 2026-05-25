@@ -170,9 +170,12 @@ export default function FilterComponent({
                       .filter((column) => column.group === item.group)
                       .map(
                         (column) =>
-                          !["examinerRadiographic", "examiner"]?.includes(
-                            column.key,
-                          ) && (
+                          ![
+                            "examinerRadiographic",
+                            "examiner",
+                            "dateOfFirstAbutmentLevelComplication",
+                            "recordFollowUpDate",
+                          ]?.includes(column.key) && (
                             <option key={column.key + index} value={column.key}>
                               {column.label}
                             </option>
@@ -211,10 +214,10 @@ export default function FilterComponent({
                         )}
                         {item.type === "string" && (
                           <>
-                            <option value="contains">contains</option>
+                            {/* <option value="contains">contains</option>
                             <option value="notContains">not contains</option>
                             <option value="equals">equals</option>
-                            <option value="notEquals">not Equals</option>
+                            <option value="notEquals">not Equals</option> */}
                             <option value="hasAValue">has a Value</option>
                             <option value="isEmpty">is Empty</option>
                           </>

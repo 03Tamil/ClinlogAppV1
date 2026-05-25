@@ -20,7 +20,7 @@ import { Card, CardHeader, CardTitle } from "src/uicomponents/ui/card";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { DownloadIcon } from "@chakra-ui/icons";
-import { table } from "console";
+
 export default function FluidTable({
   filteredData,
   groupOptions,
@@ -594,7 +594,7 @@ export default function FluidTable({
                         ? recordTreatmentSurgeonOptions
                         : rowField?.options;
                     return (
-                      <>
+                      <React.Fragment key={row + index + "_group"}>
                         <Tr
                           borderBottom={"1px solid #E2E8F0"}
                           key={row + index + "sample"}
@@ -696,9 +696,9 @@ export default function FluidTable({
                               });
                             })}
                         </Tr>
-                        {rowOptions?.map((rowOpt) => {
+                        {rowOptions?.map((rowOpt, i) => {
                           return (
-                            <>
+                            <React.Fragment key={rowOpt?.value || rowOpt}>
                               <Tr
                                 borderBottom={"1px solid #E2E8F0"}
                                 key={`${rowOpt?.value || rowOpt} _row`}
@@ -774,10 +774,10 @@ export default function FluidTable({
                                     });
                                   })}
                               </Tr>
-                            </>
+                            </React.Fragment>
                           );
                         })}
-                      </>
+                      </React.Fragment>
                     );
                   })}
               </Tbody>

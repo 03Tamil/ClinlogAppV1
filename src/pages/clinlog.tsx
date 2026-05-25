@@ -548,7 +548,7 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
   const [globalFilter, setGlobalFilter] = useState([]);
   const [columnFilters, setColumnFilters] = useState([]);
   const [columnVisibility, setColumnVisibility] = useState({
-    caseNumber: false,
+    caseNumber: true,
     patientName: true,
     fullName: false,
     status: true,
@@ -583,7 +583,7 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
     numberOfRestorativeBreakages: false,
     examinerRadiographic: false,
     zirconiaUpgrade: false,
-    dateOfFollowUp: false,
+    dateOfFollowUp: true,
     smokingAtFollowUp: false,
     hygieneAtFollowUp: false,
     performanceOverFollowUpPeriod: false,
@@ -639,13 +639,21 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
     dateOfProstheticUpgrade: false,
   });
   const selectTypeFilterFunction = (actualValue, filterValue, condition) => {
-    if (condition === "hasAValue" && actualValue) {
+    if (
+      condition === "hasAValue" &&
+      actualValue &&
+      actualValue !== "" &&
+      actualValue !== null &&
+      actualValue?.replaceAll(",", "") !== ""
+    ) {
       return true;
     }
 
     if (
       condition === "isEmpty" &&
-      (actualValue === "" || actualValue === null || actualValue === undefined)
+      (actualValue === "" ||
+        actualValue === null ||
+        actualValue?.replaceAll(",", "") === "")
     ) {
       return true;
     }
@@ -717,6 +725,26 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
       return true;
     }
     return false;
+  };
+  const stringTypeFilterFunction = (actualValue, filterValue, condition) => {
+    if (
+      condition === "hasAValue" &&
+      actualValue &&
+      actualValue !== "" &&
+      actualValue !== null &&
+      actualValue?.replaceAll(",", "")?.replaceAll("NaN", "") !== ""
+    ) {
+      return true;
+    }
+
+    if (
+      condition === "isEmpty" &&
+      (actualValue === "" ||
+        actualValue === null ||
+        actualValue?.replaceAll(",", "")?.replaceAll("NaN", "") === "")
+    ) {
+      return true;
+    }
   };
 
   const dateTypeFilterFunction = (
@@ -845,7 +873,9 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
         id: "caseNumber",
         header: "Case Number",
         cell: (row) => {
-          return row.row.original.caseNumber;
+          return row?.row?.original?.caseNumber?.length > 0
+            ? `${row.row.original.caseNumber} / SCR${row.row.original.id}`
+            : `SCR${row.row.original.id}`;
         },
       },
       {
@@ -1229,10 +1259,29 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
         accessorKey: "zygomaImplants",
         header: "Zygoma Implants",
         cell: (row) => {
-          return row.row.original.zygomaImplants;
+          const siteDetails =
+            row.row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+              (site) => site.treatmentItemNumber === "688",
+            );
+          const zygomaImplants =
+            siteDetails?.filter((site) =>
+              site.attachedSiteSpecificRecords?.[0]?.implantCategory?.includes(
+                "zygomatic",
+              ),
+            )?.length || 0;
+          return zygomaImplants;
         },
         filterFn: (row, columnId, filterValue) => {
-          const zygomaImplants = Number(row.original.zygomaImplants);
+          const siteDetails =
+            row.row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+              (site) => site.treatmentItemNumber === "688",
+            );
+          const zygomaImplants = siteDetails?.filter((site) =>
+            site.attachedSiteSpecificRecords?.[0]?.implantCategory?.includes(
+              "zygomatic",
+            ),
+          )?.length;
+          //const zygomaImplants = Number(row.original.zygomaImplants);
 
           return numberTypeFilterFunction(
             zygomaImplants,
@@ -1242,15 +1291,38 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
           );
         },
       },
+
       {
         id: "regularImplants",
         accessorKey: "regularImplants",
         header: "Regular Implants",
         cell: (row) => {
-          return row.row.original.regularImplants;
+          const siteDetails =
+            row.row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+              (site) => site.treatmentItemNumber === "688",
+            );
+          const regularImplants =
+            siteDetails?.filter(
+              (site) =>
+                !site.attachedSiteSpecificRecords?.[0]?.implantCategory?.includes(
+                  "zygomatic",
+                ),
+            )?.length || 0;
+          return regularImplants;
         },
         filterFn: (row, columnId, filterValue) => {
-          const regularImplants = Number(row.original.regularImplants);
+          const siteDetails =
+            row.row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+              (site) => site.treatmentItemNumber === "688",
+            );
+          const regularImplants =
+            siteDetails?.filter(
+              (site) =>
+                !site.attachedSiteSpecificRecords?.[0]?.implantCategory?.includes(
+                  "zygomatic",
+                ),
+            )?.length || 0;
+          // const regularImplants = Number(row.original.regularImplants);
 
           return numberTypeFilterFunction(
             regularImplants,
@@ -1260,13 +1332,32 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
           );
         },
       },
+
       {
         id: "totalImplants",
         accessorKey: "totalImplants",
         header: "Total Implants",
         cell: (row) => {
-          const zygomaImplants = Number(row.row.original.zygomaImplants) || 0;
-          const regularImplants = Number(row.row.original.regularImplants) || 0;
+          const siteDetails =
+            row.row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+              (site) => site.treatmentItemNumber === "688",
+            );
+          const regularImplants =
+            siteDetails?.filter(
+              (site) =>
+                !site.attachedSiteSpecificRecords?.[0]?.implantCategory?.includes(
+                  "zygomatic",
+                ),
+            )?.length || 0;
+          const zygomaImplants =
+            siteDetails?.filter((site) =>
+              site.attachedSiteSpecificRecords?.[0]?.implantCategory?.includes(
+                "zygomatic",
+              ),
+            )?.length || 0;
+
+          // const zygomaImplants = Number(row.row.original.zygomaImplants) || 0;
+          // const regularImplants = Number(row.row.original.regularImplants) || 0;
           return zygomaImplants + regularImplants;
         },
       },
@@ -1421,7 +1512,9 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
           id: `${column.key}`,
           accessorKey: `${column.key}_${column.group}`,
           header:
-            column.key === "dateOfFollowUp" ? "Date Of FollowUp" : column.label,
+            column.key === "dateOfFollowUp"
+              ? "Date of Last Review"
+              : column.label,
           cell: (row) => {
             if (column.group === "followUp") {
               const followUpData = row.row.original.recordFollowUpMatrix?.[0];
@@ -1448,8 +1541,21 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
                   return site.toothValue;
                 } else if (column?.subGroup === "ssFollowUp") {
                   const siteFollowUpRecords =
-                    site?.attachedSiteSpecificRecords?.[0]
-                      ?.attachedSiteSpecificFollowUp?.[0];
+                    site?.attachedSiteSpecificRecords?.[0]?.attachedSiteSpecificFollowUp?.sort(
+                      (a, b) => {
+                        const dateA = new Date(a?.recordFollowUpDate);
+                        const dateB = new Date(b?.recordFollowUpDate);
+                        return dateB - dateA;
+                      },
+                    )?.[0];
+                  if (column.type === "date") {
+                    return siteFollowUpRecords?.[column.key]
+                      ? format(
+                          new Date(siteFollowUpRecords?.[column.key]),
+                          "dd-MM-yyyy",
+                        )
+                      : "";
+                  }
 
                   return siteFollowUpRecords?.[column.key] || "-";
                 } else if (column.key === "implantCategory") {
@@ -1504,6 +1610,14 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
                   const siteFollowUpRecords =
                     site?.attachedSiteSpecificRecords?.[0]
                       ?.attachedSiteSpecificFollowUp?.[0];
+                  if (column.type === "date") {
+                    return siteFollowUpRecords?.[column.key]
+                      ? format(
+                          new Date(siteFollowUpRecords?.[column.key]),
+                          "dd-MM-yyyy",
+                        )
+                      : "";
+                  }
 
                   return siteFollowUpRecords?.[column.key];
                 }
@@ -1680,9 +1794,42 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
           cellValue =
             row.original.recordClinic?.map((clinic) => clinic.id).join(", ") ||
             null;
+        } else if (filterColumnId === "zygomaImplants") {
+          const siteDetails =
+            row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+              (site) => site.treatmentItemNumber === "688",
+            );
+          const zygomaImplants = siteDetails?.filter((site) =>
+            site.attachedSiteSpecificRecords?.[0]?.implantCategory?.includes(
+              "zygomatic",
+            ),
+          )?.length;
+          cellValue = zygomaImplants || 0;
+        } else if (filterColumnId === "regularImplants") {
+          const siteDetails =
+            row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+              (site) => site.treatmentItemNumber === "688",
+            );
+          const regularImplants =
+            siteDetails?.filter(
+              (site) =>
+                !site.attachedSiteSpecificRecords?.[0]?.implantCategory?.includes(
+                  "zygomatic",
+                ),
+            )?.length || 0;
+          cellValue = regularImplants;
         } else if (filterColumnId === "totalImplants") {
-          const zygomaImplants = Number(row.original.zygomaImplants) || 0;
-          const regularImplants = Number(row.original.regularImplants) || 0;
+          const siteDetails =
+            row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+              (site) => site.treatmentItemNumber === "688",
+            );
+          const zygomaImplants = siteDetails?.filter((site) =>
+            site.attachedSiteSpecificRecords?.[0]?.implantCategory?.includes(
+              "zygomatic",
+            ),
+          )?.length;
+          // const zygomaImplants = Number(row.original.zygomaImplants) || 0;
+          // const regularImplants = Number(row.original.regularImplants) || 0;
           cellValue = zygomaImplants + regularImplants;
         } else {
           cellValue = row.original?.[filterColumnId] || null;
@@ -1715,6 +1862,11 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
             filter?.value?.toValue,
             condition,
           ),
+        };
+      } else if (type === "string") {
+        return {
+          operation: filter.value.operation || "AND",
+          isTrue: stringTypeFilterFunction(cellValue, filterValue, condition),
         };
       }
     });
@@ -1889,23 +2041,23 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
     </Flex>
   ) : (
     <Flex w="100%" flexDirection={"column"} bgColor="#FCF8FF" minH="100vh">
+      <Flex
+        w="100%"
+        flexDirection={"column"}
+        position={"sticky"}
+        top="0"
+        zIndex={"99"}
+      >
         <Flex
           w="100%"
-          flexDirection={"column"}
-          position={"sticky"}
-          top="0"
-          zIndex={"99"}
+          bgColor="white"
+          align="center"
+          justify={"center"}
+          position="sticky"
+          p="2"
         >
-          <Flex
-            w="100%"
-            bgColor="white"
-            align="center"
-            justify={"center"}
-            position="sticky"
-            p="2"
-          >
-            <Flex w="100%" align="start" py="10px" maxW="2000px" mx="auto">
-              <Tabs
+          <Flex w="100%" align="start" py="10px" maxW="2000px" mx="auto">
+            <Tabs
               variant="unstyled"
               w="100%"
               align={"start"}
@@ -2923,6 +3075,10 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
                       fontSize={"13px"}
                       onChange={(e) => {
                         const value = e.target.value;
+                        if (e.target.value === "") {
+                          setColumnFilters([]);
+                          return;
+                        }
                         setColumnFilters([
                           {
                             id: "patientName",
