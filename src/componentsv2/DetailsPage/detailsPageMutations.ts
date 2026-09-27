@@ -813,16 +813,84 @@ export const itemSpecificationMutation = gql`
   mutation itemSpecificationMutation(
     $id: ID
     $title: String
-    $itemSpecificationMatrixBlocks: [itemSpecificationMatrix_MatrixBlockContainerInput]
-    $itemSpecificationMatrixSortOrder: [QueryArgument]
+    $enableInClinlog: Boolean
+    $implantBrand: String
+    $implantCategory: String
+    $implantLine: String
+    $surface: String
+    $implantBaseDiameter: String
+    $implantType: String
+    $implantLength: String
+    $serialSequenceBarCode: String
+    $placement: String
+    $trabecularBoneDensity: String
+    $boneVascularity: String
+    $graftingApplied: String
+    $graftMaterial: String
+    $intraOperativeSinusComplications: String
+    $crestalRest: String
+    $insertionTorque: String
+    $radiographicTrabecularDensityHu: String
+    $relevantBoneWidth: String
+    $preOperativeSinusDisease: String
+    $preOperativeSinusDiseaseManagement: String
+    $conformanceWithTreatmentPlan: String
+    $prf: String
+    $lotCode: String
+    $dateOfManufacture: String
+    $dateOfExpiry: String
+    $abutmentBrand: String
+    $abutmentCategory: String
+    $typeAndDiameter: String
+    $gingivalHeight: String
+    $abutmentHeight: String
+    $abutmentLength: String
+    $angleCorrectionAbutment: String
+    $abutmentSerialSequenceBarCode: String
+    $abutmentLotCode: String
+    $abutmentDateOfManufacture: String
+    $abutmentDateOfExpiry: String
   ) {
     save_treatmentItemSpecificationRecord_itemSpecificationAndDetails_Entry(
       id: $id
       title: $title
-      itemSpecificationMatrix: {
-        sortOrder: $itemSpecificationMatrixSortOrder
-        blocks: $itemSpecificationMatrixBlocks
-      }
+      enableInClinlog: $enableInClinlog
+      implantBrand: $implantBrand
+      implantCategory: $implantCategory
+      implantLine: $implantLine
+      surface: $surface
+      implantBaseDiameter: $implantBaseDiameter
+      implantType: $implantType
+      implantLength: $implantLength
+      serialSequenceBarCode: $serialSequenceBarCode
+      placement: $placement
+      trabecularBoneDensity: $trabecularBoneDensity
+      boneVascularity: $boneVascularity
+      graftingApplied: $graftingApplied
+      graftMaterial: $graftMaterial
+      intraOperativeSinusComplications: $intraOperativeSinusComplications
+      crestalRest: $crestalRest
+      insertionTorque: $insertionTorque
+      radiographicTrabecularDensityHu: $radiographicTrabecularDensityHu
+      relevantBoneWidth: $relevantBoneWidth
+      preOperativeSinusDisease: $preOperativeSinusDisease
+      preOperativeSinusDiseaseManagement: $preOperativeSinusDiseaseManagement
+      conformanceWithTreatmentPlan: $conformanceWithTreatmentPlan
+      prf: $prf
+      lotCode: $lotCode
+      dateOfManufacture: $dateOfManufacture
+      dateOfExpiry: $dateOfExpiry
+      abutmentBrand: $abutmentBrand
+      abutmentCategory: $abutmentCategory
+      typeAndDiameter: $typeAndDiameter
+      gingivalHeight: $gingivalHeight
+      abutmentHeight: $abutmentHeight
+      abutmentLength: $abutmentLength
+      angleCorrectionAbutment: $angleCorrectionAbutment
+      abutmentSerialSequenceBarCode: $abutmentSerialSequenceBarCode
+      abutmentLotCode: $abutmentLotCode
+      abutmentDateOfManufacture: $abutmentDateOfManufacture
+      abutmentDateOfExpiry: $abutmentDateOfExpiry
     ) {
       id
     }

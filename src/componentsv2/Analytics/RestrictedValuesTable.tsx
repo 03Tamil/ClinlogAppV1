@@ -119,8 +119,7 @@ export default function RestrictedValuesTable({
                       ?.attachedSiteSpecificFollowUp?.[0];
                   return siteFollowUpRecords?.[field.key];
                 }
-                return site.attachedSiteSpecificRecords?.[0]
-                  ?.itemSpecificationMatrix?.[0]?.[field.key];
+                return site.attachedSiteSpecificRecords?.[0]?.[field.key];
               });
               data[field.key] = siteSpecificData;
             } else if (field.key === "recordTreatmentDate") {

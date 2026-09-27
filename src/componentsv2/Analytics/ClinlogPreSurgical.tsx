@@ -48,11 +48,11 @@ function ClinlogPreSurgical({ clinlogRecordDetails }: preSurgicalProps) {
                   ?.implantFunctionAtFollowUp || "Unknown",
               boneDensity:
                 site?.attachedSiteSpecificRecords?.[0]
-                  ?.itemSpecificationMatrix?.[0]?.trabecularBoneDensity ||
+                  ?.trabecularBoneDensity ||
                 "Unknown",
               graftingApplied:
                 site?.attachedSiteSpecificRecords?.[0]
-                  ?.itemSpecificationMatrix?.[0]?.graftingApplied || "Unknown",
+                  ?.graftingApplied || "Unknown",
             };
           })
           .flat();

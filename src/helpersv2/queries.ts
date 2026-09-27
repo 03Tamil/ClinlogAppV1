@@ -3232,7 +3232,6 @@ export const clinlogNotesQuery = gql`
             id
             patientSurveyMatrix {
               ... on patientSurveyMatrix_patientSurvey_BlockType {
-                id
                 surveyDate
                 timeFromSurgery
                 patientSatisfactionAesthetic
@@ -3250,17 +3249,20 @@ export const clinlogNotesQuery = gql`
   }
 `;
 
-export const clinlogDataQuery = gql`
-  query clinlogDataQuery($id: [QueryArgument], $limit: Int, $offset: Int) {
-    entries(
-      section: "records"
-      enableClinlog: true
-      caseNumber: ["not", ""]
-      # orderBy: "recordTreatmentDate desc"
-      orderBy: "caseNumber desc"
+export const clinlogDataQueryNew = gql`
+  query clinlogDataQueryNew(
+    $id: [QueryArgument]
+    $limit: Int
+    $offset: Int
+    $recordClinic: [QueryArgument]
+    $collaboratorId: Int
+  ) {
+    entries: clinlogQuery(
       id: $id
       limit: $limit
       offset: $offset
+      recordClinic: $recordClinic
+      collaboratorId: $collaboratorId
     ) {
       ... on records_records_Entry {
         id
@@ -3270,20 +3272,10 @@ export const clinlogDataQuery = gql`
           ... on locations_locations_Entry {
             id
             locationShortName
-            locationOtherName
           }
         }
         caseNumber
         recordTreatmentDate
-        attachedAppointments {
-          ... on caseAppointments_default_Entry {
-            id
-            appointmentType
-            recordConsultationDate
-          }
-        }
-        dateCreated
-        dateUpdated
         sex
         recordDateOfBirth
         ageAtTimeOfSurgery
@@ -3301,8 +3293,6 @@ export const clinlogDataQuery = gql`
         lowerArchCondition
         oestrogen
         oralHygiene
-        recordEnquiryType
-        recordEnquiryTypeLabel: recordEnquiryType(label: true)
         treatmentTitle
         treatmentPlannedBy
         upperArchCondition
@@ -3314,15 +3304,10 @@ export const clinlogDataQuery = gql`
         postOpPhotos
         postOp2DOpg
         postOp3DOpg
-        # preOpImaging
-        # postOpImaging
         recordTreatmentRestorative {
-          id
-          firstName
-          lastName
+          fullName
         }
         recordTreatmentSurgeons {
-          id
           fullName
         }
         smoking
@@ -3339,6 +3324,8 @@ export const clinlogDataQuery = gql`
             timeFromSurgery
             zirconiaUpgrade
             smokingAtFollowUp
+            prostheticUpgrades
+            dateOfProstheticUpgrade
           }
         }
         attachedDentalCharts(chartStatus: ["approved", "modified"]) {
@@ -3346,7 +3333,6 @@ export const clinlogDataQuery = gql`
             id
             chartStatus
             defaultDentist {
-              id
               fullName
             }
             recordTreatmentDate
@@ -3378,50 +3364,199 @@ export const clinlogDataQuery = gql`
                         firstAbutmentLevelComplicationTimeFromSurgery
                         postOperativeSinusDisease
                         boneLoss
+                        graftConditionAtFollowUp
                       }
                     }
-                    itemSpecificationMatrix {
-                      ... on itemSpecificationMatrix_itemSpecs_BlockType {
+                    implantBrand
+                    implantCategory
+                    implantCategoryLabel: implantCategory(label: true)
+                    implantLine
+                    implantType
+                    implantBaseDiameter
+                    surface
+                    implantLength
+                    angleCorrectionAbutment
+                    placement
+                    placementLabel: placement(label: true)
+                    trabecularBoneDensity
+                    boneVascularity
+                    graftingApplied
+                    graftMaterial
+                    intraOperativeSinusComplications
+                    crestalRest
+                    insertionTorque
+                    relevantBoneWidth
+                    preOperativeSinusDisease
+                    preOperativeSinusDiseaseManagement
+                    conformanceWithTreatmentPlan
+                    prf
+                    abutmentCategory
+                    abutmentCategoryLabel: abutmentCategory(label: true)
+                    abutmentBrand
+                    gingivalHeight
+                    typeAndDiameter
+                    abutmentHeight
+                    abutmentLength
+                    abutmentSerialSequenceBarCode
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const clinlogDataQuery = gql`
+  query clinlogDataQuery($id: [QueryArgument], $limit: Int, $offset: Int) {
+    entries(
+      section: "records"
+      enableClinlog: true
+      caseNumber: ["not", ""]
+      # orderBy: "recordTreatmentDate desc"
+      orderBy: "caseNumber desc"
+      id: $id
+      limit: $limit
+      offset: $offset
+    ) {
+      ... on records_records_Entry {
+        id
+        recordFirstName
+        recordLastName
+        recordClinic {
+          ... on locations_locations_Entry {
+            id
+            locationShortName
+          }
+        }
+        caseNumber
+        recordTreatmentDate
+        sex
+        recordDateOfBirth
+        ageAtTimeOfSurgery
+        archType
+        alcohol
+        bruxism
+        dateOfInsertion
+        diabetesAndOsteoporosis
+        diagnosisOrAetiology
+        edentulous
+        enableClinlog
+        immediateAesthetics
+        immediateFunctionSpeech
+        immediateRestoration
+        lowerArchCondition
+        oestrogen
+        oralHygiene
+        treatmentTitle
+        treatmentPlannedBy
+        upperArchCondition
+        zygomaImplants
+        regularImplants
+        isImageIdentifiable
+        preOpPhotos
+        preOpReconstructedOpg
+        postOpPhotos
+        postOp2DOpg
+        postOp3DOpg
+        # preOpImaging
+        # postOpImaging
+        recordTreatmentRestorative {
+          fullName
+        }
+        recordTreatmentSurgeons {
+          fullName
+        }
+        smoking
+        recordFollowUpMatrix {
+          ... on recordFollowUpMatrix_followUp_BlockType {
+            id
+            dateOfFollowUp
+            examiner
+            examinerRadiographic
+            hygieneAtFollowUp
+            numberOfRestorativeBreakages
+            numberOfReviews
+            performanceOverFollowUpPeriod
+            timeFromSurgery
+            zirconiaUpgrade
+            smokingAtFollowUp
+            prostheticUpgrades
+            dateOfProstheticUpgrade
+          }
+        }
+        attachedDentalCharts(chartStatus: ["approved", "modified"]) {
+          ... on dentalChartRecords_proposedTreatmentChart_Entry {
+            id
+            chartStatus
+            defaultDentist {
+              fullName
+            }
+            recordTreatmentDate
+            proposedTreatmentToothMatrix {
+              ... on proposedTreatmentToothMatrix_toothDetails_BlockType {
+                id
+                toothValue
+                treatmentItemNumber
+                attachedSiteSpecificRecords {
+                  ... on treatmentItemSpecificationRecord_itemSpecificationAndDetails_Entry {
+                    id
+                    attachedSiteSpecificFollowUp {
+                      ... on siteSpecificFollowUp_default_Entry {
                         id
-                        implantBrand
-                        implantCategory
-                        implantCategoryLabel: implantCategory(label: true)
-                        implantLine
-                        implantType
-                        implantBaseAndDiameter
-                        surface
-                        implantLength
-                        angleCorrectionAbutment
-                        placement
-                        placementLabel: placement(label: true)
-                        trabecularBoneDensity
-                        boneVascularity
-                        graftingApplied
-                        graftMaterial
-                        intraOperativeSinusComplications
-                        crestalRest
-                        insertionTorque
-                        relevantBoneWidth
-                        preOperativeSinusDisease
-                        preOperativeSinusDiseaseManagement
-                        conformanceWithTreatmentPlan
-                        prf
+                        recordFollowUpDate
+                        implantFunctionAtFollowUp
+                        abutmentFunctionAtFollowUp
+                        sinusitis
+                        facialSwelling
+                        inflammation
+                        pain
+                        suppuration
+                        recession
+                        midShaftSoftTissueDehiscence
+                        firstAbutmentLevelComplication
+                        otherAbutmentLevelComplications
+                        totalNumberOfAbutmentLevelComplications
+                        dateOfFirstAbutmentLevelComplication
+                        firstAbutmentLevelComplicationTimeFromSurgery
+                        postOperativeSinusDisease
+                        boneLoss
+                        graftConditionAtFollowUp
                       }
                     }
-                    abutmentDetailsMatrix {
-                      ... on abutmentDetailsMatrix_abutment_BlockType {
-                        id
-                        abutmentCategory
-                        abutmentCategoryLabel: abutmentCategory(label: true)
-                        abutmentBrand
-                        gingivalHeight
-                        typeAndDiameter
-                        abutmentHeight
-                        angleCorrectionAbutment
-                        abutmentLength
-                        abutmentSerialSequenceBarCode
-                      }
-                    }
+                    implantBrand
+                    implantCategory
+                    implantCategoryLabel: implantCategory(label: true)
+                    implantLine
+                    implantType
+                    implantBaseDiameter
+                    surface
+                    implantLength
+                    angleCorrectionAbutment
+                    placement
+                    placementLabel: placement(label: true)
+                    trabecularBoneDensity
+                    boneVascularity
+                    graftingApplied
+                    graftMaterial
+                    intraOperativeSinusComplications
+                    crestalRest
+                    insertionTorque
+                    relevantBoneWidth
+                    preOperativeSinusDisease
+                    preOperativeSinusDiseaseManagement
+                    conformanceWithTreatmentPlan
+                    prf
+                    abutmentCategory
+                    abutmentCategoryLabel: abutmentCategory(label: true)
+                    abutmentBrand
+                    gingivalHeight
+                    typeAndDiameter
+                    abutmentHeight
+                    abutmentLength
+                    abutmentSerialSequenceBarCode
                   }
                 }
               }

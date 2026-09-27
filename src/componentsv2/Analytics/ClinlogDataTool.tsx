@@ -140,14 +140,39 @@ export default function ClinlogDataTool({
     field2: "",
     value2: "",
   });
+
   const implantsData = useMemo(() => {
     const result = [];
     const regularImplants = filteredData?.reduce((acc, record) => {
-      const count = acc + Number(record?.regularImplants || 0);
+      const siteDetails =
+        record?.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+          (site) =>
+            site.treatmentItemNumber === "688" &&
+            site?.attachedSiteSpecificRecords?.length > 0,
+        );
+      const regularImplants = siteDetails?.filter((site) => {
+        const implantCategory =
+          site?.attachedSiteSpecificRecords?.[0]?.implantCategory || "";
+        return !implantCategory.includes("zygomatic");
+      })?.length;
+      //  const count = acc + Number(record?.regularImplants || 0);
+      const count = acc + (regularImplants || 0);
       return count;
     }, 0);
     const zygomaImplants = filteredData?.reduce((acc, record) => {
-      const count = acc + Number(record?.zygomaImplants || 0);
+      const siteDetails =
+        record?.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+          (site) =>
+            site.treatmentItemNumber === "688" &&
+            site?.attachedSiteSpecificRecords?.length > 0,
+        );
+      const zygomaImplants = siteDetails?.filter((site) => {
+        const implantCategory =
+          site?.attachedSiteSpecificRecords?.[0]?.implantCategory || "";
+        return implantCategory.includes("zygomatic");
+      })?.length;
+      //const count = acc + Number(record?.zygomaImplants || 0);
+      const count = acc + (zygomaImplants || 0);
       return count;
     }, 0);
 
@@ -161,6 +186,7 @@ export default function ClinlogDataTool({
     });
     return result;
   }, [filteredData]);
+
   const implantsData_state: {
     options: ApexOptions;
     series: any[];
@@ -351,35 +377,49 @@ export default function ClinlogDataTool({
             );
           })
           ?.flat();
-
-        options?.forEach((key) => {
-          const value = siteDetails?.filter((record) => {
-            // if (key.value === "N/A") return record?.[selectedField] === null;
-            if (selectedField === "toothValue") {
-              return record?.toothValue === key?.value;
-            } else if (
-              record?.attachedSiteSpecificRecords?.[0]
-                ?.attachedSiteSpecificFollowUp?.length > 0 &&
-              clinlogFilterColumns?.find((col) => col.key === selectedField)
-                ?.subGroup === "ssFollowUp"
-            ) {
+        if (selectedField === "implantLine") {
+          implantLineOptions?.forEach((key) => {
+            const value = siteDetails?.filter((record) => {
               return (
+                record?.attachedSiteSpecificRecords?.[0]?.[selectedField] ===
+                key
+              );
+            }).length;
+            result.push({
+              x: key,
+              y: value,
+            });
+          });
+        } else {
+          options?.forEach((key) => {
+            const value = siteDetails?.filter((record) => {
+              // if (key.value === "N/A") return record?.[selectedField] === null;
+              if (selectedField === "toothValue") {
+                return record?.toothValue === key?.value;
+              } else if (
                 record?.attachedSiteSpecificRecords?.[0]
-                  ?.attachedSiteSpecificFollowUp?.[0]?.[selectedField] ===
+                  ?.attachedSiteSpecificFollowUp?.length > 0 &&
+                clinlogFilterColumns?.find((col) => col.key === selectedField)
+                  ?.subGroup === "ssFollowUp"
+              ) {
+                return (
+                  record?.attachedSiteSpecificRecords?.[0]
+                    ?.attachedSiteSpecificFollowUp?.[0]?.[selectedField] ===
+                  key?.value
+                );
+              }
+
+              return (
+                record?.attachedSiteSpecificRecords?.[0]?.[selectedField] ===
                 key?.value
               );
-            }
-
-            return (
-              record?.attachedSiteSpecificRecords?.[0]
-                ?.itemSpecificationMatrix?.[0]?.[selectedField] === key?.value
-            );
-          }).length;
-          result.push({
-            x: key?.name,
-            y: value,
+            }).length;
+            result.push({
+              x: key?.name,
+              y: value,
+            });
           });
-        });
+        }
       }
     }
     return result;
@@ -492,8 +532,7 @@ export default function ClinlogDataTool({
             );
           }
           return (
-            record.attachedSiteSpecificRecords?.[0]
-              ?.itemSpecificationMatrix?.[0]?.[compareParams.field1] ===
+            record.attachedSiteSpecificRecords?.[0]?.[compareParams.field1] ===
             compareParams.value1
           );
         }).length;
@@ -527,7 +566,7 @@ export default function ClinlogDataTool({
           //       return site.toothValue;
           //     }
           //     return site.attachedSiteSpecificRecords?.[0]
-          //       ?.itemSpecificationMatrix?.[0]?.[compareParams.field1];
+          //       ?.[compareParams.field1];
           //   });
           //   return siteSpecificData?.includes(value1);
           // }
@@ -571,8 +610,7 @@ export default function ClinlogDataTool({
             );
           }
           return (
-            record.attachedSiteSpecificRecords?.[0]
-              ?.itemSpecificationMatrix?.[0]?.[compareParams.field2] ===
+            record.attachedSiteSpecificRecords?.[0]?.[compareParams.field2] ===
             compareParams.value2
           );
         }).length;
@@ -603,7 +641,7 @@ export default function ClinlogDataTool({
           //       return site.toothValue;
           //     }
           //     return site.attachedSiteSpecificRecords?.[0]
-          //       ?.itemSpecificationMatrix?.[0]?.[compareParams.field2];
+          //       ?.[compareParams.field2];
           //   });
           //   return siteSpecificData?.includes(value2);
           // }
@@ -951,6 +989,9 @@ export default function ClinlogDataTool({
     smoking_ps: false,
     implantCategory: false,
     implantLine: false,
+    graftConditionAtFollowUp: false,
+    prostheticUpgrades: false,
+    dateOfProstheticUpgrade: false,
   });
   const [reportType, setReportType] = useState("");
   const reportColumns = {
@@ -1154,10 +1195,52 @@ export default function ClinlogDataTool({
             " " +
             cell.row.original.recordLastName
           );
+        } else if (cell.column.id === "regularImplants") {
+          const siteDetails =
+            cell.row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+              (site) => site.treatmentItemNumber === "688",
+            );
+          const zygomaImplants =
+            siteDetails?.filter(
+              (site) =>
+                !site?.attachedSiteSpecificRecords?.[0]?.implantCategory?.includes(
+                  "zygomatic",
+                ),
+            )?.length || 0;
+          return zygomaImplants;
+        } else if (cell.column.id === "zygomaImplants") {
+          const siteDetails =
+            cell.row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+              (site) => site.treatmentItemNumber === "688",
+            );
+          const zygomaImplants =
+            siteDetails?.filter((site) =>
+              site?.attachedSiteSpecificRecords?.[0]?.implantCategory?.includes(
+                "zygomatic",
+              ),
+            )?.length || 0;
+          return zygomaImplants;
         } else if (cell.column.id === "totalImplants") {
+          // const regularImplants =
+          //   Number(cell.row.original?.regularImplants) || 0;
+          // const zygomaImplants = Number(cell.row.original?.zygomaImplants) || 0;
+          const siteDetails =
+            cell.row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+              (site) => site.treatmentItemNumber === "688",
+            );
           const regularImplants =
-            Number(cell.row.original?.regularImplants) || 0;
-          const zygomaImplants = Number(cell.row.original?.zygomaImplants) || 0;
+            siteDetails?.filter(
+              (site) =>
+                !site?.attachedSiteSpecificRecords?.[0]?.implantCategory?.includes(
+                  "zygomatic",
+                ),
+            )?.length || 0;
+          const zygomaImplants =
+            siteDetails?.filter((site) =>
+              site?.attachedSiteSpecificRecords?.[0]?.implantCategory?.includes(
+                "zygomatic",
+              ),
+            )?.length || 0;
           return regularImplants + zygomaImplants;
         } else if (cell.column.id === "recordTreatmentSurgeons") {
           const surgeons = cell.row.original?.recordTreatmentSurgeons || [];
@@ -1197,8 +1280,8 @@ export default function ClinlogDataTool({
               return site.toothValue;
             } else if (cell.column.id === "implantCategory") {
               return (
-                site.attachedSiteSpecificRecords?.[0]
-                  ?.itemSpecificationMatrix?.[0]?.implantCategoryLabel || ""
+                site.attachedSiteSpecificRecords?.[0]?.implantCategoryLabel ||
+                ""
               );
             } else if (ssFollowUpColumns?.includes(cell.column.id)) {
               const siteFollowUpRecords =
@@ -1210,7 +1293,7 @@ export default function ClinlogDataTool({
               );
             }
             return (
-              site.attachedSiteSpecificRecords?.[0]?.itemSpecificationMatrix?.[0]?.[
+              site.attachedSiteSpecificRecords?.[0]?.[
                 cell.column.id
               ]?.replaceAll(",", "") || ""
             );
@@ -1340,6 +1423,30 @@ export default function ClinlogDataTool({
             " " +
             cell.row.original.recordLastName
           );
+        } else if (cell.column.id === "zygomaImplants") {
+          const siteDetails =
+            cell.row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+              (site) => site.treatmentItemNumber === "688",
+            );
+          const zygomaImplants =
+            siteDetails?.filter((site) =>
+              site?.attachedSiteSpecificRecords?.[0]?.implantCategory?.includes(
+                "zygomatic",
+              ),
+            )?.length || 0;
+          return zygomaImplants;
+        } else if (cell.column.id === "regularImplants") {
+          const siteDetails =
+            cell.row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+              (site) => site.treatmentItemNumber === "688",
+            );
+          const regularImplants =
+            siteDetails?.filter((site) => {
+              const implantCategory =
+                site?.attachedSiteSpecificRecords?.[0]?.implantCategory || "";
+              return !implantCategory.includes("zygomatic");
+            })?.length || 0;
+          return regularImplants;
         } else if (cell.column.id === "totalImplants") {
           const regularImplants =
             Number(cell.row.original?.regularImplants) || 0;
@@ -1383,8 +1490,8 @@ export default function ClinlogDataTool({
               return site.toothValue;
             } else if (cell.column.id === "implantCategory") {
               return (
-                site.attachedSiteSpecificRecords?.[0]
-                  ?.itemSpecificationMatrix?.[0]?.implantCategoryLabel || ""
+                site.attachedSiteSpecificRecords?.[0]?.implantCategoryLabel ||
+                ""
               );
             } else if (ssFollowUpColumns?.includes(cell.column.id)) {
               const siteFollowUpRecords =
@@ -1396,7 +1503,7 @@ export default function ClinlogDataTool({
               );
             }
             return (
-              site.attachedSiteSpecificRecords?.[0]?.itemSpecificationMatrix?.[0]?.[
+              site.attachedSiteSpecificRecords?.[0]?.[
                 cell.column.id
               ]?.replaceAll(",", "") || ""
             );
@@ -1564,6 +1671,7 @@ export default function ClinlogDataTool({
                 surgeonOptions={recordTreatmentSurgeonOptions}
                 selectCustomStyle={selectCustomStyle}
                 locationOptions={locationOptions}
+                implantLineOptions={implantLineOptions}
               />
               <SimpleGrid
                 columns={{ base: 1, md: 1, lg: 2, xl: 3 }}
@@ -1575,12 +1683,13 @@ export default function ClinlogDataTool({
                   fromReports={true}
                 />
 
-                <Card className="flex flex-col justify-center w-auto p-2">
+                <Card className="flex flex-col justify-center w-full p-2">
                   <ReactApexChart
+                    key={filteredData?.length + "_key"}
                     series={implantsData_state.series}
                     options={implantsData_state.options}
                     type="pie"
-                    width="340"
+                    width="100%"
                     height={390}
                   />
                 </Card>
@@ -1843,14 +1952,16 @@ export default function ClinlogDataTool({
                               (column.type !== "number" ||
                                 column.key === "ageAtTimeOfSurgery"),
                           )
-                          .map((column) => (
-                            <option
-                              key={column.key + "field"}
-                              value={column.key}
-                            >
-                              {column.label}
-                            </option>
-                          ))}
+                          .map((column) => {
+                            return (
+                              <option
+                                key={column.key + "field"}
+                                value={column.key}
+                              >
+                                {column.label}
+                              </option>
+                            );
+                          })}
                       </Select>{" "}
                     </>
                   )}
@@ -2159,6 +2270,7 @@ export default function ClinlogDataTool({
                 surgeonOptions={recordTreatmentSurgeonOptions}
                 selectCustomStyle={selectCustomStyle}
                 locationOptions={locationOptions}
+                implantLineOptions={implantLineOptions}
               />
               <Tabs colorScheme={"purple"}>
                 <TabList>

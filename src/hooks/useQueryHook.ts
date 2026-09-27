@@ -8,6 +8,7 @@ export const getData = async (query, variables = {}, sessionToken) => {
   const graphQLClient = new GraphQLClient(process.env.NEXT_PUBLIC_ENDPOINT, {
     headers: {
       Authorization: `JWT ${sessionToken}`,
+      // Authorization: `Bearer ZgQbyv8v3C32FKXtCosAAO6FMxvtMjvg`,
     },
   });
   const result = await graphQLClient.request(query, variables);
@@ -17,7 +18,7 @@ export const getData = async (query, variables = {}, sessionToken) => {
 export const sendData = async (mutation, variables = {}) => {
   const session = await getSession();
   const fullVariables = {
-    ...variables,
+    ...variables, 
     userId: session?.userId,
   };
 

@@ -686,15 +686,12 @@ export default function StandardReports({
           ?.filter((site) => site.treatmentItemNumber === "688");
         const onlyRegularImplants = allSites?.filter((site) => {
           const implantCategory =
-            site.attachedSiteSpecificRecords?.[0]?.itemSpecificationMatrix?.[0]
-              ?.implantCategoryLabel;
+            site.attachedSiteSpecificRecords?.[0]?.implantCategoryLabel;
           return implantCategory?.includes("Regular Implant");
         });
 
         const placementData = onlyRegularImplants?.reduce((acc, site) => {
-          const placement =
-            site?.attachedSiteSpecificRecords?.[0]?.itemSpecificationMatrix?.[0]
-              ?.placement;
+          const placement = site?.attachedSiteSpecificRecords?.[0]?.placement;
           const placementKey =
             placement?.length > 0 ? placement : "Placement (Not Recorded)";
           acc[placementKey] = (acc[placementKey] || 0) + 1;
@@ -713,14 +710,11 @@ export default function StandardReports({
         });
         const onlyZygomaImplants = allSites?.filter((site) => {
           const implantCategory =
-            site.attachedSiteSpecificRecords?.[0]?.itemSpecificationMatrix?.[0]
-              ?.implantCategoryLabel;
+            site.attachedSiteSpecificRecords?.[0]?.implantCategoryLabel;
           return implantCategory?.includes("Zygomatic Implant");
         });
         const zygomaPlacementData = onlyZygomaImplants?.reduce((acc, site) => {
-          const placement =
-            site?.attachedSiteSpecificRecords?.[0]?.itemSpecificationMatrix?.[0]
-              ?.placement;
+          const placement = site?.attachedSiteSpecificRecords?.[0]?.placement;
           const placementKey =
             placement?.length > 0 ? placement : "Placement (Not Recorded)";
           acc[placementKey] = (acc[placementKey] || 0) + 1;
@@ -741,17 +735,14 @@ export default function StandardReports({
 
         const otherImplants = allSites?.filter((site) => {
           const implantCategory =
-            site.attachedSiteSpecificRecords?.[0]?.itemSpecificationMatrix?.[0]
-              ?.implantCategoryLabel;
+            site.attachedSiteSpecificRecords?.[0]?.implantCategoryLabel;
           return (
             !implantCategory?.includes("Regular Implant") &&
             !implantCategory?.includes("Zygomatic Implant")
           );
         });
         const otherPlacementData = otherImplants?.reduce((acc, site) => {
-          const placement =
-            site?.attachedSiteSpecificRecords?.[0]?.itemSpecificationMatrix?.[0]
-              ?.placement;
+          const placement = site?.attachedSiteSpecificRecords?.[0]?.placement;
           const placementKey = "Placement (Not Recorded)";
           acc[placementKey] = (acc[placementKey] || 0) + 1;
           return acc;
@@ -779,8 +770,7 @@ export default function StandardReports({
                   ...site,
                   key:
                     record?.[colField] ||
-                    site?.attachedSiteSpecificRecords?.[0]
-                      ?.itemSpecificationMatrix?.[0]?.[colField] ||
+                    site?.attachedSiteSpecificRecords?.[0]?.[colField] ||
                     "Not Recorded",
                 };
               },
@@ -978,8 +968,7 @@ export default function StandardReports({
                   ...site,
                   key:
                     record?.[colField] ||
-                    site?.attachedSiteSpecificRecords?.[0]
-                      ?.itemSpecificationMatrix?.[0]?.[colField],
+                    site?.attachedSiteSpecificRecords?.[0]?.[colField],
                 };
               },
             ),
@@ -1048,8 +1037,7 @@ export default function StandardReports({
                   ...site,
                   key:
                     record?.[colField] ||
-                    site?.attachedSiteSpecificRecords?.[0]
-                      ?.itemSpecificationMatrix?.[0]?.[colField],
+                    site?.attachedSiteSpecificRecords?.[0]?.[colField],
                 };
               },
             ),
@@ -1119,8 +1107,7 @@ export default function StandardReports({
                   ...site,
                   key:
                     record?.[colField] ||
-                    site?.attachedSiteSpecificRecords?.[0]
-                      ?.itemSpecificationMatrix?.[0]?.[colField],
+                    site?.attachedSiteSpecificRecords?.[0]?.[colField],
                 };
               },
             ),
@@ -1195,8 +1182,7 @@ export default function StandardReports({
                   ...site,
                   key:
                     record?.[colField] ||
-                    site?.attachedSiteSpecificRecords?.[0]
-                      ?.itemSpecificationMatrix?.[0]?.[colField],
+                    site?.attachedSiteSpecificRecords?.[0]?.[colField],
                 };
               },
             ),
@@ -1278,8 +1264,7 @@ export default function StandardReports({
                   ...site,
                   key:
                     record?.[colField] ||
-                    site?.attachedSiteSpecificRecords?.[0]
-                      ?.itemSpecificationMatrix?.[0]?.[colField],
+                    site?.attachedSiteSpecificRecords?.[0]?.[colField],
                 };
               },
             ),
@@ -1364,7 +1349,7 @@ export default function StandardReports({
               record.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
                 (site) =>
                   site.treatmentItemNumber === "688" &&
-                  site.attachedSiteSpecificRecords?.[0]?.itemSpecificationMatrix?.[0].implantCategoryLabel?.includes(
+                  site.attachedSiteSpecificRecords?.[0]?.implantCategoryLabel?.includes(
                     "Zygomatic Implant",
                   ),
               ) || [];
@@ -1392,7 +1377,7 @@ export default function StandardReports({
               record.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
                 (site) =>
                   site.treatmentItemNumber === "688" &&
-                  site.attachedSiteSpecificRecords?.[0]?.itemSpecificationMatrix?.[0].implantCategoryLabel?.includes(
+                  site.attachedSiteSpecificRecords?.[0]?.implantCategoryLabel?.includes(
                     "Regular Implant",
                   ),
               ) || [];
@@ -1546,8 +1531,7 @@ export default function StandardReports({
                 return {
                   id: site?.id,
                   field:
-                    site.attachedSiteSpecificRecords?.[0]
-                      ?.itemSpecificationMatrix?.[0]?.[field] ||
+                    site.attachedSiteSpecificRecords?.[0]?.[field] ||
                     `${field} (Not Recorded)`,
                 };
               });
@@ -1824,8 +1808,7 @@ export default function StandardReports({
   //       .filter((site) => site.treatmentItemNumber === "688");
   //     const onlyRegularImplants = allSites?.filter((site) => {
   //       const implantCategory =
-  //         site.attachedSiteSpecificRecords?.[0]?.itemSpecificationMatrix?.[0]
-  //           ?.implantCategoryLabel;
+  //         site.attachedSiteSpecificRecords?.[0]?.implantCategoryLabel;
   //       return (
   //         implantCategory?.includes("Regular Implant") ||
   //         implantCategory?.includes("Other")
@@ -1836,8 +1819,7 @@ export default function StandardReports({
   //         id: site.id,
   //         toothValue: site.toothValue,
   //         placement:
-  //           site.attachedSiteSpecificRecords?.[0]?.itemSpecificationMatrix?.[0]
-  //             ?.placement,
+  //           site.attachedSiteSpecificRecords?.[0]?.placement,
   //       };
   //     });
   //   }
@@ -1968,11 +1950,14 @@ export default function StandardReports({
               }}
             >
               <option value="">-- Select --</option>
-              {reportOptions.map((report) => (
-                <option key={report.value} value={report.value}>
-                  {report.name}
-                </option>
-              ))}
+              {reportOptions.map(
+                (report) =>
+                  report.value !== "caseSuccessRate" && (
+                    <option key={report.value} value={report.value}>
+                      {report.name}
+                    </option>
+                  ),
+              )}
             </Select>
           </Flex>
         </Flex>
@@ -2045,18 +2030,50 @@ export default function StandardReports({
                           <Th
                             key={field + "h1"}
                             colSpan={
-                              field === "toothValue"
-                                ? toothValueBygroup.length + 2
-                                : field === "implantCategory"
-                                  ? 5
-                                  : reportType === "immediacy" ||
-                                      reportType === "timeToImmediateFinalTeeth"
-                                    ? 2
-                                    : reportType?.includes(
-                                          "complicationsReport",
-                                        )
-                                      ? 10
-                                      : 3
+                              [
+                                "suppurationVsImplantType",
+                                "complicationsReportByBruxism",
+                                "midShaftDehiscenceVsImplantType",
+                                "recessionVsImplantType",
+                                "inflammationVsImplantType",
+                                "complicationsReportByImplantType",
+                                "surveyVsOpposingArch",
+                              ]?.includes(reportType)
+                                ? 10
+                                : [
+                                      "sinusitisAtFollowUpVsPreOpSinusDisease",
+                                      "midShaftDehiscenceVsHygiene",
+                                      "midShaftDehiscenceVsBruxism",
+                                      "midShaftDehiscenceVsDiagnosisAetiology",
+                                      "recessionVsHygiene",
+                                      "recessionVsBruxism",
+                                      "recessionVsDiagnosisAetiology",
+                                      "inflammationVsHygiene",
+                                      "inflammationVsBruxism",
+                                      "inflammationVsDiagnosisAetiology",
+                                      "complicationsReportByHygiene",
+                                      "complicationsReportByBruxism",
+                                      "complicationsReportByDiagnosisAetiology",
+                                      "conformanceVsArchConditionOther",
+                                      "conformanceVsArchConditionEdentulous",
+                                      "surveyVsArchCondition",
+                                    ]?.includes(reportType)
+                                  ? 6
+                                  : [
+                                        "complicationsReportBySmoking",
+                                        "placementDistribution",
+                                      ]?.includes(reportType)
+                                    ? 5
+                                    : [
+                                          "sinusitisAtFollowUpVSPreOpSinusDiseaseManagement",
+                                        ]?.includes(reportType)
+                                      ? 4
+                                      : [
+                                            "immediacy",
+                                            "timeToImmediateFinalTeeth",
+                                          ].includes(reportType)
+                                        ? 2
+                                        : 3
                             }
                             textAlign={"center"}
                             bgColor={"#452A7E"}
@@ -2324,7 +2341,7 @@ export default function StandardReports({
               </Thead>
               <Tbody>
                 {selectedRows
-                  ?.map((group) => group.fields)
+                  ?.map((group, i) => group.fields)
                   ?.flat()
                   ?.map((row, index) => {
                     const rowData = tableData?.filter(
@@ -2361,7 +2378,7 @@ export default function StandardReports({
                                 })
                               : rowField?.options;
                     return (
-                      <React.Fragment key={row + index}>
+                      <React.Fragment key={row + index + "fragment_"}>
                         {index === 0 && (
                           <Tr key={row + index + "sample"} bgColor="#E2EFFC">
                             <Td
@@ -2880,7 +2897,7 @@ export default function StandardReports({
                                           (site) =>
                                             site?.treatmentItemNumber ===
                                               "688" &&
-                                            site.attachedSiteSpecificRecords?.[0]?.itemSpecificationMatrix?.[0].implantCategoryLabel?.includes(
+                                            site.attachedSiteSpecificRecords?.[0]?.implantCategoryLabel?.includes(
                                               "Zygomatic Implant",
                                             ),
                                         ) || [];
@@ -2889,7 +2906,7 @@ export default function StandardReports({
                                           (site) =>
                                             site?.treatmentItemNumber ===
                                               "688" &&
-                                            site.attachedSiteSpecificRecords?.[0]?.itemSpecificationMatrix?.[0].implantCategoryLabel?.includes(
+                                            site.attachedSiteSpecificRecords?.[0]?.implantCategoryLabel?.includes(
                                               "Regular Implant",
                                             ),
                                         ) || [];
@@ -2898,10 +2915,10 @@ export default function StandardReports({
                                           (site) =>
                                             site?.treatmentItemNumber ===
                                               "688" &&
-                                            !site.attachedSiteSpecificRecords?.[0]?.itemSpecificationMatrix?.[0].implantCategoryLabel?.includes(
+                                            !site.attachedSiteSpecificRecords?.[0]?.implantCategoryLabel?.includes(
                                               "Zygomatic Implant",
                                             ) &&
-                                            !site.attachedSiteSpecificRecords?.[0]?.itemSpecificationMatrix?.[0].implantCategoryLabel?.includes(
+                                            !site.attachedSiteSpecificRecords?.[0]?.implantCategoryLabel?.includes(
                                               "Regular Implant",
                                             ),
                                         ) || [];

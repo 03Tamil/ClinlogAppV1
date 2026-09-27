@@ -17,7 +17,6 @@ import { GoMail } from "react-icons/go"
 import { ImTable } from "react-icons/im"
 import { RiDashboardFill, RiLogoutBoxRLine } from "react-icons/ri"
 import { sidebarToggleAtom } from "../store/store"
-// import { useV2Router } from "./Dashboard/Helpers/routerHelpers"
 
 export default function Sidebar() {
   const [sidebarOpen, sidebarToggle] = useAtom(sidebarToggleAtom)
@@ -80,7 +79,7 @@ export default function Sidebar() {
               <Button
                 onClick={() => {
                   sidebarToggle(false)
-                  router.push("/pagesv2/signout")
+                  router.push("/signout")
                 }}
                 leftIcon={<Icon as={RiLogoutBoxRLine} />}
                 variant="ghost"

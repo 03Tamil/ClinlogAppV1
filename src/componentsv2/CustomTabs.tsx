@@ -8,7 +8,7 @@ import {
 } from "@chakra-ui/react";
 import { Fallback } from "helpersv2/Fallback";
 import { useAtom } from "jotai";
-import { useV2Router } from "componentsv2/Dashboard/Helpers/routerHelpers";
+import { useRouter } from "next/router";
 import { useEffect, useRef } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import {
@@ -23,7 +23,7 @@ type TabProps = {
 };
 
 export default function CustomTabs({ tabs, customTabsRef }: TabProps) {
-  const router = useV2Router();
+  const router = useRouter();
   const isDashboard = router.pathname === "/dashboard";
   const [treatmentProposalTabPage, setTreatmentProposalTabPage] = useAtom(
     treatmentProposalTabPageAtom

@@ -18,7 +18,7 @@ import {
 import { yupResolver } from "@hookform/resolvers/yup";
 import { gql } from "graphql-request";
 import { Session } from "next-auth";
-import { useV2Router } from "componentsv2/Dashboard/Helpers/routerHelpers";
+import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { mixed, object, string } from "yup";
@@ -53,7 +53,7 @@ export default function StaffSupportTicketForm({
   session,
   defaultValues,
 }: SupportTicketFormProps) {
-  const router = useV2Router();
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const validationSchema = object({
@@ -181,7 +181,7 @@ export default function StaffSupportTicketForm({
                 <Text fontWeight={"bold"}>
                   You are not logged into your account - If you have an account
                   and are not experencing log in issues{" "}
-                  <Link href={"/pagesv2/"} className={"link"}>
+                  <Link href={"/"} className={"link"}>
                     log in to your account
                   </Link>{" "}
                   and then use this form to contact your clinic directly.

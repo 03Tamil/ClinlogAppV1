@@ -263,10 +263,10 @@ function ClinlogPostSurgical({ clinlogRecordDetails }: postSurgicalProps) {
                     ?.attachedSiteSpecificFollowUp?.[0]?.sinusitis || "No",
                 inflammation:
                   site?.attachedSiteSpecificRecords?.[0]
-                    ?.itemSpecificationMatrix?.[0]?.inflammation || "No",
+                    ?.inflammation || "No",
                 pain:
                   site?.attachedSiteSpecificRecords?.[0]
-                    ?.itemSpecificationMatrix?.[0]?.pain || "No",
+                    ?.pain || "No",
               };
             })
             .flat();

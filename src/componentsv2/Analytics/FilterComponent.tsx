@@ -9,6 +9,7 @@ import {
   NumberInputStepper,
   Select,
   SimpleGrid,
+  Spacer,
   Text,
 } from "@chakra-ui/react";
 import { set } from "date-fns";
@@ -80,6 +81,7 @@ export default function FilterComponent({
       //  setStandardReport(true);
     } else if (globalFilter.length === 0 && standardReport) {
       setFilterArray([]);
+
       setStandardReport(false);
     }
   }, [globalFilter, standardReport]);
@@ -108,6 +110,7 @@ export default function FilterComponent({
               <Select
                 value={item.group}
                 fontSize={"13px"}
+                disabled={standardReport}
                 onChange={(e) => {
                   const group = e.target.value;
                   setFilterArray(
@@ -144,6 +147,7 @@ export default function FilterComponent({
                 <>
                   <Select
                     fontSize={"13px"}
+                    disabled={standardReport}
                     onChange={(e) => {
                       const key = e.target.value;
 
@@ -169,17 +173,26 @@ export default function FilterComponent({
                     <option value="">-- Select Field --</option>
                     {clinlogFilterColumns
                       .filter((column) => column.group === item.group)
-                      .map((column) => (
-                        <option key={column.key + index} value={column.key}>
-                          {column.label}
-                        </option>
-                      ))}
+                      .map(
+                        (column) =>
+                          ![
+                            "examinerRadiographic",
+                            "examiner",
+                            "dateOfFirstAbutmentLevelComplication",
+                            "recordFollowUpDate",
+                          ]?.includes(column.key) && (
+                            <option key={column.key + index} value={column.key}>
+                              {column.label}
+                            </option>
+                          ),
+                      )}
                   </Select>
                   {item.key && item.type && (
                     <>
                       <Select
                         fontSize={"13px"}
                         value={item.condition}
+                        disabled={standardReport}
                         onChange={(e) => {
                           const condition = e.target.value;
                           setFilterArray(
@@ -206,10 +219,10 @@ export default function FilterComponent({
                         )}
                         {item.type === "string" && (
                           <>
-                            <option value="contains">contains</option>
+                            {/* <option value="contains">contains</option>
                             <option value="notContains">not contains</option>
                             <option value="equals">equals</option>
-                            <option value="notEquals">not Equals</option>
+                            <option value="notEquals">not Equals</option> */}
                             <option value="hasAValue">has a Value</option>
                             <option value="isEmpty">is Empty</option>
                           </>
@@ -254,6 +267,7 @@ export default function FilterComponent({
                         <ReactSelect
                           placeholder="-- Select value -- "
                           isMulti
+                          isDisabled={standardReport}
                           value={item.value}
                           onChange={(value) => {
                             setFilterArray(
@@ -274,13 +288,13 @@ export default function FilterComponent({
                                   value: option,
                                   label: option,
                                 }))
-                              : item?.key === "recordClinic"
-                                ? locationOptions
-                                : item?.key === "implantLine"
-                                  ? implantLineOptions?.map((option) => ({
-                                      value: option,
-                                      label: option,
-                                    }))
+                              : item?.key === "implantLine"
+                                ? implantLineOptions?.map((option) => ({
+                                    value: option,
+                                    label: option,
+                                  }))
+                                : item?.key === "recordClinic"
+                                  ? locationOptions
                                   : clinlogFilterColumns
                                       .find((column) => column.key === item.key)
                                       ?.options?.map((option) => ({
@@ -300,7 +314,9 @@ export default function FilterComponent({
                           <Flex gap="0.2rem" align={"center"}>
                             <NumberInput
                               min={1}
-                              value={item?.value}
+                              //value={item?.value}
+                              isDisabled={standardReport}
+                              defaultValue={standardReport ? item?.value : 0}
                               onChange={(val) => {
                                 if (
                                   val !== undefined &&
@@ -329,7 +345,9 @@ export default function FilterComponent({
                             <Text mx="1">and</Text>
                             <NumberInput
                               min={1}
-                              value={item?.toValue}
+                              isDisabled={standardReport}
+                              //value={item?.toValue}
+                              defaultValue={standardReport ? item?.toValue : 0}
                               onChange={(val) => {
                                 if (
                                   val !== undefined &&
@@ -349,7 +367,7 @@ export default function FilterComponent({
                                         return item;
                                       }),
                                     );
-                                  }, 1000);
+                                  }, 100);
                                 }
                               }}
                             >
@@ -358,8 +376,10 @@ export default function FilterComponent({
                           </Flex>
                         ) : (
                           <NumberInput
-                            min={1}
-                            value={item?.value}
+                            min={0}
+                            //value={item?.value}
+                            isDisabled={standardReport}
+                            defaultValue={standardReport ? item?.value : 0}
                             onChange={(val) => {
                               if (
                                 val !== undefined &&
@@ -367,6 +387,7 @@ export default function FilterComponent({
                                 val !== ""
                               ) {
                                 const value = [Number(val)];
+
                                 setTimeout(() => {
                                   setFilterArray(
                                     filterArray.map((item, i) => {
@@ -379,7 +400,7 @@ export default function FilterComponent({
                                       return item;
                                     }),
                                   );
-                                }, 1000);
+                                }, 100);
                               }
                             }}
                           >
@@ -397,7 +418,7 @@ export default function FilterComponent({
                     !["hasAValue", "isEmpty"].includes(item.condition) && (
                       <>
                         {item.condition === "isBetween" ? (
-                          <Flex gap="0.2rem" align={"center"} w="30%">
+                          <Flex gap="0.2rem" align={"center"}>
                             <Input
                               type="date"
                               fontSize={"13px"}
@@ -468,6 +489,7 @@ export default function FilterComponent({
                     item.operation && (
                       <Select
                         fontSize={"13px"}
+                        disabled={standardReport}
                         value={item.operation || "AND"}
                         onChange={(e) => {
                           const operation = e.target.value;
@@ -497,6 +519,9 @@ export default function FilterComponent({
                 setFilterArray(
                   filterArray.filter((item, i) => i !== index) || [],
                 );
+                setGlobalFilter(
+                  globalFilter.filter((filter, i) => i !== index) || [],
+                );
               }}
               rightIcon={<MdDelete color="red" fontSize={"26px"} />}
               bg="none"
@@ -524,6 +549,9 @@ export default function FilterComponent({
                     }
                     return item;
                   }),
+                );
+                setGlobalFilter(
+                  globalFilter.filter((filter, i) => i !== index) || [],
                 );
               }}
               leftIcon={<IoMdRefresh fontSize={"26px"} />}
@@ -614,6 +642,35 @@ export default function FilterComponent({
           </Button>
         )}
       </Flex>
+      {filterArray?.length > 0 && (
+        <Flex gap="0.5rem">
+          <Button
+            py="4"
+            px="8"
+            fontWeight={"700"}
+            bgColor="red.500"
+            fontSize={"10px"}
+            borderRadius={"10px"}
+            color="white"
+            _hover={{
+              bgColor: "#007AFF",
+            }}
+            disabled={
+              (filterArray?.[0]?.value?.length === 0 &&
+                filterArray?.[0]?.condition !== "hasAValue" &&
+                filterArray?.[0]?.condition !== "isEmpty") ||
+              standardReport
+            }
+            textTransform={"uppercase"}
+            onClick={() => {
+              setFilterArray([]);
+              setGlobalFilter([]);
+            }}
+          >
+            Clear All
+          </Button>
+        </Flex>
+      )}
     </Flex>
   );
 }

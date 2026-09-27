@@ -1,4 +1,5 @@
 // @ts-nocheck
+import { GraphQLClient } from "graphql-request";
 import {
   Box,
   Flex,
@@ -33,7 +34,7 @@ import {
   Textarea,
   Spinner,
 } from "@chakra-ui/react";
-import NextLink from "next/link";
+import { CheckIcon } from "@chakra-ui/icons";
 import {
   createColumnHelper,
   useReactTable,
@@ -49,7 +50,6 @@ import animationData from "../animationsv2/clinlog_loading.json";
 import useQueryHook, { getData, sendData } from "hooks/useQueryHook";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { encryptId } from "helpersv2/Auth";
 import {
   differenceInDays,
   format,
@@ -68,7 +68,8 @@ import { StylesConfig } from "react-select";
 import { clinlogFilterColumns } from "helpersv2/utils";
 import { useSession } from "next-auth/react";
 import {
-  allClinicsQuery,
+  // allClinicsQuery,
+  clinlogDataQueryNew,
   clinlogDataQuery,
   clinlogNotesQuery,
   globalIdsQuery,
@@ -83,14 +84,42 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { clinlogNoteMutation } from "componentsv2/DetailsPage/detailsPageMutations";
-import { useV2Router } from "componentsv2/Dashboard/Helpers/routerHelpers";
+import { useRouter } from "next/router";
 
 const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
-function Clinlog() {
+
+const formatClinlogLoadDuration = (milliseconds: number) => {
+  const safeMilliseconds = Number.isFinite(milliseconds)
+    ? Math.max(milliseconds, 0)
+    : 0;
+  const totalSeconds = safeMilliseconds / 1000;
+
+  if (totalSeconds < 60) {
+    return `${totalSeconds.toFixed(1)}s`;
+  }
+
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = Math.floor(totalSeconds % 60)
+    .toString()
+    .padStart(2, "0");
+
+  return `${minutes}m ${seconds}s`;
+};
+
+export async function getServerSideProps() {
+  const clinlogQueryToken = process.env.CLINLOG_QUERY_TOKEN;
+
+  return {
+    props: {
+      clinlogQueryToken,
+    },
+  };
+}
+
+function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
   const [filterArray, setFilterArray] = React.useState([]);
   const [openTab, setOpenTab] = useState("allCases");
   const { data: session } = useSession();
-  console.log("session", session);
   const [viewPatient, setViewPatient] = useState(null);
   const [locationArr, setLocationArr] = useState([session?.locationIds?.[0]]);
   const [clinlogStatus, setClinlogStatus] = useState("More Data Required");
@@ -109,84 +138,79 @@ function Clinlog() {
 
   const [openMenu, setOpenMenu] = useState(true);
   const [patientSurveyData, setPatientSurveyData] = useState(null);
-  const viewerMainNavbarResult = useQueryHook(
-    ["mainViewerQuery"],
-    mainViewerQuery,
-    {},
-    { enabled: !!session },
-  );
-  const viewerValues = useMemo(() => {
-    return viewerMainNavbarResult?.data?.viewer;
-  }, [viewerMainNavbarResult?.data?.viewer]);
+  const [clinlogLoadStartedAt, setClinlogLoadStartedAt] = useState<
+    number | null
+  >(null);
+  const [clinlogLoadElapsedMs, setClinlogLoadElapsedMs] = useState(0);
+  const [clinlogFullLoadDurationMs, setClinlogFullLoadDurationMs] = useState<
+    number | null
+  >(null);
+  const [clinlogLastRecordBatchLoadedAt, setClinlogLastRecordBatchLoadedAt] =
+    useState<number | null>(null);
+
+  // const viewerMainNavbarResult = useQueryHook(
+  //   ["mainViewerQuery"],
+  //   mainViewerQuery,
+  //   {},
+  //   { enabled: !!session },
+  // );
+
+  // const viewerValues = useMemo(() => {
+  //   return viewerMainNavbarResult?.data?.viewer;
+  // }, [viewerMainNavbarResult?.data?.viewer]);
+
   const [collapseTabs, setCollapseTabs] = useState(true);
   const isAdmin = session?.groups?.includes("Admin");
-  const router = useV2Router();
-
-  const allClinicsQueryResult = useQueryHook(
-    ["clinics"],
-    allClinicsQuery,
-    {},
-    {
-      enabled: !!session,
-    },
-  );
-
-  const locationOptions = useMemo(() => {
-    // if (isAdmin) {
-    //   return allClinicsQueryResult?.data?.clinics?.map((clinic) => ({
-    //     value: clinic?.id,
-    //     label: `${clinic?.locationShortName}`,
-    //   }));
-    // } else {
-    //   const allClinicIds = allClinicsQueryResult?.data?.clinics?.map(
-    //     (clinic) => clinic?.id,
-    //   );
-    //   const location = session?.locationIds
-    //     ?.filter((item) => allClinicIds?.includes(item.toString()))
-    //     .map((clinic) => ({
-    //       value: clinic.toString(),
-    //       label: allClinicsQueryResult?.data?.clinics?.find(
-    //         (item) => item.id === clinic.toString(),
-    //       )?.locationShortName,
-    //     }));
-    //   return location || [];
-    // }
-    return allClinicsQueryResult?.data?.clinics?.map((clinic) => ({
-      value: clinic?.id,
-      label: `${clinic?.locationShortName}`,
-    }));
-  }, [allClinicsQueryResult?.data?.clinics, session?.locationIds]);
+  const shouldShowClinlogLoadTimer = true;
+  const router = useRouter();
 
   useEffect(() => {
-    if (!locationArr?.includes("all") && allClinicsQueryResult?.data?.clinics) {
-      const allClinicIds = allClinicsQueryResult?.data?.clinics?.map(
-        (clinic) => clinic.id,
-      );
-      const filteredArr = locationArr.filter((item) =>
-        allClinicIds.includes(item.toString()),
-      );
-      setLocationArr(filteredArr.map((item) => item.toString()));
+    if (
+      session?.locationIds?.[0] &&
+      (!locationArr?.length || locationArr.every((item) => !item))
+    ) {
+      setLocationArr([session.locationIds[0].toString()]);
     }
-  }, [allClinicsQueryResult?.data?.clinics]);
-  const globalIdsResults = useQueryHook(
-    ["globalIds", locationArr],
-    globalIdsQuery,
-    {
-      // recordClinic: isAdmin
-      //   ? allClinicsQueryResult?.data?.clinics?.map((clinic) => clinic?.id)
-      //   : session?.locationIds,
-      recordClinic: allClinicsQueryResult?.data?.clinics?.map(
-        (clinic) => clinic?.id,
-      ),
-    },
-    { enabled: locationArr?.length > 0 && allClinicsQueryResult?.isSuccess },
+  }, [session?.locationIds, locationArr]);
+
+  const locationQueryKey = useMemo(
+    () =>
+      (locationArr ?? [])
+        .filter(Boolean)
+        .map((item) => item.toString())
+        .sort()
+        .join("|"),
+    [locationArr],
   );
-  const clinlogNotesQueryResult = useQueryHook(
-    ["clinlogNotesQueryResult"],
-    clinlogNotesQuery,
-    {},
-    { enabled: !!session },
+
+  const clinlogDataInfiniteQueryKey = useMemo(
+    () => [
+      "clinlogData",
+      "infinite",
+      locationQueryKey,
+      session?.userId ?? null,
+    ],
+    [locationQueryKey, session?.userId],
   );
+
+  // const globalIdsResults = useQueryHook(
+  //   ["globalIds"],
+  //   globalIdsQuery,
+  //   {
+  //     // recordClinic: isAdmin
+  //     //   ? allClinicsQueryResult?.data?.clinics?.map((clinic) => clinic?.id)
+  //     //   : session?.locationIds,
+  //     recordClinic: globalClinicIds,
+  //   },
+  //   {
+  //     enabled: allClinicsQueryResult?.isSuccess && globalClinicIds.length > 0,
+  //     refetchOnMount: false,
+  //     refetchOnReconnect: false,
+  //     refetchOnWindowFocus: false,
+  //     staleTime: Infinity,
+  //   },
+  // );
+
   const {
     data: clinlogDataInfinite,
     fetchNextPage,
@@ -194,25 +218,29 @@ function Clinlog() {
     hasNextPage,
     isFetching,
   } = useInfiniteQuery(
-    ["clinlogData", "infinite"],
+    clinlogDataInfiniteQueryKey,
     async ({ pageParam = 0 }) => {
-      // First page gets 20 items (covers page 1 & 2), subsequent pages get 10
-
-      const limit = 100;
-
-      const res = await getData(
-        clinlogDataQuery,
+      // First load gets 100 items, subsequent loads get 200
+      const getDataNew = async (query, variables = {}, sessionToken) => {
+        const graphQLClient = new GraphQLClient(
+          process.env.NEXT_PUBLIC_ENDPOINT,
+          {
+            headers: {
+              Authorization: clinlogQueryToken,
+            },
+          },
+        );
+        const result = await graphQLClient.request(query, variables);
+        return result;
+      };
+      const limit = pageParam === 0 ? 100 : 160;
+      const res = await getDataNew(
+        clinlogDataQueryNew,
         {
-          id:
-            globalIdsResults?.data?.entries
-              ?.map((record) =>
-                record?.attachedRecordsEntry?.map((entry) => entry.id),
-              )
-              .flat() || [],
           offset: pageParam,
+          recordClinic: locationArr,
           limit: limit,
-
-          userId: session?.userId,
+          collaboratorId: Number(session?.userId),
         },
         session?.accessToken,
       );
@@ -223,14 +251,193 @@ function Clinlog() {
         if (lastPage?.entries?.length === 0) {
           return undefined;
         }
-
-        return allPages.length * 100;
+        // return 200
+        // Set offset for next page
+        if (allPages.length === 1) {
+          // After first, offset is 100 (first page), next fetch for items 100+
+          return 100;
+        }
+        // For page n, offset is 100 + (n-1)*200
+        return 100 + (allPages.length - 1) * 160;
       },
-      enabled:
-        locationArr?.length > 0 &&
-        globalIdsResults?.isSuccess &&
-        clinlogNotesQueryResult?.isSuccess,
+      enabled: locationQueryKey.length > 0 && !!session?.accessToken,
+      retry: 0,
     },
+  );
+
+  const clinlogHasLoadedRecords = useMemo(
+    () =>
+      clinlogDataInfinite?.pages?.some((page) => page?.entries?.length > 0) ??
+      false,
+    [clinlogDataInfinite?.pages],
+  );
+
+  const hasFinishedClinlogDataLoading =
+    (clinlogDataInfinite?.pages?.length ?? 0) > 0 &&
+    !isLoading &&
+    !isFetching &&
+    !hasNextPage;
+
+  const hasLoadedAllClinlogPages =
+    clinlogHasLoadedRecords && hasFinishedClinlogDataLoading;
+
+  const clinlogLoadDurationText = formatClinlogLoadDuration(
+    clinlogFullLoadDurationMs ?? clinlogLoadElapsedMs,
+  );
+
+  useEffect(() => {
+    setClinlogLoadStartedAt(null);
+    setClinlogLoadElapsedMs(0);
+    setClinlogFullLoadDurationMs(null);
+    setClinlogLastRecordBatchLoadedAt(null);
+  }, [locationQueryKey, session?.userId, shouldShowClinlogLoadTimer]);
+
+  useEffect(() => {
+    if (
+      !shouldShowClinlogLoadTimer ||
+      !locationQueryKey ||
+      !session?.accessToken ||
+      hasFinishedClinlogDataLoading
+    ) {
+      return;
+    }
+
+    setClinlogLoadStartedAt((currentStartedAt) => {
+      return currentStartedAt ?? Date.now();
+    });
+  }, [
+    hasFinishedClinlogDataLoading,
+    locationQueryKey,
+    session?.accessToken,
+    shouldShowClinlogLoadTimer,
+  ]);
+
+  useEffect(() => {
+    if (
+      !shouldShowClinlogLoadTimer ||
+      !clinlogLoadStartedAt ||
+      hasFinishedClinlogDataLoading
+    ) {
+      return;
+    }
+
+    const updateElapsedTime = () => {
+      setClinlogLoadElapsedMs(Date.now() - clinlogLoadStartedAt);
+    };
+
+    updateElapsedTime();
+    const timerId = window.setInterval(updateElapsedTime, 250);
+
+    return () => {
+      window.clearInterval(timerId);
+    };
+  }, [
+    clinlogLoadStartedAt,
+    hasFinishedClinlogDataLoading,
+    shouldShowClinlogLoadTimer,
+  ]);
+
+  useEffect(() => {
+    const pages = clinlogDataInfinite?.pages ?? [];
+    const lastPage = pages[pages.length - 1];
+
+    if (
+      !shouldShowClinlogLoadTimer ||
+      !clinlogLoadStartedAt ||
+      !lastPage?.entries?.length
+    ) {
+      return;
+    }
+
+    const loadedAt = Date.now();
+    setClinlogLastRecordBatchLoadedAt(loadedAt);
+    setClinlogLoadElapsedMs(loadedAt - clinlogLoadStartedAt);
+  }, [
+    clinlogDataInfinite?.pages?.length,
+    clinlogLoadStartedAt,
+    shouldShowClinlogLoadTimer,
+  ]);
+
+  useEffect(() => {
+    if (
+      !shouldShowClinlogLoadTimer ||
+      !hasFinishedClinlogDataLoading ||
+      !clinlogLoadStartedAt
+    ) {
+      return;
+    }
+
+    const finishedAt = clinlogLastRecordBatchLoadedAt ?? Date.now();
+    const duration = finishedAt - clinlogLoadStartedAt;
+    setClinlogFullLoadDurationMs((currentDuration) => {
+      return currentDuration ?? duration;
+    });
+    setClinlogLoadElapsedMs(duration);
+  }, [
+    hasFinishedClinlogDataLoading,
+    clinlogLastRecordBatchLoadedAt,
+    clinlogLoadStartedAt,
+    shouldShowClinlogLoadTimer,
+  ]);
+
+  // const allClinicsQueryResult = useQueryHook(
+  //   ["clinics"],
+  //   allClinicsQuery,
+  //   {},
+  //   {
+  //     enabled: hasFinishedClinlogDataLoading && !!session,
+  //   },
+  // );
+  //
+  // const locationOptions = useMemo(() => {
+  //   // if (isAdmin) {
+  //   //   return allClinicsQueryResult?.data?.clinics?.map((clinic) => ({
+  //   //     value: clinic?.id,
+  //   //     label: `${clinic?.locationShortName}`,
+  //   //   }));
+  //   // } else {
+  //   //   const allClinicIds = allClinicsQueryResult?.data?.clinics?.map(
+  //   //     (clinic) => clinic?.id,
+  //   //   );
+  //   //   const location = session?.locationIds
+  //   //     ?.filter((item) => allClinicIds?.includes(item.toString()))
+  //   //     .map((clinic) => ({
+  //   //       value: clinic.toString(),
+  //   //       label: allClinicsQueryResult?.data?.clinics?.find(
+  //   //         (item) => item.id === clinic.toString(),
+  //   //       )?.locationShortName,
+  //   //     }));
+  //   //   return location || [];
+  //   // }
+  //   return allClinicsQueryResult?.data?.clinics?.map((clinic) => ({
+  //     value: clinic?.id,
+  //     label: `${clinic?.locationShortName}`,
+  //   }));
+  // }, [allClinicsQueryResult?.data?.clinics, session?.locationIds]);
+  //
+  // useEffect(() => {
+  //   if (!locationArr?.includes("all") && allClinicsQueryResult?.data?.clinics) {
+  //     const allClinicIds = allClinicsQueryResult?.data?.clinics?.map(
+  //       (clinic) => clinic.id,
+  //     );
+  //     const filteredArr = locationArr.filter((item) =>
+  //       allClinicIds.includes(item.toString()),
+  //     );
+  //     setLocationArr(filteredArr.map((item) => item.toString()));
+  //   }
+  // }, [allClinicsQueryResult?.data?.clinics]);
+  //
+  // const globalClinicIds = useMemo(
+  //   () =>
+  //     allClinicsQueryResult?.data?.clinics?.map((clinic) => clinic?.id) ?? [],
+  //   [allClinicsQueryResult?.data?.clinics],
+  // );
+
+  const clinlogNotesQueryResult = useQueryHook(
+    ["clinlogNotesQueryResult", locationQueryKey, session?.userId ?? null],
+    clinlogNotesQuery,
+    {},
+    { enabled: hasLoadedAllClinlogPages },
   );
 
   const clinlogDataQueryResults = useMemo(() => {
@@ -241,35 +448,6 @@ function Clinlog() {
     return allPages?.map((p) => p.entries)?.flat() ?? [];
   }, [clinlogDataInfinite?.pages?.length]);
 
-  // const clinlogDataQueryResults = useQueryHook(
-  //   ["clinlogDataQueryResults", "all"],
-  //   clinlogDataQuery,
-  //   {
-  //     id:
-  //       globalIdsResults?.data?.entries
-  //         ?.map((record) =>
-  //           record?.attachedRecordsEntry?.map((entry) => entry.id)
-  //         )
-  //         .flat() || [],
-  //     limit: 100,
-  //     offset: 0,
-  //   },
-  //   { enabled: globalIdsResults?.isSuccess }
-  // );
-  // const surgeonOptions = useMemo(() => {
-  //   return [
-  //     ...new Set(
-  //       clinlogDataQueryResults?.data?.entries
-  //         ?.map(
-  //           (record) =>
-  //             record["recordTreatmentSurgeons"]?.map(
-  //               (surgeon) => surgeon.fullName
-  //             ) // Extract the IDs of the surgeons
-  //         )
-  //         .flat()
-  //     ),
-  //   ]?.filter((surgeon) => surgeon !== null && surgeon !== undefined);
-  // }, [clinlogDataQueryResults?.data?.entries]);
   const surgeonOptions = useMemo(() => {
     return [
       ...new Set(
@@ -295,9 +473,7 @@ function Clinlog() {
                 (site) => site.treatmentItemNumber === "688",
               );
             return allSites?.map(
-              (site) =>
-                site.attachedSiteSpecificRecords?.[0]
-                  ?.itemSpecificationMatrix?.[0]?.implantLine,
+              (site) => site.attachedSiteSpecificRecords?.[0]?.implantLine,
             );
           })
           .flat(),
@@ -372,7 +548,7 @@ function Clinlog() {
   const [globalFilter, setGlobalFilter] = useState([]);
   const [columnFilters, setColumnFilters] = useState([]);
   const [columnVisibility, setColumnVisibility] = useState({
-    caseNumber: false,
+    caseNumber: true,
     patientName: true,
     fullName: false,
     status: true,
@@ -407,7 +583,7 @@ function Clinlog() {
     numberOfRestorativeBreakages: false,
     examinerRadiographic: false,
     zirconiaUpgrade: false,
-    dateOfFollowUp: false,
+    dateOfFollowUp: true,
     smokingAtFollowUp: false,
     hygieneAtFollowUp: false,
     performanceOverFollowUpPeriod: false,
@@ -458,29 +634,43 @@ function Clinlog() {
     smoking_ps: false,
     implantCategory: false,
     implantLine: false,
+    graftConditionAtFollowUp: false,
+    prostheticUpgrades: false,
+    dateOfProstheticUpgrade: false,
   });
   const selectTypeFilterFunction = (actualValue, filterValue, condition) => {
-    if (condition === "hasAValue" && actualValue) {
+    if (
+      condition === "hasAValue" &&
+      actualValue &&
+      actualValue !== "" &&
+      actualValue !== null &&
+      actualValue?.replaceAll(",", "") !== ""
+    ) {
       return true;
     }
 
     if (
       condition === "isEmpty" &&
-      (actualValue === "" || actualValue === null || actualValue === undefined)
+      (actualValue === "" ||
+        actualValue === null ||
+        actualValue?.replaceAll(",", "") === "")
     ) {
       return true;
     }
 
     if (condition === "isOneOf") {
       return (
-        filterValue.map((val) => val.value).includes(actualValue) ||
+        filterValue.map((val) => val?.value).includes(actualValue) ||
         filterValue.some((val) =>
-          actualValue?.split(",").includes(val.value?.replaceAll(",", "")),
+          actualValue?.split(",")?.includes(val?.value?.replaceAll(",", "")),
         )
       );
     }
     if (condition === "isNotOneOf") {
-      return !filterValue.map((val) => val.value).includes(actualValue);
+      // return !filterValue.map((val) => val.value).includes(actualValue);
+      return !filterValue.some((val) =>
+        actualValue?.split(",").includes(val?.value?.replaceAll(",", "")),
+      );
     }
     if (condition === "" && filterValue.length === 0) {
       return true;
@@ -504,37 +694,57 @@ function Clinlog() {
     if (condition === "equals") {
       const value = filterValue?.[0];
 
-      return actualValue === value;
+      return actualValue && actualValue === value;
     }
     if (condition === "notEquals") {
       const value = filterValue?.[0];
-      return actualValue !== value;
+      return actualValue && actualValue !== value;
     }
     if (condition === "isGreaterThan") {
       const value = filterValue?.[0];
-      return actualValue > value;
+      return actualValue && actualValue > value;
     }
     if (condition === "isGreaterThanOrEquals") {
       const value = filterValue?.[0];
-      return actualValue >= value;
+      return actualValue && actualValue >= value;
     }
     if (condition === "isLessThan") {
       const value = filterValue?.[0];
-      return actualValue < value;
+      return actualValue && actualValue < value;
     }
     if (condition === "isLessThanOrEquals") {
       const value = filterValue?.[0];
-      return actualValue <= value;
+      return actualValue && actualValue <= value;
     }
     if (condition === "isBetween") {
       const fromValue = filterValue?.[0];
       const toValue_ = toValue?.[0];
-      return actualValue >= fromValue && actualValue <= toValue_;
+      return actualValue && actualValue >= fromValue && actualValue <= toValue_;
     }
     if (condition === "" && filterValue.length === 0) {
       return true;
     }
     return false;
+  };
+  const stringTypeFilterFunction = (actualValue, filterValue, condition) => {
+    if (
+      condition === "hasAValue" &&
+      actualValue &&
+      actualValue !== "" &&
+      actualValue !== null &&
+      actualValue?.replaceAll(",", "")?.replaceAll("NaN", "") !== ""
+    ) {
+      return true;
+    }
+
+    if (
+      condition === "isEmpty" &&
+      (actualValue === "" ||
+        actualValue === null ||
+        actualValue?.replaceAll(",", "")?.replaceAll("NaN", "") === "")
+    ) {
+      return true;
+    }
   };
 
   const dateTypeFilterFunction = (
@@ -663,7 +873,9 @@ function Clinlog() {
         id: "caseNumber",
         header: "Case Number",
         cell: (row) => {
-          return row.row.original.caseNumber;
+          return row?.row?.original?.caseNumber?.length > 0
+            ? `${row.row.original.caseNumber} / SCR${row.row.original.id}`
+            : `SCR${row.row.original.id}`;
         },
       },
       {
@@ -1047,10 +1259,29 @@ function Clinlog() {
         accessorKey: "zygomaImplants",
         header: "Zygoma Implants",
         cell: (row) => {
-          return row.row.original.zygomaImplants;
+          const siteDetails =
+            row.row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+              (site) => site.treatmentItemNumber === "688",
+            );
+          const zygomaImplants =
+            siteDetails?.filter((site) =>
+              site.attachedSiteSpecificRecords?.[0]?.implantCategory?.includes(
+                "zygomatic",
+              ),
+            )?.length || 0;
+          return zygomaImplants;
         },
         filterFn: (row, columnId, filterValue) => {
-          const zygomaImplants = Number(row.original.zygomaImplants);
+          const siteDetails =
+            row.row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+              (site) => site.treatmentItemNumber === "688",
+            );
+          const zygomaImplants = siteDetails?.filter((site) =>
+            site.attachedSiteSpecificRecords?.[0]?.implantCategory?.includes(
+              "zygomatic",
+            ),
+          )?.length;
+          //const zygomaImplants = Number(row.original.zygomaImplants);
 
           return numberTypeFilterFunction(
             zygomaImplants,
@@ -1060,15 +1291,38 @@ function Clinlog() {
           );
         },
       },
+
       {
         id: "regularImplants",
         accessorKey: "regularImplants",
         header: "Regular Implants",
         cell: (row) => {
-          return row.row.original.regularImplants;
+          const siteDetails =
+            row.row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+              (site) => site.treatmentItemNumber === "688",
+            );
+          const regularImplants =
+            siteDetails?.filter(
+              (site) =>
+                !site.attachedSiteSpecificRecords?.[0]?.implantCategory?.includes(
+                  "zygomatic",
+                ),
+            )?.length || 0;
+          return regularImplants;
         },
         filterFn: (row, columnId, filterValue) => {
-          const regularImplants = Number(row.original.regularImplants);
+          const siteDetails =
+            row.row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+              (site) => site.treatmentItemNumber === "688",
+            );
+          const regularImplants =
+            siteDetails?.filter(
+              (site) =>
+                !site.attachedSiteSpecificRecords?.[0]?.implantCategory?.includes(
+                  "zygomatic",
+                ),
+            )?.length || 0;
+          // const regularImplants = Number(row.original.regularImplants);
 
           return numberTypeFilterFunction(
             regularImplants,
@@ -1078,13 +1332,32 @@ function Clinlog() {
           );
         },
       },
+
       {
         id: "totalImplants",
         accessorKey: "totalImplants",
         header: "Total Implants",
         cell: (row) => {
-          const zygomaImplants = Number(row.row.original.zygomaImplants) || 0;
-          const regularImplants = Number(row.row.original.regularImplants) || 0;
+          const siteDetails =
+            row.row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+              (site) => site.treatmentItemNumber === "688",
+            );
+          const regularImplants =
+            siteDetails?.filter(
+              (site) =>
+                !site.attachedSiteSpecificRecords?.[0]?.implantCategory?.includes(
+                  "zygomatic",
+                ),
+            )?.length || 0;
+          const zygomaImplants =
+            siteDetails?.filter((site) =>
+              site.attachedSiteSpecificRecords?.[0]?.implantCategory?.includes(
+                "zygomatic",
+              ),
+            )?.length || 0;
+
+          // const zygomaImplants = Number(row.row.original.zygomaImplants) || 0;
+          // const regularImplants = Number(row.row.original.regularImplants) || 0;
           return zygomaImplants + regularImplants;
         },
       },
@@ -1239,7 +1512,9 @@ function Clinlog() {
           id: `${column.key}`,
           accessorKey: `${column.key}_${column.group}`,
           header:
-            column.key === "dateOfFollowUp" ? "Date Of FollowUp" : column.label,
+            column.key === "dateOfFollowUp"
+              ? "Date of Last Review"
+              : column.label,
           cell: (row) => {
             if (column.group === "followUp") {
               const followUpData = row.row.original.recordFollowUpMatrix?.[0];
@@ -1266,18 +1541,30 @@ function Clinlog() {
                   return site.toothValue;
                 } else if (column?.subGroup === "ssFollowUp") {
                   const siteFollowUpRecords =
-                    site?.attachedSiteSpecificRecords?.[0]
-                      ?.attachedSiteSpecificFollowUp?.[0];
+                    site?.attachedSiteSpecificRecords?.[0]?.attachedSiteSpecificFollowUp?.sort(
+                      (a, b) => {
+                        const dateA = new Date(a?.recordFollowUpDate);
+                        const dateB = new Date(b?.recordFollowUpDate);
+                        return dateB - dateA;
+                      },
+                    )?.[0];
+                  if (column.type === "date") {
+                    return siteFollowUpRecords?.[column.key]
+                      ? format(
+                          new Date(siteFollowUpRecords?.[column.key]),
+                          "dd-MM-yyyy",
+                        )
+                      : "";
+                  }
 
                   return siteFollowUpRecords?.[column.key] || "-";
                 } else if (column.key === "implantCategory") {
                   const implantCategory =
                     site?.attachedSiteSpecificRecords?.[0]
-                      ?.itemSpecificationMatrix?.[0]?.implantCategoryLabel;
+                      ?.implantCategoryLabel;
                   return implantCategory || "-";
                 }
-                return site.attachedSiteSpecificRecords?.[0]
-                  ?.itemSpecificationMatrix?.[0]?.[column.key];
+                return site.attachedSiteSpecificRecords?.[0]?.[column.key];
               });
 
               return siteSpecificData?.map((data) => {
@@ -1323,11 +1610,18 @@ function Clinlog() {
                   const siteFollowUpRecords =
                     site?.attachedSiteSpecificRecords?.[0]
                       ?.attachedSiteSpecificFollowUp?.[0];
+                  if (column.type === "date") {
+                    return siteFollowUpRecords?.[column.key]
+                      ? format(
+                          new Date(siteFollowUpRecords?.[column.key]),
+                          "dd-MM-yyyy",
+                        )
+                      : "";
+                  }
 
                   return siteFollowUpRecords?.[column.key];
                 }
-                return site.attachedSiteSpecificRecords?.[0]
-                  ?.itemSpecificationMatrix?.[0]?.[column.key];
+                return site.attachedSiteSpecificRecords?.[0]?.[column.key];
               });
               cellValue = siteSpecificData.join(",");
             }
@@ -1375,23 +1669,37 @@ function Clinlog() {
     return result;
   }
   const tableData = useMemo(() => {
-    if (clinlogDataQueryResults?.length > 0 && globalIdsResults?.isSuccess) {
-      const data = clinlogDataQueryResults?.map((entry) => {
-        const globaldata = globalIdsResults.data?.entries?.find((global) => {
-          return global.attachedRecordsEntry?.some(
-            (record) => record.id === entry.id,
-          );
+    return clinlogDataQueryResults?.map((entry) => {
+      const lastNamePrefix = entry.recordLastName?.slice(0, 2) || "";
+      const firstNamePrefix = entry.recordFirstName?.slice(0, 2) || "";
+
+      return {
+        ...entry,
+        patientName: `${lastNamePrefix}, ${firstNamePrefix}`,
+      };
+    });
+  }, [clinlogDataQueryResults]);
+
+  const locationOptions = useMemo(() => {
+    const locationMap = new Map();
+
+    tableData?.forEach((entry) => {
+      entry.recordClinic?.forEach((clinic) => {
+        if (!clinic?.id) return;
+
+        locationMap.set(clinic.id.toString(), {
+          value: clinic.id.toString(),
+          label:
+            clinic.locationShortName || clinic.title || clinic.id.toString(),
         });
-        return {
-          ...entry,
-          globalId: globaldata?.id,
-          patientName: globaldata?.patientShortName,
-        };
       });
-      return data;
-    }
-    return [];
-  }, [clinlogDataQueryResults, globalIdsResults?.data?.entries]);
+    });
+
+    return Array.from(locationMap.values()).sort((a, b) =>
+      a.label.localeCompare(b.label),
+    );
+  }, [tableData]);
+
   const globalFilterFunction = (row, columnId, filters) => {
     const conditionChecks = filters.map((filter) => {
       const filterValue = filter.value.value;
@@ -1411,10 +1719,10 @@ function Clinlog() {
         const followUpData = row.original.recordFollowUpMatrix?.[0];
         if (filterColumnId === "numberOfReviews") {
           cellValue =
-            followUpData?.[filterColumnId] ||
+            followUpData?.[filterColumnId?.split("_")?.[0]] ||
             row.original?.recordFollowUpMatrix?.length;
         } else {
-          cellValue = followUpData?.[filterColumnId];
+          cellValue = followUpData?.[filterColumnId?.split("_")?.[0]];
         }
       } else if (group === "siteSpecificCharacteristics") {
         const siteDetails =
@@ -1431,7 +1739,7 @@ function Clinlog() {
 
             return siteFollowUpRecords?.[filterColumnId]?.replaceAll(",", "");
           }
-          return site.attachedSiteSpecificRecords?.[0]?.itemSpecificationMatrix?.[0]?.[
+          return site.attachedSiteSpecificRecords?.[0]?.[
             filterColumnId
           ]?.replaceAll(",", "");
         });
@@ -1456,6 +1764,16 @@ function Clinlog() {
               : row?.original?.attachedDentalCharts?.[0]?.defaultDentist
                   ?.map((surgeon) => surgeon?.fullName)
                   ?.join(",") || null;
+        } else if (filterColumnId === "recordTreatmentDate") {
+          const chartData = row?.original?.attachedDentalCharts?.[0];
+          cellValue = chartData?.recordTreatmentDate
+            ? format(new Date(chartData?.recordTreatmentDate), "yyyy-MM-dd")
+            : row?.original?.recordTreatmentDate
+              ? format(
+                  new Date(row?.original?.recordTreatmentDate),
+                  "yyyy-MM-dd",
+                )
+              : null;
         } else if (filterColumnId === "timeFromSurgery") {
           const chartData = row?.original?.attachedDentalCharts?.[0];
           const surgeryDate =
@@ -1476,9 +1794,42 @@ function Clinlog() {
           cellValue =
             row.original.recordClinic?.map((clinic) => clinic.id).join(", ") ||
             null;
+        } else if (filterColumnId === "zygomaImplants") {
+          const siteDetails =
+            row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+              (site) => site.treatmentItemNumber === "688",
+            );
+          const zygomaImplants = siteDetails?.filter((site) =>
+            site.attachedSiteSpecificRecords?.[0]?.implantCategory?.includes(
+              "zygomatic",
+            ),
+          )?.length;
+          cellValue = zygomaImplants || 0;
+        } else if (filterColumnId === "regularImplants") {
+          const siteDetails =
+            row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+              (site) => site.treatmentItemNumber === "688",
+            );
+          const regularImplants =
+            siteDetails?.filter(
+              (site) =>
+                !site.attachedSiteSpecificRecords?.[0]?.implantCategory?.includes(
+                  "zygomatic",
+                ),
+            )?.length || 0;
+          cellValue = regularImplants;
         } else if (filterColumnId === "totalImplants") {
-          const zygomaImplants = Number(row.original.zygomaImplants) || 0;
-          const regularImplants = Number(row.original.regularImplants) || 0;
+          const siteDetails =
+            row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+              (site) => site.treatmentItemNumber === "688",
+            );
+          const zygomaImplants = siteDetails?.filter((site) =>
+            site.attachedSiteSpecificRecords?.[0]?.implantCategory?.includes(
+              "zygomatic",
+            ),
+          )?.length;
+          // const zygomaImplants = Number(row.original.zygomaImplants) || 0;
+          // const regularImplants = Number(row.original.regularImplants) || 0;
           cellValue = zygomaImplants + regularImplants;
         } else {
           cellValue = row.original?.[filterColumnId] || null;
@@ -1512,9 +1863,13 @@ function Clinlog() {
             condition,
           ),
         };
+      } else if (type === "string") {
+        return {
+          operation: filter.value.operation || "AND",
+          isTrue: stringTypeFilterFunction(cellValue, filterValue, condition),
+        };
       }
     });
-
     return evaluateConditions(conditionChecks);
   };
 
@@ -1606,18 +1961,7 @@ function Clinlog() {
       </Flex>
     );
   };
-  const selectedGlobalPatientData = useMemo(() => {
-    if (viewPatient && globalIdsResults?.isSuccess) {
-      const patientData = globalIdsResults?.data?.entries?.find((entry) => {
-        const records = entry?.attachedRecordsEntry?.map(
-          (record) => record?.id,
-        );
-        return records?.includes(viewPatient?.id);
-      });
-      return patientData;
-    }
-    return null;
-  }, [viewPatient, globalIdsResults?.data?.entries]);
+
   const selectedPatientNotes = useMemo(() => {
     if (viewPatient && clinlogNotesQueryResult?.isSuccess) {
       const notes = clinlogNotesQueryResult.data?.recordNotes?.filter(
@@ -1674,6 +2018,7 @@ function Clinlog() {
       },
     },
   );
+
   const handleAddNote = () => {
     const notesData = {
       recordNoteRecord: Number(viewPatient?.id),
@@ -1682,12 +2027,15 @@ function Clinlog() {
     };
     addClinlogNotesMutationFunction.mutate(notesData);
   };
+
   useEffect(() => {
     if (hasNextPage) {
       fetchNextPage();
     }
   }, [hasNextPage, clinlogDataInfinite]);
+
   return clinlogDataQueryResults?.length === 0 ? (
+    // return false ? (
     <Flex h="100vh" w="100%" bgColor="#FCF8FF">
       <InitialLoader />
     </Flex>
@@ -1794,14 +2142,107 @@ function Clinlog() {
                 ))}
               </TabList>
             </Tabs>
-            {hasNextPage && (
-              <Flex align="center" mt="2" gap={"1rem"} w="15%">
-                <Spinner size="sm" color="#351361" />
-                <Text fontSize={"14px"} fontWeight="600" color="#351361">
-                  Loading more records...
-                </Text>
-              </Flex>
-            )}
+            <Flex
+              align="center"
+              mt="2"
+              minH="34px"
+              w={{ base: "100%", md: "auto" }}
+              aria-live="polite"
+            >
+              {hasNextPage ? (
+                <Flex
+                  align="center"
+                  gap="0.6rem"
+                  px="3"
+                  py="1.5"
+                  border="1px solid"
+                  borderColor="#DDD6FE"
+                  borderRadius="8px"
+                  bgColor="#F7F3FF"
+                >
+                  <Spinner size="xs" thickness="2px" color="#351361" />
+                  <Text
+                    fontSize="13px"
+                    fontWeight="700"
+                    color="#351361"
+                    whiteSpace="nowrap"
+                  >
+                    Loading records
+                  </Text>
+                  {shouldShowClinlogLoadTimer && (
+                    <Text
+                      fontSize="12px"
+                      fontWeight="700"
+                      color="#351361"
+                      fontVariantNumeric="tabular-nums"
+                      whiteSpace="nowrap"
+                    >
+                      {clinlogLoadDurationText}
+                    </Text>
+                  )}
+                  <Text
+                    fontSize="12px"
+                    fontWeight="600"
+                    color="#5B4B77"
+                    fontVariantNumeric="tabular-nums"
+                    whiteSpace="nowrap"
+                  >
+                    {clinlogDataQueryResults.length} loaded
+                  </Text>
+                </Flex>
+              ) : hasLoadedAllClinlogPages ? (
+                <Flex
+                  align="center"
+                  gap="0.6rem"
+                  px="3"
+                  py="1.5"
+                  border="1px solid"
+                  borderColor="#BBF7D0"
+                  borderRadius="8px"
+                  bgColor="#F0FDF4"
+                >
+                  <Flex
+                    align="center"
+                    justify="center"
+                    w="18px"
+                    h="18px"
+                    borderRadius="full"
+                    bgColor="#16A34A"
+                    color="white"
+                  >
+                    <CheckIcon boxSize="9px" />
+                  </Flex>
+                  <Text
+                    fontSize="13px"
+                    fontWeight="700"
+                    color="#166534"
+                    whiteSpace="nowrap"
+                  >
+                    All records loaded
+                  </Text>
+                  {shouldShowClinlogLoadTimer && (
+                    <Text
+                      fontSize="12px"
+                      fontWeight="700"
+                      color="#166534"
+                      fontVariantNumeric="tabular-nums"
+                      whiteSpace="nowrap"
+                    >
+                      Loaded in {clinlogLoadDurationText}
+                    </Text>
+                  )}
+                  <Text
+                    fontSize="12px"
+                    fontWeight="600"
+                    color="#3F7F52"
+                    fontVariantNumeric="tabular-nums"
+                    whiteSpace="nowrap"
+                  >
+                    {clinlogDataQueryResults.length} records
+                  </Text>
+                </Flex>
+              ) : null}
+            </Flex>
           </Flex>
         </Flex>
       </Flex>
@@ -1858,7 +2299,10 @@ function Clinlog() {
                         <chakra.span
                           className="material-symbols-outlined"
                           fontSize="36px"
-                          onClick={() => setViewPatient(null)}
+                          onClick={() => {
+                            setViewPatient(null);
+                            setGlobalFilter([]);
+                          }}
                           cursor="pointer"
                         >
                           arrow_circle_left
@@ -1883,41 +2327,6 @@ function Clinlog() {
                       </Text>
                     </Flex>
                     <Spacer />
-                    {session?.locationIds?.includes(
-                      Number(selectedGlobalPatientData?.recordClinic?.[0]?.id),
-                    ) && (
-                      <Link
-                        as={NextLink}
-                        target="_blank"
-                        bgColor="scBlack"
-                        color={"white"}
-                        fontWeight={700}
-                        borderRadius={"25px"}
-                        _hover={{ bgColor: "scBlack" }}
-                        href={`/pagesv2/patientdata?postId=${encryptId(
-                          selectedGlobalPatientData?.id?.toString(),
-                        )}&entryId=${encryptId(
-                          viewPatient?.id?.toString(),
-                        )}&tabName=surgical`}
-                      >
-                        <Flex align="center" p="3">
-                          <chakra.span
-                            className="material-symbols-outlined"
-                            fontSize={"24px"}
-                          >
-                            account_circle
-                          </chakra.span>
-                          <Text
-                            ml="2"
-                            mr="3"
-                            fontSize={"12px"}
-                            textTransform={"uppercase"}
-                          >
-                            View Patient
-                          </Text>
-                        </Flex>
-                      </Link>
-                    )}
                   </Flex>
                   <SurgicalDetailsV3_2
                     setClinlogStatus={setClinlogStatus}
@@ -1941,67 +2350,10 @@ function Clinlog() {
                     patientGender={
                       viewPatient?.recordPatient?.[0]?.sex || viewPatient?.sex
                     }
-                    globalPostId={globalIdsResults?.data?.entries
-                      ?.find((entry) => {
-                        const records = entry?.attachedRecordsEntry?.map(
-                          (record) => record?.id,
-                        );
-                        return records?.includes(viewPatient.id.toString());
-                      })
-                      ?.id.toString()}
-                    detailsData={globalIdsResults?.data?.entries?.find(
-                      (entry) => {
-                        const records = entry?.attachedRecordsEntry?.map(
-                          (record) => record?.id,
-                        );
-                        return records?.includes(viewPatient.id.toString());
-                      },
-                    )}
                     fromClinlog={true}
                   />
                 </Flex>
                 <Flex direction={"column"} w="20%" p="4" gap="1rem">
-                  <Flex
-                    flexDirection={"column"}
-                    gap="0.5rem"
-                    p="4"
-                    borderRadius={"6px"}
-                    border="1px solid #F7F0F0"
-                    bg="white"
-                  >
-                    <Flex w="100%" justify="space-between" align="center">
-                      <Text
-                        fontSize={{ base: "12px", md: "13px" }}
-                        fontWeight="700"
-                      >
-                        Marked for attention
-                      </Text>
-                      <chakra.span
-                        className="material-symbols-outlined"
-                        fontSize={"28px"}
-                      >
-                        {selectedGlobalPatientData?.globalIsFlagged
-                          ? "toggle_on"
-                          : "toggle_off"}
-                      </chakra.span>
-                    </Flex>
-                    <Flex w="100%" justify="space-between" align="center">
-                      <Text
-                        fontSize={{ base: "12px", md: "13px" }}
-                        fontWeight="700"
-                      >
-                        Included in Analysis{" "}
-                      </Text>
-                      <chakra.span
-                        className="material-symbols-outlined"
-                        fontSize={"28px"}
-                      >
-                        {viewPatient?.enableClinlog
-                          ? "toggle_on"
-                          : "toggle_off"}
-                      </chakra.span>
-                    </Flex>
-                  </Flex>
                   <Flex
                     flexDirection={"column"}
                     borderRadius={"6px"}
@@ -2723,6 +3075,10 @@ function Clinlog() {
                       fontSize={"13px"}
                       onChange={(e) => {
                         const value = e.target.value;
+                        if (e.target.value === "") {
+                          setColumnFilters([]);
+                          return;
+                        }
                         setColumnFilters([
                           {
                             id: "patientName",
@@ -2835,31 +3191,6 @@ function Clinlog() {
                             <Td textAlign={"center"}>
                               {" "}
                               <Link
-                                //target={"_blank"}
-
-                                //as={NextLink}
-                                // href={{
-                                //   pathname: "/patientdata",
-                                //   query: {
-                                //     postId: encryptId(postId),
-                                //     entryId: encryptId(treatment.id),
-                                //   },
-                                // }}
-                                // href={`/patientdata?postId=${encryptId(
-                                //   globalIdsResults?.data?.entries
-                                //     ?.find((entry) => {
-                                //       const records =
-                                //         entry?.attachedRecordsEntry?.map(
-                                //           (record) => record?.id
-                                //         );
-                                //       return records?.includes(
-                                //         row.original.id.toString()
-                                //       );
-                                //     })
-                                //     ?.id.toString()
-                                // )}&entryId=${encryptId(
-                                //   row.original.id.toString()
-                                // )}&tabName=surgical`}
                                 onClick={() => {
                                   setViewPatient(row.original);
                                 }}
@@ -2903,9 +3234,57 @@ function Clinlog() {
                     <Text fontSize="14px">
                       {table.getFilteredRowModel().rows.length}
                     </Text>
-                    {hasNextPage && (
-                      <Spinner ml="10px" size="sm" color="#351361" />
-                    )}
+                    {hasNextPage ? (
+                      <Flex
+                        align="center"
+                        gap="0.4rem"
+                        ml="10px"
+                        px="2"
+                        py="1"
+                        borderRadius="8px"
+                        bgColor="#F7F3FF"
+                        color="#351361"
+                      >
+                        <Spinner size="xs" thickness="2px" />
+                        <Text fontSize="12px" fontWeight="700">
+                          Loading
+                        </Text>
+                        {shouldShowClinlogLoadTimer && (
+                          <Text
+                            fontSize="12px"
+                            fontWeight="600"
+                            fontVariantNumeric="tabular-nums"
+                          >
+                            {clinlogLoadDurationText}
+                          </Text>
+                        )}
+                      </Flex>
+                    ) : hasLoadedAllClinlogPages ? (
+                      <Flex
+                        align="center"
+                        gap="0.35rem"
+                        ml="10px"
+                        px="2"
+                        py="1"
+                        borderRadius="8px"
+                        bgColor="#F0FDF4"
+                        color="#166534"
+                      >
+                        <CheckIcon boxSize="10px" />
+                        <Text fontSize="12px" fontWeight="700">
+                          Complete
+                        </Text>
+                        {shouldShowClinlogLoadTimer && (
+                          <Text
+                            fontSize="12px"
+                            fontWeight="600"
+                            fontVariantNumeric="tabular-nums"
+                          >
+                            {clinlogLoadDurationText}
+                          </Text>
+                        )}
+                      </Flex>
+                    ) : null}
                     <Spacer />
                     <Button
                       onClick={

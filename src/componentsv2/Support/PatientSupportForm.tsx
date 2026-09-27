@@ -3,7 +3,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import Mailgun from "mailgun.js";
 import { Session } from "next-auth";
 import { useSession } from "next-auth/react";
-import { useV2Router } from "componentsv2/Dashboard/Helpers/routerHelpers";
+import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { object, string } from "yup";
@@ -30,7 +30,7 @@ export default function PatientSupportForm({session, defaultValues, clinic}: Pat
   const [captchaCode, setCaptchaCode] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const router = useV2Router()
+  const router = useRouter()
 
   const validationSchema = object({
     firstName: string().required("First Name is required"),

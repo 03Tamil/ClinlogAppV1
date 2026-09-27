@@ -1683,6 +1683,10 @@ export const baseChartQuery = gql`
                     )
                     boneLoss
                     boneLossLabel: boneLoss(label: true)
+                    graftConditionAtFollowUp
+                    graftConditionAtFollowUpLabel: graftConditionAtFollowUp(
+                      label: true
+                    )
                   }
                 }
                 itemSpecificationMatrix {
@@ -2137,6 +2141,10 @@ export const proposedTreatmentChartApprovedQuery = gql`
                     )
                     boneLoss
                     boneLossLabel: boneLoss(label: true)
+                    graftConditionAtFollowUp
+                    graftConditionAtFollowUpLabel: graftConditionAtFollowUp(
+                      label: true
+                    )
                   }
                 }
                 itemSpecificationMatrix {
@@ -2776,6 +2784,10 @@ export const proposedTreatmentChartQuery = gql`
                     )
                     boneLoss
                     boneLossLabel: boneLoss(label: true)
+                    graftConditionAtFollowUp
+                    graftConditionAtFollowUpLabel: graftConditionAtFollowUp(
+                      label: true
+                    )
                   }
                 }
                 itemSpecificationMatrix {

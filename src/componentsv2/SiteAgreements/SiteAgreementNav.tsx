@@ -1,7 +1,7 @@
 import {Box, Container, Divider, HStack, Link, Skeleton, Stack, Text, Wrap, WrapItem} from "@chakra-ui/react";
 import { isStaff } from "helpersv2/Permissions";
 import { useSession } from "next-auth/react";
-import { V2Link } from "../Dashboard/Helpers/routerHelpers";
+import NextLink from "next/link";
 
 type SiteAgreementNav = {
   isActive: "WebsiteTermsAndConditions" | "PatientTermsAndConditions" | "StaffTermsAndConditions" | "PrivacyPolicy" | "SensitiveInformationPolicy"
@@ -17,7 +17,7 @@ export default function SiteAgreementNav({isActive}: SiteAgreementNav) {
       <Box>
         <Wrap mb={"1rem"} flexDirection={{base: "column", lg: "row"}}>
           <WrapItem>
-            <Link color={"primary"} fontWeight={isActive === "WebsiteTermsAndConditions" ? "600" : "400"} as={V2Link} href={"/pagesv2/terms"}>
+            <Link color={"primary"} fontWeight={isActive === "WebsiteTermsAndConditions" ? "600" : "400"} as={NextLink} href={"/terms"}>
               <Text>Website Terms &amp; Conditions</Text>
             </Link>
           </WrapItem>
@@ -25,7 +25,7 @@ export default function SiteAgreementNav({isActive}: SiteAgreementNav) {
             <Text color={"dark"}>|</Text>
           </WrapItem>
           <WrapItem>
-            <Link color={"primary"} fontWeight={isActive === "PatientTermsAndConditions" ? "600" : "400"} as={V2Link} href={"/pagesv2/terms/patient"}>
+            <Link color={"primary"} fontWeight={isActive === "PatientTermsAndConditions" ? "600" : "400"} as={NextLink} href={"/terms/patient"}>
               <Text>Patient Terms &amp; Conditions</Text>
             </Link>
           </WrapItem>
@@ -35,7 +35,7 @@ export default function SiteAgreementNav({isActive}: SiteAgreementNav) {
                 <Text color={"dark"}>|</Text>
               </WrapItem>
               <WrapItem>
-                <Link color={"primary"} fontWeight={isActive === "StaffTermsAndConditions" ? "600" : "400"} as={V2Link} href={"/pagesv2/terms/staff"}>
+                <Link color={"primary"} fontWeight={isActive === "StaffTermsAndConditions" ? "600" : "400"} as={NextLink} href={"/terms/staff"}>
                   <Text>Staff Terms &amp; Conditions</Text>
                 </Link>
               </WrapItem>
@@ -45,7 +45,7 @@ export default function SiteAgreementNav({isActive}: SiteAgreementNav) {
             <Text color={"dark"}>|</Text>
           </WrapItem>
           <WrapItem>
-            <Link color={"primary"} fontWeight={isActive === "PrivacyPolicy" ? "600" : "400"}  as={V2Link} href={"/pagesv2/privacy"}>
+            <Link color={"primary"} fontWeight={isActive === "PrivacyPolicy" ? "600" : "400"}  as={NextLink} href={"/privacy"}>
               <Text>Privacy Policy</Text>
             </Link>
           </WrapItem>
@@ -53,7 +53,7 @@ export default function SiteAgreementNav({isActive}: SiteAgreementNav) {
             <Text color={"dark"}>|</Text>
           </WrapItem>
           <WrapItem>
-            <Link color={"primary"} fontWeight={isActive === "SensitiveInformationPolicy" ? "600" : "400"}  as={V2Link} href={"/pagesv2/sensitive-information"}>
+            <Link color={"primary"} fontWeight={isActive === "SensitiveInformationPolicy" ? "600" : "400"}  as={NextLink} href={"/sensitive-information"}>
               <Text>Sensitive Information Policy</Text>
             </Link>
           </WrapItem>

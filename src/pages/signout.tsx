@@ -14,7 +14,7 @@ function SignOut() {
     queryClient.removeQueries()
     queryClient.clear()
     localStorage.removeItem("dashboardTabPage")
-    router.push("/pagesv2/")
+    router.push("/")
   }, [router])
 
   return <FullscreenLoadingSpinner />

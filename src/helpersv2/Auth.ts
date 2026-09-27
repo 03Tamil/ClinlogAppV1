@@ -63,7 +63,7 @@ export async function refreshTokens(router) {
     }
   } catch (error) {
     console.log("errors have arrived");
-    router.push("/pagesv2/signout");
+    router.push("/signout");
   }
 }
 
