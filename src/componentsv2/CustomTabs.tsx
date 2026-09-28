@@ -94,11 +94,11 @@ export default function CustomTabs({ tabs, customTabsRef }: TabProps) {
           {tabs.map((tab, index) => (
             <TabPanel p="10px" key={index}>
               <ErrorBoundary
-                FallbackComponent={(error, resetErrorBoundary) => (
+                fallbackRender={({ error, resetErrorBoundary }) => (
                   <Fallback
                     error={error}
                     resetErrorBoundary={resetErrorBoundary}
-                    customMessage={`Error with ${tab.label} tab`}
+                    customMessage={`The ${tab.label} tab couldn't be displayed.`}
                   />
                 )}
               >

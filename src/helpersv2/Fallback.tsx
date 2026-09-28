@@ -1,3 +1,5 @@
+import { ErrorState } from "componentsv2/common/QueryState"
+
 type fallbackTypes = {
   error: any
   resetErrorBoundary: () => void
@@ -10,12 +12,10 @@ export function Fallback({
   customMessage,
 }: fallbackTypes) {
   return (
-    <div role="alert">
-      <p>
-        Something went wrong: please try refreshing page if error persists
-        please create a support ticket
-      </p>
-      <pre style={{ color: "red" }}>{customMessage}</pre>
-    </div>
+    <ErrorState
+      title={customMessage ?? "Something went wrong."}
+      description="Try again. If the problem persists, please create a support ticket."
+      onRetry={resetErrorBoundary}
+    />
   )
 }

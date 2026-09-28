@@ -99,16 +99,17 @@ import {
 } from "@tanstack/react-query";
 import { clinlogNoteMutation } from "componentsv2/DetailsPage/detailsPageMutations";
 import { useRouter } from "next/router";
+import {
+  EmptyState,
+  ErrorState,
+  LoadingState,
+} from "componentsv2/common/QueryState";
 
 const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
 
 // Heavy views are only rendered on demand (a tab or a selected case), so load
 // their code on demand too instead of shipping it with the initial page.
-const TabLoading = () => (
-  <Flex w="100%" justify="center" py="16">
-    <Spinner color="#612ECC" thickness="3px" size="lg" />
-  </Flex>
-);
+const TabLoading = () => <LoadingState />;
 const ClinlogDemoGraphics = dynamic(
   () => import("componentsv2/Analytics/ClinlogDemoGraphics"),
   { loading: TabLoading },
@@ -531,7 +532,9 @@ function Clinlog() {
             batch:
               pageParam === 0
                 ? 1
-                : 2 + (pageParam - FIRST_PAGE_SIZE) / (PARALLEL_CHUNKS * CHUNK_SIZE),
+                : 2 +
+                  (pageParam - FIRST_PAGE_SIZE) /
+                    (PARALLEL_CHUNKS * CHUNK_SIZE),
             log: batchTimingsRef.current,
           }
         : undefined;
@@ -807,9 +810,7 @@ function Clinlog() {
   // sorting and paging).
   const [rowSelection, setRowSelection] = useState({});
   // Cases sent from All Cases to the Data Tool ("Analyse selected").
-  const [dataToolCaseIds, setDataToolCaseIds] = useState<string[] | null>(
-    null,
-  );
+  const [dataToolCaseIds, setDataToolCaseIds] = useState<string[] | null>(null);
   const [globalFilter, setGlobalFilter] = useState([]);
   const [columnFilters, setColumnFilters] = useState([]);
   const [columnVisibility, setColumnVisibility] = useState({
@@ -1904,170 +1905,176 @@ function Clinlog() {
     );
   }, [tableData]);
 
-  const globalFilterFunction = useCallback((row, columnId, filters) => {
-    const conditionChecks = filters.map((filter) => {
-      const filterValue = filter.value.value;
-      const condition = filter.value.condition;
-      const filterColumnId = filter.id;
-      const columnMeta = clinlogColumnMeta.get(filterColumnId);
-      const group = columnMeta?.group;
-      const subGroup = columnMeta?.subGroup;
-      const type = columnMeta?.type;
-      let cellValue: any;
-      if (group === "followUp") {
-        const followUpData = row.original.recordFollowUpMatrix?.[0];
-        if (filterColumnId === "numberOfReviews") {
-          cellValue =
-            followUpData?.[filterColumnId?.split("_")?.[0]] ||
-            row.original?.recordFollowUpMatrix?.length;
-        } else {
-          cellValue = followUpData?.[filterColumnId?.split("_")?.[0]];
-        }
-      } else if (group === "siteSpecificCharacteristics") {
-        const siteDetails =
-          row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
-            (site) => site?.treatmentItemNumber === "688",
-          );
-        const siteSpecificData = siteDetails?.map((site) => {
-          if (filterColumnId === "toothValue") {
-            return site.toothValue;
-          } else if (subGroup === "ssFollowUp") {
-            const siteFollowUpRecords =
-              site?.attachedSiteSpecificRecords?.[0]
-                ?.attachedSiteSpecificFollowUp?.[0];
-
-            return siteFollowUpRecords?.[filterColumnId]?.replaceAll(",", "");
+  const globalFilterFunction = useCallback(
+    (row, columnId, filters) => {
+      const conditionChecks = filters.map((filter) => {
+        const filterValue = filter.value.value;
+        const condition = filter.value.condition;
+        const filterColumnId = filter.id;
+        const columnMeta = clinlogColumnMeta.get(filterColumnId);
+        const group = columnMeta?.group;
+        const subGroup = columnMeta?.subGroup;
+        const type = columnMeta?.type;
+        let cellValue: any;
+        if (group === "followUp") {
+          const followUpData = row.original.recordFollowUpMatrix?.[0];
+          if (filterColumnId === "numberOfReviews") {
+            cellValue =
+              followUpData?.[filterColumnId?.split("_")?.[0]] ||
+              row.original?.recordFollowUpMatrix?.length;
+          } else {
+            cellValue = followUpData?.[filterColumnId?.split("_")?.[0]];
           }
-          return site.attachedSiteSpecificRecords?.[0]?.[
-            filterColumnId
-          ]?.replaceAll(",", "");
-        });
-        cellValue = siteSpecificData?.join(",");
-      } else if (group === "patientSurvey") {
-        const patientSurveyData = surveyByRecordId.get(String(row.original.id));
-        cellValue =
-          patientSurveyData?.[filterColumnId?.split("_")?.[0]] || null;
-      } else {
-        if (filterColumnId === "recordTreatmentSurgeons") {
-          cellValue =
-            row.original?.recordTreatmentSurgeons?.length > 0
-              ? row.original?.recordTreatmentSurgeons
-                  ?.map((surgeon) => surgeon?.fullName)
-                  ?.join(",")
-              : row?.original?.attachedDentalCharts?.[0]?.defaultDentist
-                  ?.map((surgeon) => surgeon?.fullName)
-                  ?.join(",") || null;
-        } else if (filterColumnId === "recordTreatmentDate") {
-          const chartData = row?.original?.attachedDentalCharts?.[0];
-          cellValue = chartData?.recordTreatmentDate
-            ? format(new Date(chartData?.recordTreatmentDate), "yyyy-MM-dd")
-            : row?.original?.recordTreatmentDate
-              ? format(
-                  new Date(row?.original?.recordTreatmentDate),
-                  "yyyy-MM-dd",
-                )
-              : null;
-        } else if (filterColumnId === "timeFromSurgery") {
-          const chartData = row?.original?.attachedDentalCharts?.[0];
-          const surgeryDate =
-            chartData?.recordTreatmentDate || row.original?.recordTreatmentDate;
-          cellValue =
-            row.original?.dateOfInsertion && surgeryDate
-              ? differenceInDays(
-                  new Date(
-                    format(
-                      new Date(row.original?.dateOfInsertion),
-                      "yyyy-MM-dd",
-                    ),
-                  ),
-                  new Date(format(new Date(surgeryDate), "yyyy-MM-dd")),
-                )
-              : null;
-        } else if (filterColumnId === "recordClinic") {
-          cellValue =
-            // Joined without spaces so multi-clinic records match
-            // ("12, 34".split(",") left " 34" unmatched).
-            row.original.recordClinic?.map((clinic) => clinic.id).join(",") ||
-            null;
-        } else if (filterColumnId === "zygomaImplants") {
+        } else if (group === "siteSpecificCharacteristics") {
           const siteDetails =
             row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
-              (site) => site.treatmentItemNumber === "688",
+              (site) => site?.treatmentItemNumber === "688",
             );
-          const zygomaImplants = siteDetails?.filter((site) =>
-            site.attachedSiteSpecificRecords?.[0]?.implantCategory?.includes(
-              "zygomatic",
-            ),
-          )?.length;
-          cellValue = zygomaImplants || 0;
-        } else if (filterColumnId === "regularImplants") {
-          const siteDetails =
-            row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
-              (site) => site.treatmentItemNumber === "688",
-            );
-          const regularImplants =
-            siteDetails?.filter(
-              (site) =>
-                !site.attachedSiteSpecificRecords?.[0]?.implantCategory?.includes(
-                  "zygomatic",
-                ),
-            )?.length || 0;
-          cellValue = regularImplants;
-        } else if (filterColumnId === "totalImplants") {
-          const siteDetails =
-            row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
-              (site) => site.treatmentItemNumber === "688",
-            );
-          const zygomaImplants = siteDetails?.filter((site) =>
-            site.attachedSiteSpecificRecords?.[0]?.implantCategory?.includes(
-              "zygomatic",
-            ),
-          )?.length;
-          // Bug fix: `regularImplants` was not defined in this branch, so
-          // filtering on Total Implants threw a ReferenceError.
-          cellValue = siteDetails?.length || 0;
+          const siteSpecificData = siteDetails?.map((site) => {
+            if (filterColumnId === "toothValue") {
+              return site.toothValue;
+            } else if (subGroup === "ssFollowUp") {
+              const siteFollowUpRecords =
+                site?.attachedSiteSpecificRecords?.[0]
+                  ?.attachedSiteSpecificFollowUp?.[0];
+
+              return siteFollowUpRecords?.[filterColumnId]?.replaceAll(",", "");
+            }
+            return site.attachedSiteSpecificRecords?.[0]?.[
+              filterColumnId
+            ]?.replaceAll(",", "");
+          });
+          cellValue = siteSpecificData?.join(",");
+        } else if (group === "patientSurvey") {
+          const patientSurveyData = surveyByRecordId.get(
+            String(row.original.id),
+          );
+          cellValue =
+            patientSurveyData?.[filterColumnId?.split("_")?.[0]] || null;
         } else {
-          cellValue = row.original?.[filterColumnId] || null;
+          if (filterColumnId === "recordTreatmentSurgeons") {
+            cellValue =
+              row.original?.recordTreatmentSurgeons?.length > 0
+                ? row.original?.recordTreatmentSurgeons
+                    ?.map((surgeon) => surgeon?.fullName)
+                    ?.join(",")
+                : row?.original?.attachedDentalCharts?.[0]?.defaultDentist
+                    ?.map((surgeon) => surgeon?.fullName)
+                    ?.join(",") || null;
+          } else if (filterColumnId === "recordTreatmentDate") {
+            const chartData = row?.original?.attachedDentalCharts?.[0];
+            cellValue = chartData?.recordTreatmentDate
+              ? format(new Date(chartData?.recordTreatmentDate), "yyyy-MM-dd")
+              : row?.original?.recordTreatmentDate
+                ? format(
+                    new Date(row?.original?.recordTreatmentDate),
+                    "yyyy-MM-dd",
+                  )
+                : null;
+          } else if (filterColumnId === "timeFromSurgery") {
+            const chartData = row?.original?.attachedDentalCharts?.[0];
+            const surgeryDate =
+              chartData?.recordTreatmentDate ||
+              row.original?.recordTreatmentDate;
+            cellValue =
+              row.original?.dateOfInsertion && surgeryDate
+                ? differenceInDays(
+                    new Date(
+                      format(
+                        new Date(row.original?.dateOfInsertion),
+                        "yyyy-MM-dd",
+                      ),
+                    ),
+                    new Date(format(new Date(surgeryDate), "yyyy-MM-dd")),
+                  )
+                : null;
+          } else if (filterColumnId === "recordClinic") {
+            cellValue =
+              // Joined without spaces so multi-clinic records match
+              // ("12, 34".split(",") left " 34" unmatched).
+              row.original.recordClinic?.map((clinic) => clinic.id).join(",") ||
+              null;
+          } else if (filterColumnId === "zygomaImplants") {
+            const siteDetails =
+              row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+                (site) => site.treatmentItemNumber === "688",
+              );
+            const zygomaImplants = siteDetails?.filter((site) =>
+              site.attachedSiteSpecificRecords?.[0]?.implantCategory?.includes(
+                "zygomatic",
+              ),
+            )?.length;
+            cellValue = zygomaImplants || 0;
+          } else if (filterColumnId === "regularImplants") {
+            const siteDetails =
+              row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+                (site) => site.treatmentItemNumber === "688",
+              );
+            const regularImplants =
+              siteDetails?.filter(
+                (site) =>
+                  !site.attachedSiteSpecificRecords?.[0]?.implantCategory?.includes(
+                    "zygomatic",
+                  ),
+              )?.length || 0;
+            cellValue = regularImplants;
+          } else if (filterColumnId === "totalImplants") {
+            const siteDetails =
+              row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+                (site) => site.treatmentItemNumber === "688",
+              );
+            const zygomaImplants = siteDetails?.filter((site) =>
+              site.attachedSiteSpecificRecords?.[0]?.implantCategory?.includes(
+                "zygomatic",
+              ),
+            )?.length;
+            // Bug fix: `regularImplants` was not defined in this branch, so
+            // filtering on Total Implants threw a ReferenceError.
+            cellValue = siteDetails?.length || 0;
+          } else {
+            cellValue = row.original?.[filterColumnId] || null;
+          }
         }
-      }
-      if (type === "select") {
-        return {
-          operation: filter.value.operation || "AND",
-          isTrue: selectTypeFilterFunction(cellValue, filterValue, condition),
-        };
-      } else if (type === "number") {
-        return {
-          operation: filter.value.operation || "AND",
-          isTrue: numberTypeFilterFunction(
-            Number(cellValue) || null,
-            filterValue,
-            filter?.value?.toValue,
-            condition,
-          ),
-        };
-      } else if (type === "date") {
-        const dateValue = cellValue
-          ? format(new Date(cellValue), "yyyy-MM-dd")
-          : null;
-        return {
-          operation: filter.value.operation || "AND",
-          isTrue: dateTypeFilterFunction(
-            dateValue,
-            filterValue,
-            filter?.value?.toValue,
-            condition,
-          ),
-        };
-      } else if (type === "string") {
-        return {
-          operation: filter.value.operation || "AND",
-          isTrue: stringTypeFilterFunction(cellValue, filterValue, condition),
-        };
-      }
-    });
-    return evaluateConditions(conditionChecks);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [surveyByRecordId]);
+        if (type === "select") {
+          return {
+            operation: filter.value.operation || "AND",
+            isTrue: selectTypeFilterFunction(cellValue, filterValue, condition),
+          };
+        } else if (type === "number") {
+          return {
+            operation: filter.value.operation || "AND",
+            isTrue: numberTypeFilterFunction(
+              Number(cellValue) || null,
+              filterValue,
+              filter?.value?.toValue,
+              condition,
+            ),
+          };
+        } else if (type === "date") {
+          const dateValue = cellValue
+            ? format(new Date(cellValue), "yyyy-MM-dd")
+            : null;
+          return {
+            operation: filter.value.operation || "AND",
+            isTrue: dateTypeFilterFunction(
+              dateValue,
+              filterValue,
+              filter?.value?.toValue,
+              condition,
+            ),
+          };
+        } else if (type === "string") {
+          return {
+            operation: filter.value.operation || "AND",
+            isTrue: stringTypeFilterFunction(cellValue, filterValue, condition),
+          };
+        }
+      });
+      return evaluateConditions(conditionChecks);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    },
+    [surveyByRecordId],
+  );
 
   const table = useReactTable({
     data: tableData,
@@ -2132,8 +2139,7 @@ function Clinlog() {
         .filter((column) => column.id)
         .map((column) => ({
           id: column.id,
-          label:
-            typeof column.header === "string" ? column.header : column.id,
+          label: typeof column.header === "string" ? column.header : column.id,
           group: getFieldMeta(column.id)?.group ?? "case",
         })),
     [columns],
@@ -2215,7 +2221,6 @@ function Clinlog() {
   ];
   //const animation = `${fadeInSlide} 2s ease-in-out infinite`;
 
-
   const selectedPatientNotes = useMemo(() => {
     if (viewPatient && clinlogNotesQueryResult?.isSuccess) {
       const notes = clinlogNotesQueryResult.data?.recordNotes?.filter(
@@ -2282,7 +2287,6 @@ function Clinlog() {
     addClinlogNotesMutationFunction.mutate(notesData);
   };
 
-
   useEffect(() => {
     // Keep pulling batches until the server reports the end. Guarded by
     // isFetching/isError so we never cancel an in-flight request or loop on
@@ -2294,47 +2298,23 @@ function Clinlog() {
 
   if (isError && clinlogDataQueryResults?.length === 0) {
     return (
-      <Flex
+      <ErrorState
         h="80vh"
-        w="100%"
-        bgColor="#FCF8FF"
-        align="center"
-        justify="center"
-        direction="column"
-        gap="3"
-        role="alert"
-      >
-        <Text fontSize="16px" fontWeight="700" color="#351361">
-          We couldn't load Clinlog records.
-        </Text>
-        <Text fontSize="13px" color="#5B4B77">
-          Check your connection and try again.
-        </Text>
-        <Button size="sm" colorScheme="purple" onClick={() => refetch()}>
-          Retry
-        </Button>
-      </Flex>
+        bgColor="surfaceSubtle"
+        title="We couldn't load Clinlog records."
+        onRetry={() => refetch()}
+      />
     );
   }
 
   if (hasFinishedClinlogDataLoading && clinlogDataQueryResults?.length === 0) {
     return (
-      <Flex
+      <EmptyState
         h="80vh"
-        w="100%"
-        bgColor="#FCF8FF"
-        align="center"
-        justify="center"
-        direction="column"
-        gap="2"
-      >
-        <Text fontSize="16px" fontWeight="700" color="#351361">
-          No Clinlog records yet
-        </Text>
-        <Text fontSize="13px" color="#5B4B77" textAlign="center" maxW="420px">
-          Records with Clinlog enabled for your clinic will appear here.
-        </Text>
-      </Flex>
+        bgColor="surfaceSubtle"
+        title="No Clinlog records yet"
+        description="Records with Clinlog enabled for your clinic will appear here."
+      />
     );
   }
 
@@ -2498,7 +2478,7 @@ function Clinlog() {
                   >
                     Loading records
                   </Text>
-                  {(
+                  {
                     <Text
                       fontSize="12px"
                       fontWeight="700"
@@ -2511,7 +2491,7 @@ function Clinlog() {
                         finishedAt={loadTiming.finishedAt}
                       />
                     </Text>
-                  )}
+                  }
                   <Text
                     fontSize="12px"
                     fontWeight="600"
@@ -2552,7 +2532,7 @@ function Clinlog() {
                   >
                     All records loaded
                   </Text>
-                  {(
+                  {
                     <Text
                       fontSize="12px"
                       fontWeight="700"
@@ -2560,12 +2540,13 @@ function Clinlog() {
                       fontVariantNumeric="tabular-nums"
                       whiteSpace="nowrap"
                     >
-                      Loaded in <ClinlogLoadTimer
+                      Loaded in{" "}
+                      <ClinlogLoadTimer
                         startedAt={loadTiming.startedAt}
                         finishedAt={loadTiming.finishedAt}
                       />
                     </Text>
-                  )}
+                  }
                   <Text
                     fontSize="12px"
                     fontWeight="600"
@@ -2744,7 +2725,13 @@ function Clinlog() {
                       h="100%"
                     >
                       {clinlogNotesQueryResult.isLoading ? (
-                        <Text>Loading Notes...</Text>
+                        <LoadingState label="Loading notes" py="6" />
+                      ) : clinlogNotesQueryResult.isError ? (
+                        <ErrorState
+                          py="6"
+                          title="We couldn't load notes."
+                          onRetry={() => clinlogNotesQueryResult.refetch()}
+                        />
                       ) : selectedPatientNotes.length > 0 ? (
                         selectedPatientNotes?.map((note, index) => (
                           <Flex
@@ -2793,9 +2780,11 @@ function Clinlog() {
                           </Flex>
                         ))
                       ) : (
-                        <Text fontSize={{ base: "11px", md: "12px" }}>
-                          No notes available.
-                        </Text>
+                        <EmptyState
+                          py="6"
+                          title="No notes yet"
+                          description="Notes added to this record will appear here."
+                        />
                       )}
                       {/* <Flex
                         w="100%"
@@ -3413,13 +3402,28 @@ function Clinlog() {
                       <Text fontSize="14px" fontWeight="700" color="#351361">
                         Cases
                       </Text>
-                      <Flex align="center" gap="3" fontSize="11px" color="gray.600">
+                      <Flex
+                        align="center"
+                        gap="3"
+                        fontSize="11px"
+                        color="gray.600"
+                      >
                         <Flex align="center" gap="1">
-                          <Box w="8px" h="8px" borderRadius="full" bg="#4ADE80" />
+                          <Box
+                            w="8px"
+                            h="8px"
+                            borderRadius="full"
+                            bg="#4ADE80"
+                          />
                           All data complete
                         </Flex>
                         <Flex align="center" gap="1">
-                          <Box w="8px" h="8px" borderRadius="full" bg="orange.400" />
+                          <Box
+                            w="8px"
+                            h="8px"
+                            borderRadius="full"
+                            bg="orange.400"
+                          />
                           Some data missing
                         </Flex>
                       </Flex>
@@ -3447,7 +3451,9 @@ function Clinlog() {
                         onClick={() =>
                           exportRows(table.getFilteredRowModel().rows)
                         }
-                        isDisabled={table.getFilteredRowModel().rows.length === 0}
+                        isDisabled={
+                          table.getFilteredRowModel().rows.length === 0
+                        }
                       >
                         Export all
                       </Button>

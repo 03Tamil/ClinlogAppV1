@@ -14,8 +14,9 @@ const breakpoints = {
   sm: "640px",
   md: "768px",
   lg: "1024px",
-  "2lg": "1700px",
   xl: "1280px",
+  // Chakra reads breakpoints in key order, so keep these sorted by width.
+  "2lg": "1700px",
   "2xl": "2000px",
 };
 const colors = {
@@ -34,6 +35,20 @@ const colors = {
   scBlack: "#111111",
   scLightGrey: "#F5F5F5",
   scGrey: "#767676",
+  // Clinlog purple. 500/700/800 are the values used across the app; use this
+  // scale (or colorScheme="brand") instead of hardcoding hex values.
+  brand: {
+    50: "#FCF8FF",
+    100: "#F7F3FF",
+    200: "#DDD6FE",
+    300: "#B9A2EC",
+    400: "#8A63DC",
+    500: "#612ECC",
+    600: "#5227AE",
+    700: "#452A7E",
+    800: "#351361",
+    900: "#240C44",
+  },
 };
 const components = {
   Badge: {
@@ -193,6 +208,12 @@ const semanticTokens = {
       default: "#eaeff9",
       _dark: "#eaeff9",
     },
+    // Clinlog UI roles
+    surfaceSubtle: { default: "brand.50" },
+    borderSubtle: { default: "#E2E8F0" },
+    textStrong: { default: "brand.800" },
+    textMuted: { default: "#5B4B77" },
+    accent: { default: "#007AFF" },
   },
   radii: {
     button: "12px",

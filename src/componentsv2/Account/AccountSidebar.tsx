@@ -70,6 +70,20 @@ export type AccountSidebarProps = {
   sidebar?: MenuCardsType[];
 };
 
+// Account routes that have a page under src/pages/account. Menu items pointing
+// anywhere else are hidden so the sidebar never links to a 404.
+const IMPLEMENTED_ACCOUNT_ROUTES = [
+  "/account/profile-settings",
+  "/account/personal-information",
+  "/account/resources",
+  "/account/branding",
+  "/account/support-ticket",
+  "/account/staff-terms",
+];
+const isImplementedRoute = (url: string) =>
+  IMPLEMENTED_ACCOUNT_ROUTES.includes(url) ||
+  url.startsWith("/account/help-guides/");
+
 export default function AccountSidebar({
   name,
   icon,
@@ -336,7 +350,14 @@ export default function AccountSidebar({
         //...(userIsStaff || userIsAdmin ? [privacyMenuItems] : []),
       ];
 
-  const profileMenuCards = sidebar ?? defaultProfileMenuCards;
+  const profileMenuCards =
+    sidebar ??
+    defaultProfileMenuCards.map((menuCard) => ({
+      ...menuCard,
+      menuItems: menuCard.menuItems.filter((item) =>
+        isImplementedRoute(item.url),
+      ),
+    }));
 
   const { isOpen, onToggle } = useDisclosure();
 
