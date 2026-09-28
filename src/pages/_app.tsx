@@ -2,7 +2,7 @@ import { Box, ChakraProvider } from "@chakra-ui/react";
 import theme from "../theme";
 import { AppProps } from "next/app";
 import Head from "next/head";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import {
   QueryCache,
@@ -22,11 +22,18 @@ import { useAtom } from "jotai";
 import { Toaster } from "sonner";
 
 
-import "material-symbols";
+// Only the outlined variant is used in the app; importing the package root
+// pulls in the rounded + sharp @font-face rules too.
+import "material-symbols/outlined.css";
 import MaintenanceBar from "components/MaintenanceBar";
 import { pageTitles } from "helpersv2/PageTitles";
 
 
+
+// Longest keys first so the most specific route wins. Sorted once at module load.
+const sortedPageTitles = Object.entries(pageTitles).sort(
+  ([a], [b]) => b.length - a.length,
+);
 
 type CustomComponentType = NextComponentType & {
   auth: {
@@ -59,9 +66,11 @@ function MyApp({ Component, pageProps }: CustomAppProps) {
   const router = useRouter();
   const title = (Component as any).title as string | undefined;
 
-  const derivedTitle = Object.entries(pageTitles)
-    .sort(([a], [b]) => b.length - a.length)
-    .find(([key, value]) => router.asPath.includes(key))?.[1];
+  const derivedTitle = useMemo(
+    () =>
+      sortedPageTitles.find(([key]) => router.asPath.includes(key))?.[1],
+    [router.asPath],
+  );
   const finalTitle = derivedTitle ?? title;
 
   const pageTitle = finalTitle

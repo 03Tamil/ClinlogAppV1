@@ -1,5 +1,4 @@
 // @ts-nocheck
-import { GraphQLClient } from "graphql-request";
 import {
   Box,
   Flex,
@@ -33,8 +32,14 @@ import {
   useDisclosure,
   Textarea,
   Spinner,
+  Select,
 } from "@chakra-ui/react";
-import { CheckIcon } from "@chakra-ui/icons";
+import {
+  CheckIcon,
+  DownloadIcon,
+  TriangleDownIcon,
+  TriangleUpIcon,
+} from "@chakra-ui/icons";
 import {
   createColumnHelper,
   useReactTable,
@@ -49,7 +54,13 @@ import dynamic from "next/dynamic";
 import animationData from "../animationsv2/clinlog_loading.json";
 import useQueryHook, { getData, sendData } from "hooks/useQueryHook";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   differenceInDays,
   format,
@@ -57,11 +68,6 @@ import {
   isBefore,
   subMonths,
 } from "date-fns";
-import ClinlogDemoGraphics from "componentsv2/Analytics/ClinlogDemoGraphics";
-import ClinlogPreSurgical from "componentsv2/Analytics/ClinlogPreSurgical";
-import ClinlogPostSurgical from "componentsv2/Analytics/ClinlogPostSurgical";
-import ClinlogHabitsAndRiskFactors from "componentsv2/Analytics/ClinlogHabitsAndRiskFactors";
-import ClinlogDataTool from "componentsv2/Analytics/ClinlogDataTool";
 import { MdSearch } from "react-icons/md";
 import { StylesConfig } from "react-select";
 
@@ -75,9 +81,17 @@ import {
   globalIdsQuery,
   mainViewerQuery,
 } from "helpersv2/queries";
-import FilterComponent from "componentsv2/Analytics/FilterComponent";
+import ClinlogFilterBar from "componentsv2/Clinlog/ClinlogFilterBar";
+import ClinlogDataTable from "componentsv2/Clinlog/ClinlogDataTable";
+import GroupedChecklist from "componentsv2/Clinlog/GroupedChecklist";
+import { exportCasesCsv } from "componentsv2/Clinlog/caseExport";
+import {
+  FIELD_GROUPS,
+  getFieldMeta,
+  optionLabel,
+} from "componentsv2/Clinlog/clinlogFields";
+import { MdViewColumn } from "react-icons/md";
 import { keyframes } from "@emotion/react";
-import SurgicalDetailsV3_2 from "componentsv2/DetailsPage/Clinical/SurgicalDetailsV3_2";
 import {
   useInfiniteQuery,
   useMutation,
@@ -87,6 +101,38 @@ import { clinlogNoteMutation } from "componentsv2/DetailsPage/detailsPageMutatio
 import { useRouter } from "next/router";
 
 const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
+
+// Heavy views are only rendered on demand (a tab or a selected case), so load
+// their code on demand too instead of shipping it with the initial page.
+const TabLoading = () => (
+  <Flex w="100%" justify="center" py="16">
+    <Spinner color="#612ECC" thickness="3px" size="lg" />
+  </Flex>
+);
+const ClinlogDemoGraphics = dynamic(
+  () => import("componentsv2/Analytics/ClinlogDemoGraphics"),
+  { loading: TabLoading },
+);
+const ClinlogPreSurgical = dynamic(
+  () => import("componentsv2/Analytics/ClinlogPreSurgical"),
+  { loading: TabLoading },
+);
+const ClinlogPostSurgical = dynamic(
+  () => import("componentsv2/Analytics/ClinlogPostSurgical"),
+  { loading: TabLoading },
+);
+const ClinlogHabitsAndRiskFactors = dynamic(
+  () => import("componentsv2/Analytics/ClinlogHabitsAndRiskFactors"),
+  { loading: TabLoading },
+);
+const ClinlogDataTool = dynamic(
+  () => import("componentsv2/Analytics/ClinlogDataTool"),
+  { loading: TabLoading },
+);
+const SurgicalDetailsV3_2 = dynamic(
+  () => import("componentsv2/DetailsPage/Clinical/SurgicalDetailsV3_2"),
+  { loading: TabLoading },
+);
 
 const formatClinlogLoadDuration = (milliseconds: number) => {
   const safeMilliseconds = Number.isFinite(milliseconds)
@@ -106,17 +152,262 @@ const formatClinlogLoadDuration = (milliseconds: number) => {
   return `${minutes}m ${seconds}s`;
 };
 
-export async function getServerSideProps() {
-  const clinlogQueryToken = process.env.CLINLOG_QUERY_TOKEN;
+/**
+ * Self-contained load timer. It owns the 250ms interval so that only this tiny
+ * component re-renders while records stream in. Previously the interval lived
+ * in the page component, which re-rendered the whole 3,000-line page (table,
+ * filters, data tool) four times a second for the entire load.
+ */
+const ClinlogLoadTimer = React.memo(function ClinlogLoadTimer({
+  startedAt,
+  finishedAt,
+}: {
+  startedAt: number | null;
+  finishedAt: number | null;
+}) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!startedAt || finishedAt) return;
+    setNow(Date.now());
+    const id = window.setInterval(() => setNow(Date.now()), 250);
+    return () => window.clearInterval(id);
+  }, [startedAt, finishedAt]);
 
-  return {
-    props: {
-      clinlogQueryToken,
-    },
-  };
-}
+  if (!startedAt) return <>{formatClinlogLoadDuration(0)}</>;
+  return <>{formatClinlogLoadDuration((finishedAt ?? now) - startedAt)}</>;
+});
 
-function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
+// Defined at module scope so it isn't re-created (and the Lottie animation
+// restarted) on every render of the page.
+const InitialLoader = () => (
+  <Flex
+    zIndex={99999999999999}
+    align="center"
+    justify="center"
+    position="absolute"
+    top="0px"
+    left="0px"
+    w="100vw"
+    h="100vh"
+    p="4"
+    bgColor="#FCF8FF"
+    direction="column"
+    gap="2"
+    role="status"
+    aria-live="polite"
+  >
+    <Lottie
+      animationData={animationData}
+      loop={true}
+      autoplay={true}
+      style={{ width: 100, height: 100 }}
+    />
+    <Text fontSize="13px" fontWeight="600" color="#351361">
+      Loading Clinlog records…
+    </Text>
+  </Flex>
+);
+
+// ---- Record fetching -------------------------------------------------------
+// First request is small so the table appears quickly; after that we request
+// several chunks concurrently instead of one-at-a-time.
+const FIRST_PAGE_SIZE = 100;
+const CHUNK_SIZE = 200;
+const PARALLEL_CHUNKS = 3;
+
+// ---- Batch timing diagnostics (development only) --------------------------
+// Every chunk request is timed. When a full load finishes in development, the
+// browser downloads clinlog-batch-timings.txt listing each batch, slowest
+// first, with the record ids it contained.
+type ChunkTiming = {
+  batch: number;
+  offset: number;
+  limit: number;
+  count: number;
+  ms: number;
+  ids: string[];
+};
+const SHOULD_RECORD_TIMINGS = process.env.NODE_ENV === "development";
+
+const fetchClinlogChunk = async (
+  offset: number,
+  limit: number,
+  recordClinic: string[],
+  signal?: AbortSignal,
+  timing?: { batch: number; log: ChunkTiming[] },
+) => {
+  const startedAt = performance.now();
+  const res = await fetch("/api/clinlog/records", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ offset, limit, recordClinic }),
+    signal,
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to load Clinlog records (${res.status})`);
+  }
+  const json = await res.json();
+  const entries = (json?.entries ?? []) as any[];
+  if (timing) {
+    timing.log.push({
+      batch: timing.batch,
+      offset,
+      limit,
+      count: entries.length,
+      ms: Math.round(performance.now() - startedAt),
+      ids: entries.map((entry) => String(entry?.id)),
+    });
+  }
+  return entries;
+};
+
+const buildBatchTimingReport = (log: ChunkTiming[], totalMs: number) => {
+  const pad = (value: string | number, width: number) =>
+    String(value).padEnd(width);
+  const byBatch = new Map<number, ChunkTiming[]>();
+  log.forEach((chunk) => {
+    byBatch.set(chunk.batch, [...(byBatch.get(chunk.batch) ?? []), chunk]);
+  });
+  const batches = Array.from(byBatch.entries()).map(([batch, chunks]) => ({
+    batch,
+    // Chunks in a batch run in parallel, so the batch takes as long as its
+    // slowest chunk.
+    ms: Math.max(...chunks.map((chunk) => chunk.ms)),
+    count: chunks.reduce((sum, chunk) => sum + chunk.count, 0),
+    chunks: [...chunks].sort((a, b) => a.offset - b.offset),
+  }));
+  const totalRecords = batches.reduce((sum, b) => sum + b.count, 0);
+  const slowest = [...batches].sort((a, b) => b.ms - a.ms)[0];
+  const slowestChunk = [...log].sort((a, b) => b.ms - a.ms)[0];
+
+  const lines = [
+    "Clinlog batch timings",
+    `Generated: ${new Date().toISOString()}`,
+    `Total load time: ${(totalMs / 1000).toFixed(1)}s for ${totalRecords} records in ${batches.length} batches`,
+    `Batch sizes: batch 1 = ${FIRST_PAGE_SIZE} records, then ${PARALLEL_CHUNKS} x ${CHUNK_SIZE} records in parallel per batch`,
+    "",
+    slowest
+      ? `SLOWEST BATCH: #${slowest.batch} (${(slowest.ms / 1000).toFixed(1)}s, ${slowest.count} records, ${Math.round((slowest.ms / Math.max(totalMs, 1)) * 100)}% of total time)`
+      : "No batches recorded.",
+    slowestChunk
+      ? `SLOWEST REQUEST: offset ${slowestChunk.offset}-${slowestChunk.offset + slowestChunk.limit - 1} (${(slowestChunk.ms / 1000).toFixed(1)}s, ${slowestChunk.count} records, ${slowestChunk.count ? Math.round(slowestChunk.ms / slowestChunk.count) : 0}ms/record)`
+      : "",
+    "",
+    "Batches, slowest first",
+    `${pad("Batch", 7)}${pad("Time", 10)}${pad("Records", 9)}ms/record`,
+    ...[...batches]
+      .sort((a, b) => b.ms - a.ms)
+      .map(
+        (b) =>
+          `${pad(`#${b.batch}`, 7)}${pad(`${(b.ms / 1000).toFixed(1)}s`, 10)}${pad(b.count, 9)}${b.count ? Math.round(b.ms / b.count) : "-"}`,
+      ),
+    "",
+    "Requests in each batch (in load order)",
+  ];
+  batches
+    .sort((a, b) => a.batch - b.batch)
+    .forEach((b) => {
+      lines.push("", `Batch #${b.batch} - ${(b.ms / 1000).toFixed(1)}s`);
+      b.chunks.forEach((chunk) => {
+        lines.push(
+          `  offset ${chunk.offset}-${chunk.offset + chunk.limit - 1}: ${(chunk.ms / 1000).toFixed(1)}s, ${chunk.count} records`,
+          `    record ids: ${chunk.ids.join(", ") || "(none)"}`,
+        );
+      });
+    });
+  return lines.join("\n");
+};
+
+const downloadTextFile = (fileName: string, text: string) => {
+  const url = URL.createObjectURL(new Blob([text], { type: "text/plain" }));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+};
+
+// ---- Precomputed column metadata ------------------------------------------
+const clinlogColumnMeta = new Map(
+  clinlogFilterColumns.map((column) => [column.key, column]),
+);
+const columnsByGroup = (group: string) =>
+  clinlogFilterColumns.filter((column) => column.group === group);
+const GENERAL_DETAILS_COLUMNS = columnsByGroup("generalDetails");
+const PATIENT_CHAR_COLUMNS = columnsByGroup("patientCharacteristics");
+const TREATMENT_CHAR_COLUMNS = columnsByGroup("treatmentCharacteristics");
+const FOLLOW_UP_COLUMNS = columnsByGroup("followUp");
+
+const hasValue = (value) =>
+  value !== null && value !== undefined && value !== "";
+
+// Returns "completed" | "inProgress". Computed once per record (in tableData)
+// instead of on every render of every status cell.
+const getRecordDataStatus = (data) => {
+  const followUpData = data?.recordFollowUpMatrix?.[0];
+  const complete =
+    GENERAL_DETAILS_COLUMNS.every((column) => hasValue(data[column.key])) &&
+    PATIENT_CHAR_COLUMNS.every((column) => hasValue(data[column.key])) &&
+    TREATMENT_CHAR_COLUMNS.every(
+      (column) =>
+        hasValue(data[column.key]) ||
+        column.key === "lowerArchCondition" ||
+        column.key === "timeFromSurgery",
+    ) &&
+    FOLLOW_UP_COLUMNS.every(
+      (column) =>
+        hasValue(followUpData?.[column.key]) ||
+        column.key === "timeFromSurgery_fs",
+    );
+  return complete ? "completed" : "inProgress";
+};
+
+// Most recent site-specific follow-up, without mutating the cached query data
+// (the old code called .sort() in place on React Query's cache).
+const latestSiteFollowUp = (site) => {
+  const followUps =
+    site?.attachedSiteSpecificRecords?.[0]?.attachedSiteSpecificFollowUp;
+  if (!followUps?.length) return undefined;
+  return [...followUps].sort(
+    (a, b) =>
+      new Date(b?.recordFollowUpDate).getTime() -
+      new Date(a?.recordFollowUpDate).getTime(),
+  )[0];
+};
+
+const selectCustomStyle: StylesConfig = {
+  menu: (styles) => ({
+    ...styles,
+    fontSize: "13px",
+    zIndex: 100002,
+  }),
+  control: (styles) => ({
+    ...styles,
+    borderRadius: "6px",
+    borderColor: "gray.400",
+  }),
+  option: (styles) => ({
+    ...styles,
+    fontSize: "13px",
+  }),
+  input: (styles) => ({
+    ...styles,
+    fontSize: "13px",
+  }),
+  placeholder: (styles) => ({
+    ...styles,
+    fontSize: "13px",
+    color: "#767676",
+  }),
+  singleValue: (styles) => ({
+    ...styles,
+    fontSize: "13px",
+  }),
+};
+
+function Clinlog() {
   const [filterArray, setFilterArray] = React.useState([]);
   const [openTab, setOpenTab] = useState("allCases");
   const { data: session } = useSession();
@@ -138,15 +429,10 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
 
   const [openMenu, setOpenMenu] = useState(true);
   const [patientSurveyData, setPatientSurveyData] = useState(null);
-  const [clinlogLoadStartedAt, setClinlogLoadStartedAt] = useState<
-    number | null
-  >(null);
-  const [clinlogLoadElapsedMs, setClinlogLoadElapsedMs] = useState(0);
-  const [clinlogFullLoadDurationMs, setClinlogFullLoadDurationMs] = useState<
-    number | null
-  >(null);
-  const [clinlogLastRecordBatchLoadedAt, setClinlogLastRecordBatchLoadedAt] =
-    useState<number | null>(null);
+  const [loadTiming, setLoadTiming] = useState<{
+    startedAt: number | null;
+    finishedAt: number | null;
+  }>({ startedAt: null, finishedAt: null });
 
   // const viewerMainNavbarResult = useQueryHook(
   //   ["mainViewerQuery"],
@@ -161,7 +447,6 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
 
   const [collapseTabs, setCollapseTabs] = useState(true);
   const isAdmin = session?.groups?.includes("Admin");
-  const shouldShowClinlogLoadTimer = true;
   const router = useRouter();
 
   useEffect(() => {
@@ -211,57 +496,87 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
   //   },
   // );
 
+  // Per-load timing log (reset whenever the record query key changes).
+  const batchTimingsRef = useRef<ChunkTiming[]>([]);
+  const batchTimingsStartedAtRef = useRef<number | null>(null);
+  const batchTimingsDownloadedRef = useRef(false);
+  useEffect(() => {
+    batchTimingsRef.current = [];
+    batchTimingsStartedAtRef.current = null;
+    batchTimingsDownloadedRef.current = false;
+  }, [clinlogDataInfiniteQueryKey]);
+
   const {
     data: clinlogDataInfinite,
     fetchNextPage,
     isLoading,
+    isError,
+    refetch,
     hasNextPage,
     isFetching,
   } = useInfiniteQuery(
     clinlogDataInfiniteQueryKey,
-    async ({ pageParam = 0 }) => {
-      // First load gets 100 items, subsequent loads get 200
-      const getDataNew = async (query, variables = {}, sessionToken) => {
-        const graphQLClient = new GraphQLClient(
-          process.env.NEXT_PUBLIC_ENDPOINT,
-          {
-            headers: {
-              Authorization: clinlogQueryToken,
-            },
-          },
+    async ({ pageParam = 0, signal }) => {
+      const recordClinic = (locationArr ?? [])
+        .filter(Boolean)
+        .map((item) => item.toString());
+      if (pageParam === 0) {
+        // A fresh load (or refetch) starts a new timing log.
+        batchTimingsRef.current = [];
+        batchTimingsStartedAtRef.current = performance.now();
+        batchTimingsDownloadedRef.current = false;
+      }
+      const timing = SHOULD_RECORD_TIMINGS
+        ? {
+            batch:
+              pageParam === 0
+                ? 1
+                : 2 + (pageParam - FIRST_PAGE_SIZE) / (PARALLEL_CHUNKS * CHUNK_SIZE),
+            log: batchTimingsRef.current,
+          }
+        : undefined;
+
+      if (pageParam === 0) {
+        const entries = await fetchClinlogChunk(
+          0,
+          FIRST_PAGE_SIZE,
+          recordClinic,
+          signal,
+          timing,
         );
-        const result = await graphQLClient.request(query, variables);
-        return result;
-      };
-      const limit = pageParam === 0 ? 100 : 160;
-      const res = await getDataNew(
-        clinlogDataQueryNew,
-        {
-          offset: pageParam,
-          recordClinic: locationArr,
-          limit: limit,
-          collaboratorId: Number(session?.userId),
-        },
-        session?.accessToken,
+        return {
+          entries,
+          nextOffset: FIRST_PAGE_SIZE,
+          reachedEnd: entries.length === 0,
+        };
+      }
+
+      // Fetch several chunks in parallel to cut total load time.
+      const chunks = await Promise.all(
+        Array.from({ length: PARALLEL_CHUNKS }, (_, i) =>
+          fetchClinlogChunk(
+            pageParam + i * CHUNK_SIZE,
+            CHUNK_SIZE,
+            recordClinic,
+            signal,
+            timing,
+          ),
+        ),
       );
-      return res;
+      return {
+        entries: chunks.flat(),
+        nextOffset: pageParam + PARALLEL_CHUNKS * CHUNK_SIZE,
+        // Same stop condition as before (an empty response), applied per chunk.
+        reachedEnd: chunks.some((chunk) => chunk.length === 0),
+      };
     },
     {
-      getNextPageParam: (lastPage, allPages) => {
-        if (lastPage?.entries?.length === 0) {
-          return undefined;
-        }
-        // return 200
-        // Set offset for next page
-        if (allPages.length === 1) {
-          // After first, offset is 100 (first page), next fetch for items 100+
-          return 100;
-        }
-        // For page n, offset is 100 + (n-1)*200
-        return 100 + (allPages.length - 1) * 160;
-      },
+      getNextPageParam: (lastPage) =>
+        lastPage?.reachedEnd ? undefined : lastPage?.nextOffset,
       enabled: locationQueryKey.length > 0 && !!session?.accessToken,
-      retry: 0,
+      retry: 1,
+      refetchOnWindowFocus: false,
+      staleTime: 10 * 60 * 1000,
     },
   );
 
@@ -281,104 +596,53 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
   const hasLoadedAllClinlogPages =
     clinlogHasLoadedRecords && hasFinishedClinlogDataLoading;
 
-  const clinlogLoadDurationText = formatClinlogLoadDuration(
-    clinlogFullLoadDurationMs ?? clinlogLoadElapsedMs,
-  );
-
+  // Development only: once every batch has loaded, download a text file
+  // showing which batch (and which records) caused the slowdown.
   useEffect(() => {
-    setClinlogLoadStartedAt(null);
-    setClinlogLoadElapsedMs(0);
-    setClinlogFullLoadDurationMs(null);
-    setClinlogLastRecordBatchLoadedAt(null);
-  }, [locationQueryKey, session?.userId, shouldShowClinlogLoadTimer]);
+    if (
+      !SHOULD_RECORD_TIMINGS ||
+      !hasFinishedClinlogDataLoading ||
+      batchTimingsDownloadedRef.current ||
+      batchTimingsRef.current.length === 0 ||
+      batchTimingsStartedAtRef.current === null
+    ) {
+      return;
+    }
+    batchTimingsDownloadedRef.current = true;
+    const totalMs = performance.now() - batchTimingsStartedAtRef.current;
+    downloadTextFile(
+      "clinlog-batch-timings.txt",
+      buildBatchTimingReport(batchTimingsRef.current, totalMs),
+    );
+  }, [hasFinishedClinlogDataLoading]);
+
+  // Load timing: only start/finish timestamps live here. The ticking display
+  // is handled by <ClinlogLoadTimer/> so the page doesn't re-render 4x/sec.
+  useEffect(() => {
+    setLoadTiming({ startedAt: null, finishedAt: null });
+  }, [locationQueryKey, session?.userId]);
 
   useEffect(() => {
     if (
-      !shouldShowClinlogLoadTimer ||
       !locationQueryKey ||
       !session?.accessToken ||
       hasFinishedClinlogDataLoading
     ) {
       return;
     }
-
-    setClinlogLoadStartedAt((currentStartedAt) => {
-      return currentStartedAt ?? Date.now();
-    });
-  }, [
-    hasFinishedClinlogDataLoading,
-    locationQueryKey,
-    session?.accessToken,
-    shouldShowClinlogLoadTimer,
-  ]);
+    setLoadTiming((current) =>
+      current.startedAt ? current : { startedAt: Date.now(), finishedAt: null },
+    );
+  }, [hasFinishedClinlogDataLoading, locationQueryKey, session?.accessToken]);
 
   useEffect(() => {
-    if (
-      !shouldShowClinlogLoadTimer ||
-      !clinlogLoadStartedAt ||
-      hasFinishedClinlogDataLoading
-    ) {
-      return;
-    }
-
-    const updateElapsedTime = () => {
-      setClinlogLoadElapsedMs(Date.now() - clinlogLoadStartedAt);
-    };
-
-    updateElapsedTime();
-    const timerId = window.setInterval(updateElapsedTime, 250);
-
-    return () => {
-      window.clearInterval(timerId);
-    };
-  }, [
-    clinlogLoadStartedAt,
-    hasFinishedClinlogDataLoading,
-    shouldShowClinlogLoadTimer,
-  ]);
-
-  useEffect(() => {
-    const pages = clinlogDataInfinite?.pages ?? [];
-    const lastPage = pages[pages.length - 1];
-
-    if (
-      !shouldShowClinlogLoadTimer ||
-      !clinlogLoadStartedAt ||
-      !lastPage?.entries?.length
-    ) {
-      return;
-    }
-
-    const loadedAt = Date.now();
-    setClinlogLastRecordBatchLoadedAt(loadedAt);
-    setClinlogLoadElapsedMs(loadedAt - clinlogLoadStartedAt);
-  }, [
-    clinlogDataInfinite?.pages?.length,
-    clinlogLoadStartedAt,
-    shouldShowClinlogLoadTimer,
-  ]);
-
-  useEffect(() => {
-    if (
-      !shouldShowClinlogLoadTimer ||
-      !hasFinishedClinlogDataLoading ||
-      !clinlogLoadStartedAt
-    ) {
-      return;
-    }
-
-    const finishedAt = clinlogLastRecordBatchLoadedAt ?? Date.now();
-    const duration = finishedAt - clinlogLoadStartedAt;
-    setClinlogFullLoadDurationMs((currentDuration) => {
-      return currentDuration ?? duration;
-    });
-    setClinlogLoadElapsedMs(duration);
-  }, [
-    hasFinishedClinlogDataLoading,
-    clinlogLastRecordBatchLoadedAt,
-    clinlogLoadStartedAt,
-    shouldShowClinlogLoadTimer,
-  ]);
+    if (!hasFinishedClinlogDataLoading) return;
+    setLoadTiming((current) =>
+      current.startedAt && !current.finishedAt
+        ? { ...current, finishedAt: Date.now() }
+        : current,
+    );
+  }, [hasFinishedClinlogDataLoading]);
 
   // const allClinicsQueryResult = useQueryHook(
   //   ["clinics"],
@@ -433,20 +697,45 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
   //   [allClinicsQueryResult?.data?.clinics],
   // );
 
+  // Notes don't depend on the record batches (the query has no clinic
+  // variables), so load them in parallel instead of after every record page.
   const clinlogNotesQueryResult = useQueryHook(
-    ["clinlogNotesQueryResult", locationQueryKey, session?.userId ?? null],
+    ["clinlogNotesQueryResult", session?.userId ?? null],
     clinlogNotesQuery,
     {},
-    { enabled: hasLoadedAllClinlogPages },
+    { refetchOnWindowFocus: false },
   );
+
+  // recordId -> first patient survey matrix. Replaces a linear .find() over
+  // every note for every row during filtering and cell rendering.
+  const surveyByRecordId = useMemo(() => {
+    const map = new Map();
+    clinlogNotesQueryResult?.data?.recordNotes?.forEach((note) => {
+      const recordId = note?.recordNoteRecord?.[0]?.id;
+      if (
+        recordId === undefined ||
+        recordId === null ||
+        !(note?.attachedSurveyForm?.length > 0) ||
+        map.has(String(recordId))
+      ) {
+        return;
+      }
+      map.set(
+        String(recordId),
+        note.attachedSurveyForm?.[0]?.patientSurveyMatrix?.[0],
+      );
+    });
+    return map;
+  }, [clinlogNotesQueryResult?.data?.recordNotes]);
 
   const clinlogDataQueryResults = useMemo(() => {
     //if (!clinlogDataInfinite) return [];
 
     //fetchNextPage();
-    const allPages = clinlogDataInfinite?.pages.flat();
-    return allPages?.map((p) => p.entries)?.flat() ?? [];
-  }, [clinlogDataInfinite?.pages?.length]);
+    return clinlogDataInfinite?.pages?.flatMap((p) => p?.entries ?? []) ?? [];
+    // Depend on the pages array itself (not just its length) so a refetch
+    // with the same number of pages still updates the table.
+  }, [clinlogDataInfinite?.pages]);
 
   const surgeonOptions = useMemo(() => {
     return [
@@ -485,37 +774,6 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
     );
   }, [clinlogDataQueryResults]);
 
-  const selectCustomStyle: StylesConfig = {
-    menu: (styles) => ({
-      ...styles,
-      fontSize: "13px",
-      zIndex: 100002,
-    }),
-    control: (styles, state) => ({
-      ...styles,
-      borderRadius: "6px",
-      borderColor: "gray.400",
-    }),
-    option: (styles, { data, isDisabled, isFocused, isSelected }) => {
-      return {
-        ...styles,
-        fontSize: "13px",
-      };
-    },
-    input: (styles) => ({
-      ...styles,
-      fontSize: "13px",
-    }),
-    placeholder: (styles) => ({
-      ...styles,
-      fontSize: "13px",
-      color: "#767676",
-    }),
-    singleValue: (styles, { data }) => ({
-      ...styles,
-      fontSize: "13px",
-    }),
-  };
   const [xaxis, setXaxis] = useState([]);
   const getMonths = (num) => {
     const xaxisMonths = [];
@@ -542,9 +800,16 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
     }
   }, [isBase]);
   const [pagination, setPagination] = useState({
-    pageSize: 8,
+    pageSize: 20,
     pageIndex: 0,
   });
+  // Selected case ids (kept by record id so selection survives new batches,
+  // sorting and paging).
+  const [rowSelection, setRowSelection] = useState({});
+  // Cases sent from All Cases to the Data Tool ("Analyse selected").
+  const [dataToolCaseIds, setDataToolCaseIds] = useState<string[] | null>(
+    null,
+  );
   const [globalFilter, setGlobalFilter] = useState([]);
   const [columnFilters, setColumnFilters] = useState([]);
   const [columnVisibility, setColumnVisibility] = useState({
@@ -794,76 +1059,6 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
     return false;
   };
 
-  const statusCheck = (data) => {
-    let status = "noData";
-    const generalDetailsStatus = clinlogFilterColumns
-      .filter((column) => column.group === "generalDetails")
-      ?.map((column) => {
-        if (
-          data[column.key] !== null &&
-          data[column.key] !== undefined &&
-          data[column.key] !== ""
-        ) {
-          return "completed";
-        } else {
-          return "noData";
-        }
-      });
-    const patientCharStatus = clinlogFilterColumns
-      .filter((column) => column.group === "patientCharacteristics")
-      ?.map((column) => {
-        if (
-          data[column.key] !== null &&
-          data[column.key] !== undefined &&
-          data[column.key] !== ""
-        ) {
-          return "completed";
-        } else {
-          return "noData";
-        }
-      });
-    const treatmentCharStatus = clinlogFilterColumns
-      .filter((column) => column.group === "treatmentCharacteristics")
-      .map((column) => {
-        if (
-          (data[column.key] !== null &&
-            data[column.key] !== undefined &&
-            data[column.key] !== "") ||
-          column.key === "lowerArchCondition" ||
-          column.key === "timeFromSurgery"
-        ) {
-          return "completed";
-        } else {
-          return "noData";
-        }
-      });
-    const followUpStatus = clinlogFilterColumns
-      .filter((column) => column.group === "followUp")
-      ?.map((column) => {
-        const followUpData = data?.recordFollowUpMatrix?.[0];
-        if (
-          (followUpData?.[column.key] !== null &&
-            followUpData?.[column.key] !== undefined &&
-            followUpData?.[column.key] !== "") ||
-          column.key === "timeFromSurgery_fs"
-        ) {
-          return "completed";
-        } else {
-          return "noData";
-        }
-      });
-    if (
-      patientCharStatus.every((status) => status === "completed") &&
-      generalDetailsStatus.every((status) => status === "completed") &&
-      treatmentCharStatus.every((status) => status === "completed") &&
-      followUpStatus.every((status) => status === "completed")
-    ) {
-      status = "completed";
-    } else {
-      status = "inProgress";
-    }
-    return status;
-  };
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const columnHelper = createColumnHelper<any>();
   const columns = useMemo(
@@ -911,7 +1106,9 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
         id: "status",
         header: "Data Status",
         cell: (row) => {
-          const status = statusCheck(row.row.original);
+          const status =
+            row.row.original.__dataStatus ??
+            getRecordDataStatus(row.row.original);
           return (
             <Flex w="100%" align={"center"} justify={"center"}>
               <Box
@@ -924,6 +1121,20 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
                     : status === "inProgress"
                       ? "orange.400"
                       : "red.400"
+                }
+                title={
+                  status === "completed"
+                    ? "All data complete"
+                    : status === "inProgress"
+                      ? "Some data missing"
+                      : "No data"
+                }
+                aria-label={
+                  status === "completed"
+                    ? "All data complete"
+                    : status === "inProgress"
+                      ? "Some data missing"
+                      : "No data"
                 }
               ></Box>
             </Flex>
@@ -1050,7 +1261,10 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
         accessorKey: "archType",
         id: "archType",
         cell: (row) => {
-          return row.row.original.archType.toUpperCase();
+          // Readable label ("Upper & Lower"); also no longer crashes when the
+          // arch type is empty.
+          const archType = row.row.original.archType;
+          return archType ? optionLabel("archType", archType) : "N/A";
         },
         filterFn: (row, columnId, filterValue) => {
           const archType = row.original.archType;
@@ -1273,7 +1487,7 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
         },
         filterFn: (row, columnId, filterValue) => {
           const siteDetails =
-            row.row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+            row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
               (site) => site.treatmentItemNumber === "688",
             );
           const zygomaImplants = siteDetails?.filter((site) =>
@@ -1312,7 +1526,7 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
         },
         filterFn: (row, columnId, filterValue) => {
           const siteDetails =
-            row.row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+            row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
               (site) => site.treatmentItemNumber === "688",
             );
           const regularImplants =
@@ -1493,7 +1707,7 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
         filterFn: (row, columnId, filterValue) => {
           const recordClinic = row.original.recordClinic
             ?.map((clinic) => clinic.id)
-            .join(", ");
+            .join(",");
 
           return selectTypeFilterFunction(
             recordClinic,
@@ -1540,14 +1754,7 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
                 if (column.key === "toothValue") {
                   return site.toothValue;
                 } else if (column?.subGroup === "ssFollowUp") {
-                  const siteFollowUpRecords =
-                    site?.attachedSiteSpecificRecords?.[0]?.attachedSiteSpecificFollowUp?.sort(
-                      (a, b) => {
-                        const dateA = new Date(a?.recordFollowUpDate);
-                        const dateB = new Date(b?.recordFollowUpDate);
-                        return dateB - dateA;
-                      },
-                    )?.[0];
+                  const siteFollowUpRecords = latestSiteFollowUp(site);
                   if (column.type === "date") {
                     return siteFollowUpRecords?.[column.key]
                       ? format(
@@ -1567,17 +1774,13 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
                 return site.attachedSiteSpecificRecords?.[0]?.[column.key];
               });
 
-              return siteSpecificData?.map((data) => {
-                return <Tr>{data || "-"}</Tr>;
+              return siteSpecificData?.map((data, index) => {
+                return <Box key={index}>{data || "-"}</Box>;
               });
             } else if (column.group === "patientSurvey") {
-              const patientSurveyData =
-                clinlogNotesQueryResult?.data?.recordNotes?.find((note) => {
-                  return (
-                    note?.recordNoteRecord?.[0]?.id === row.row.original.id &&
-                    note?.attachedSurveyForm?.length > 0
-                  );
-                })?.attachedSurveyForm?.[0]?.patientSurveyMatrix?.[0];
+              const patientSurveyData = surveyByRecordId.get(
+                String(row.row.original.id),
+              );
               if (column.type === "date") {
                 return patientSurveyData?.[column.key]
                   ? format(
@@ -1597,7 +1800,7 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
             let cellValue = "";
             if (column.group === "followUp") {
               const followUpData = row.original.recordFollowUpMatrix?.[0];
-              cellValue = followUpData[column.key];
+              cellValue = followUpData?.[column.key];
             } else if (column.group === "siteSpecificCharacteristics") {
               const siteDetails =
                 row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
@@ -1623,7 +1826,7 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
                 }
                 return site.attachedSiteSpecificRecords?.[0]?.[column.key];
               });
-              cellValue = siteSpecificData.join(",");
+              cellValue = siteSpecificData?.join(",");
             }
 
             if (column.type === "select") {
@@ -1645,7 +1848,7 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
           },
         })),
     ],
-    [clinlogNotesQueryResult?.data],
+    [surveyByRecordId],
   );
   function evaluateConditions(conditions) {
     if (!conditions.length) return true;
@@ -1676,6 +1879,7 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
       return {
         ...entry,
         patientName: `${lastNamePrefix}, ${firstNamePrefix}`,
+        __dataStatus: getRecordDataStatus(entry),
       };
     });
   }, [clinlogDataQueryResults]);
@@ -1700,20 +1904,15 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
     );
   }, [tableData]);
 
-  const globalFilterFunction = (row, columnId, filters) => {
+  const globalFilterFunction = useCallback((row, columnId, filters) => {
     const conditionChecks = filters.map((filter) => {
       const filterValue = filter.value.value;
       const condition = filter.value.condition;
       const filterColumnId = filter.id;
-      const group = clinlogFilterColumns.find(
-        (column) => column.key === filterColumnId,
-      )?.group;
-      const subGroup = clinlogFilterColumns.find(
-        (column) => column.key === filterColumnId,
-      )?.subGroup;
-      const type = clinlogFilterColumns.find(
-        (column) => column.key === filterColumnId,
-      )?.type;
+      const columnMeta = clinlogColumnMeta.get(filterColumnId);
+      const group = columnMeta?.group;
+      const subGroup = columnMeta?.subGroup;
+      const type = columnMeta?.type;
       let cellValue: any;
       if (group === "followUp") {
         const followUpData = row.original.recordFollowUpMatrix?.[0];
@@ -1745,13 +1944,7 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
         });
         cellValue = siteSpecificData?.join(",");
       } else if (group === "patientSurvey") {
-        const patientSurveyData =
-          clinlogNotesQueryResult?.data?.recordNotes?.find((note) => {
-            return (
-              note?.recordNoteRecord?.[0]?.id === row.original.id &&
-              note?.attachedSurveyForm?.length > 0
-            );
-          })?.attachedSurveyForm?.[0]?.patientSurveyMatrix?.[0];
+        const patientSurveyData = surveyByRecordId.get(String(row.original.id));
         cellValue =
           patientSurveyData?.[filterColumnId?.split("_")?.[0]] || null;
       } else {
@@ -1792,7 +1985,9 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
               : null;
         } else if (filterColumnId === "recordClinic") {
           cellValue =
-            row.original.recordClinic?.map((clinic) => clinic.id).join(", ") ||
+            // Joined without spaces so multi-clinic records match
+            // ("12, 34".split(",") left " 34" unmatched).
+            row.original.recordClinic?.map((clinic) => clinic.id).join(",") ||
             null;
         } else if (filterColumnId === "zygomaImplants") {
           const siteDetails =
@@ -1828,9 +2023,9 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
               "zygomatic",
             ),
           )?.length;
-          // const zygomaImplants = Number(row.original.zygomaImplants) || 0;
-          // const regularImplants = Number(row.original.regularImplants) || 0;
-          cellValue = zygomaImplants + regularImplants;
+          // Bug fix: `regularImplants` was not defined in this branch, so
+          // filtering on Total Implants threw a ReferenceError.
+          cellValue = siteDetails?.length || 0;
         } else {
           cellValue = row.original?.[filterColumnId] || null;
         }
@@ -1871,7 +2066,8 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
       }
     });
     return evaluateConditions(conditionChecks);
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [surveyByRecordId]);
 
   const table = useReactTable({
     data: tableData,
@@ -1882,7 +2078,15 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
       columnVisibility,
       pagination,
       sorting,
+      rowSelection,
     },
+    enableRowSelection: true,
+    onRowSelectionChange: setRowSelection,
+    getRowId: (row) => String(row.id),
+    // The custom filter ignores the column id, so evaluate it once per row
+    // (tanstack otherwise re-runs it for every column of every row that
+    // doesn't match).
+    getColumnCanGlobalFilter: (column) => column.id === "caseNumber",
     onColumnFiltersChange: setColumnFilters,
     onGlobalFilterChange: setGlobalFilter,
     globalFilterFn: globalFilterFunction,
@@ -1893,7 +2097,82 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
     getSortedRowModel: getSortedRowModel(),
     onPaginationChange: setPagination,
     onSortingChange: setSorting,
+    // Don't jump back to page 1 every time another batch of records arrives.
+    // Page index is reset explicitly when search / filters change.
+    autoResetPageIndex: false,
   });
+
+  useEffect(() => {
+    setPagination((prev) =>
+      prev.pageIndex === 0 ? prev : { ...prev, pageIndex: 0 },
+    );
+  }, [columnFilters, globalFilter, sorting]);
+
+  // Debounced case search so each keystroke doesn't re-filter every record.
+  const [searchText, setSearchText] = useState("");
+  useEffect(() => {
+    const id = window.setTimeout(() => {
+      const value = searchText.trim();
+      setColumnFilters(value ? [{ id: "patientName", value }] : []);
+    }, 250);
+    return () => window.clearTimeout(id);
+  }, [searchText]);
+
+  // ---- Column picker + CSV export helpers --------------------------------
+  const defaultVisibleColumnsRef = useRef(
+    Object.keys(columnVisibility).filter((key) => columnVisibility[key]),
+  );
+  const columnGroups = useMemo(
+    () => [{ value: "case", label: "Case" }, ...FIELD_GROUPS],
+    [],
+  );
+  const columnItems = useMemo(
+    () =>
+      columns
+        .filter((column) => column.id)
+        .map((column) => ({
+          id: column.id,
+          label:
+            typeof column.header === "string" ? column.header : column.id,
+          group: getFieldMeta(column.id)?.group ?? "case",
+        })),
+    [columns],
+  );
+  const visibleColumnIds = useMemo(
+    () =>
+      columnItems
+        .map((item) => item.id)
+        .filter((id) => columnVisibility[id] !== false),
+    [columnItems, columnVisibility],
+  );
+  const setVisibleColumns = useCallback(
+    (ids: string[]) => {
+      const next = {};
+      columnItems.forEach((item) => {
+        next[item.id] = ids.includes(item.id);
+      });
+      setColumnVisibility((prev) => ({ ...prev, ...next }));
+    },
+    [columnItems],
+  );
+  const exportRows = (rows) => {
+    exportCasesCsv({
+      records: rows.map((row) => row.original),
+      columns: table.getVisibleLeafColumns().map((column) => ({
+        id: column.id,
+        label:
+          typeof column.columnDef.header === "string"
+            ? column.columnDef.header
+            : column.id,
+      })),
+      ctx: {
+        surgeonOptions,
+        locationOptions,
+        implantLineOptions,
+        surveyByRecordId,
+      },
+    });
+  };
 
   const handleFilter = (arrowClicked: string) => {
     setPagination((prev) => ({ ...prev, pageIndex: 0 }));
@@ -1936,31 +2215,6 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
   ];
   //const animation = `${fadeInSlide} 2s ease-in-out infinite`;
 
-  const InitialLoader = () => {
-    return (
-      <Flex
-        zIndex={99999999999999}
-        align="center"
-        justify="center"
-        position="absolute"
-        top="0px"
-        left="0px"
-        w="100vw"
-        h="100vh"
-        //h="80%"
-        //minHeight={"50vh"}
-        p="4"
-        bgColor="#FCF8FF"
-      >
-        <Lottie
-          animationData={animationData}
-          loop={true}
-          autoplay={true}
-          style={{ width: 100, height: 100 }}
-        />
-      </Flex>
-    );
-  };
 
   const selectedPatientNotes = useMemo(() => {
     if (viewPatient && clinlogNotesQueryResult?.isSuccess) {
@@ -2028,14 +2282,63 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
     addClinlogNotesMutationFunction.mutate(notesData);
   };
 
+
   useEffect(() => {
-    if (hasNextPage) {
+    // Keep pulling batches until the server reports the end. Guarded by
+    // isFetching/isError so we never cancel an in-flight request or loop on
+    // a failing page.
+    if (hasNextPage && !isFetching && !isError) {
       fetchNextPage();
     }
-  }, [hasNextPage, clinlogDataInfinite]);
+  }, [hasNextPage, isFetching, isError, clinlogDataInfinite]);
+
+  if (isError && clinlogDataQueryResults?.length === 0) {
+    return (
+      <Flex
+        h="80vh"
+        w="100%"
+        bgColor="#FCF8FF"
+        align="center"
+        justify="center"
+        direction="column"
+        gap="3"
+        role="alert"
+      >
+        <Text fontSize="16px" fontWeight="700" color="#351361">
+          We couldn't load Clinlog records.
+        </Text>
+        <Text fontSize="13px" color="#5B4B77">
+          Check your connection and try again.
+        </Text>
+        <Button size="sm" colorScheme="purple" onClick={() => refetch()}>
+          Retry
+        </Button>
+      </Flex>
+    );
+  }
+
+  if (hasFinishedClinlogDataLoading && clinlogDataQueryResults?.length === 0) {
+    return (
+      <Flex
+        h="80vh"
+        w="100%"
+        bgColor="#FCF8FF"
+        align="center"
+        justify="center"
+        direction="column"
+        gap="2"
+      >
+        <Text fontSize="16px" fontWeight="700" color="#351361">
+          No Clinlog records yet
+        </Text>
+        <Text fontSize="13px" color="#5B4B77" textAlign="center" maxW="420px">
+          Records with Clinlog enabled for your clinic will appear here.
+        </Text>
+      </Flex>
+    );
+  }
 
   return clinlogDataQueryResults?.length === 0 ? (
-    // return false ? (
     <Flex h="100vh" w="100%" bgColor="#FCF8FF">
       <InitialLoader />
     </Flex>
@@ -2149,7 +2452,33 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
               w={{ base: "100%", md: "auto" }}
               aria-live="polite"
             >
-              {hasNextPage ? (
+              {isError && hasNextPage ? (
+                <Flex
+                  align="center"
+                  gap="0.6rem"
+                  px="3"
+                  py="1.5"
+                  border="1px solid"
+                  borderColor="#FECACA"
+                  borderRadius="8px"
+                  bgColor="#FEF2F2"
+                >
+                  <Text fontSize="13px" fontWeight="700" color="#991B1B">
+                    Some records failed to load
+                  </Text>
+                  <Text fontSize="12px" color="#991B1B">
+                    {clinlogDataQueryResults.length} loaded
+                  </Text>
+                  <Button
+                    size="xs"
+                    colorScheme="red"
+                    variant="outline"
+                    onClick={() => fetchNextPage()}
+                  >
+                    Retry
+                  </Button>
+                </Flex>
+              ) : hasNextPage ? (
                 <Flex
                   align="center"
                   gap="0.6rem"
@@ -2169,7 +2498,7 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
                   >
                     Loading records
                   </Text>
-                  {shouldShowClinlogLoadTimer && (
+                  {(
                     <Text
                       fontSize="12px"
                       fontWeight="700"
@@ -2177,7 +2506,10 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
                       fontVariantNumeric="tabular-nums"
                       whiteSpace="nowrap"
                     >
-                      {clinlogLoadDurationText}
+                      <ClinlogLoadTimer
+                        startedAt={loadTiming.startedAt}
+                        finishedAt={loadTiming.finishedAt}
+                      />
                     </Text>
                   )}
                   <Text
@@ -2220,7 +2552,7 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
                   >
                     All records loaded
                   </Text>
-                  {shouldShowClinlogLoadTimer && (
+                  {(
                     <Text
                       fontSize="12px"
                       fontWeight="700"
@@ -2228,7 +2560,10 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
                       fontVariantNumeric="tabular-nums"
                       whiteSpace="nowrap"
                     >
-                      Loaded in {clinlogLoadDurationText}
+                      Loaded in <ClinlogLoadTimer
+                        startedAt={loadTiming.startedAt}
+                        finishedAt={loadTiming.finishedAt}
+                      />
                     </Text>
                   )}
                   <Text
@@ -2296,7 +2631,9 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
                   <Flex w="100%" gap="0.5rem" align="center">
                     <Flex flexDirection={"column"} gap="0.2rem">
                       <Flex align={"center"} gap="1rem">
-                        <chakra.span
+                        <chakra.button
+                          type="button"
+                          aria-label="Back to all cases"
                           className="material-symbols-outlined"
                           fontSize="36px"
                           onClick={() => {
@@ -2304,9 +2641,13 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
                             setGlobalFilter([]);
                           }}
                           cursor="pointer"
+                          color="#351361"
+                          borderRadius="full"
+                          _hover={{ color: "#612ECC" }}
+                          _focusVisible={{ boxShadow: "outline" }}
                         >
                           arrow_circle_left
-                        </chakra.span>
+                        </chakra.button>
                         <Text fontSize={"18px"} fontWeight="700">
                           {`${viewPatient.patientName} (${
                             viewPatient.caseNumber || "-"
@@ -3052,283 +3393,110 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
                     </>
                   )} */}
                 </Flex>
-                <Flex
-                  w="100%"
-                  gap="1rem"
-                  bg="white"
-                  p="4"
-                  borderRadius="6px"
-                  border="1px solid #F7F0F0"
-                  align="center"
-                >
-                  <Text fontSize="13px" fontWeight={"600"} whiteSpace="nowrap">
-                    Search Case:
-                  </Text>
-                  <InputGroup>
-                    <InputLeftElement
-                      pointerEvents="none"
-                      children={<MdSearch fontSize={"22px"} />}
-                    />
-                    <Input
-                      type="text"
-                      placeholder="Search by Patient Name or Case Number"
-                      fontSize={"13px"}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        if (e.target.value === "") {
-                          setColumnFilters([]);
-                          return;
-                        }
-                        setColumnFilters([
-                          {
-                            id: "patientName",
-                            value: value,
-                          },
-                        ]);
-                      }}
-                    />
-                  </InputGroup>
-                </Flex>
-                <FilterComponent
-                  globalFilter={globalFilter}
-                  setGlobalFilter={setGlobalFilter}
+                <ClinlogFilterBar
+                  filters={globalFilter}
+                  onFiltersChange={setGlobalFilter}
                   surgeonOptions={surgeonOptions}
-                  selectCustomStyle={selectCustomStyle}
                   locationOptions={locationOptions}
                   implantLineOptions={implantLineOptions}
+                  searchValue={searchText}
+                  onSearchChange={setSearchText}
+                  resultCount={table.getFilteredRowModel().rows.length}
+                  totalCount={tableData.length}
                 />
-                <TableContainer
-                  overflowY="auto"
-                  borderRadius="6px"
-                  border="1px solid #F7F0F0"
-                  bg="white"
-                >
-                  <Table variant="simple">
-                    <Thead
-                      position="sticky"
-                      zIndex={1001}
-                      bgColor={"scLightGrey"}
-                      top={0}
-                    >
-                      {table.getHeaderGroups().map((headerGroup) => (
-                        <Tr key={headerGroup.id}>
-                          {headerGroup.headers.map((header) => {
-                            return (
-                              <Th
-                                key={header.id + "_clinlog"}
-                                color="scBlack"
-                                fontFamily={"Inter"}
-                                fontSize={"12px"}
-                                textAlign={"center"}
-                                p="6"
-                                onClick={() => {
-                                  setSorting([
-                                    {
-                                      id: header.id,
-                                      desc:
-                                        header?.column?.getIsSorted() === "asc"
-                                          ? true
-                                          : false,
-                                    },
-                                  ]);
-                                }}
-                                title={
-                                  header.column?.getCanSort()
-                                    ? header.column?.getNextSortingOrder() ===
-                                      "asc"
-                                      ? "Sort ascending"
-                                      : header.column?.getNextSortingOrder() ===
-                                          "desc"
-                                        ? "Sort descending"
-                                        : "Clear sort"
-                                    : undefined
-                                }
-                              >
-                                {header.isPlaceholder
-                                  ? null
-                                  : flexRender(
-                                      header.column.columnDef.header,
-                                      header.getContext(),
-                                    )}
-                                {{
-                                  asc: " 🔼",
-                                  desc: " 🔽",
-                                }[header.column.getIsSorted() as string] ??
-                                  null}
-                              </Th>
-                            );
-                          })}
-                          <Th
-                            color="scBlack"
-                            fontFamily={"Inter"}
-                            fontSize={"12px"}
-                            p="6"
-                            textAlign={"center"}
-                          >
-                            Action
-                          </Th>
-                        </Tr>
-                      ))}
-                    </Thead>
-                    <Tbody>
-                      {table?.getRowModel()?.rows?.length ? (
-                        table.getRowModel().rows.map((row, i) => (
-                          <Tr key={row.id + "_clinlog"} fontSize="14px">
-                            {row.getVisibleCells().map(
-                              (cell) =>
-                                !cell.id.includes("recordTreatmentStatus") &&
-                                !cell.id.includes(
-                                  "recordConsultationStatus",
-                                ) && (
-                                  <Td key={cell.id} p="6" textAlign={"center"}>
-                                    {flexRender(
-                                      cell.column.columnDef.cell,
-                                      cell.getContext(),
-                                    )}
-                                  </Td>
-                                ),
-                            )}
-                            <Td textAlign={"center"}>
-                              {" "}
-                              <Link
-                                onClick={() => {
-                                  setViewPatient(row.original);
-                                }}
-                                bgColor={"scBlack"}
-                                py="1"
-                                px="2"
-                                color="white"
-                                borderRadius="25px"
-                                fontSize={"12px"}
-                                fontWeight="700"
-                              >
-                                View
-                              </Link>
-                            </Td>
-                          </Tr>
-                        ))
-                      ) : (
-                        <Tr>
-                          <Th colSpan={columns.length}>No results.</Th>
-                        </Tr>
-                      )}
-                    </Tbody>
-                  </Table>
-                  <Flex
-                    display={"flex"}
-                    //justify="flex-end"
-                    align="center"
-                    mt={"1.5rem"}
-                    mb={"1rem"}
-                    p="4"
-                  >
-                    {" "}
-                    <Text
-                      fontSize="14px"
-                      fontWeight={700}
-                      textTransform={"uppercase"}
-                      mr="4"
-                    >
-                      Total Cases:{" "}
-                    </Text>
-                    <Text fontSize="14px">
-                      {table.getFilteredRowModel().rows.length}
-                    </Text>
-                    {hasNextPage ? (
-                      <Flex
-                        align="center"
-                        gap="0.4rem"
-                        ml="10px"
-                        px="2"
-                        py="1"
-                        borderRadius="8px"
-                        bgColor="#F7F3FF"
-                        color="#351361"
-                      >
-                        <Spinner size="xs" thickness="2px" />
-                        <Text fontSize="12px" fontWeight="700">
-                          Loading
-                        </Text>
-                        {shouldShowClinlogLoadTimer && (
-                          <Text
-                            fontSize="12px"
-                            fontWeight="600"
-                            fontVariantNumeric="tabular-nums"
-                          >
-                            {clinlogLoadDurationText}
-                          </Text>
-                        )}
+                <ClinlogDataTable
+                  table={table}
+                  isLoadingMore={!!hasNextPage}
+                  onRowClick={(row) => setViewPatient(row.original)}
+                  toolbarLeft={
+                    <Flex align="center" gap="3" wrap="wrap">
+                      <Text fontSize="14px" fontWeight="700" color="#351361">
+                        Cases
+                      </Text>
+                      <Flex align="center" gap="3" fontSize="11px" color="gray.600">
+                        <Flex align="center" gap="1">
+                          <Box w="8px" h="8px" borderRadius="full" bg="#4ADE80" />
+                          All data complete
+                        </Flex>
+                        <Flex align="center" gap="1">
+                          <Box w="8px" h="8px" borderRadius="full" bg="orange.400" />
+                          Some data missing
+                        </Flex>
                       </Flex>
-                    ) : hasLoadedAllClinlogPages ? (
-                      <Flex
-                        align="center"
-                        gap="0.35rem"
-                        ml="10px"
-                        px="2"
-                        py="1"
-                        borderRadius="8px"
-                        bgColor="#F0FDF4"
-                        color="#166534"
+                    </Flex>
+                  }
+                  toolbarRight={
+                    <>
+                      <GroupedChecklist
+                        buttonLabel="Columns"
+                        buttonIcon={<MdViewColumn />}
+                        title="Show these columns"
+                        items={columnItems}
+                        groups={columnGroups}
+                        selected={visibleColumnIds}
+                        onChange={setVisibleColumns}
+                        lockedIds={["caseNumber"]}
+                        defaultSelected={defaultVisibleColumnsRef.current}
+                      />
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        borderRadius="full"
+                        fontSize="13px"
+                        leftIcon={<DownloadIcon />}
+                        onClick={() =>
+                          exportRows(table.getFilteredRowModel().rows)
+                        }
+                        isDisabled={table.getFilteredRowModel().rows.length === 0}
                       >
-                        <CheckIcon boxSize="10px" />
-                        <Text fontSize="12px" fontWeight="700">
-                          Complete
-                        </Text>
-                        {shouldShowClinlogLoadTimer && (
-                          <Text
-                            fontSize="12px"
-                            fontWeight="600"
-                            fontVariantNumeric="tabular-nums"
-                          >
-                            {clinlogLoadDurationText}
-                          </Text>
-                        )}
-                      </Flex>
-                    ) : null}
-                    <Spacer />
+                        Export all
+                      </Button>
+                    </>
+                  }
+                  renderSelectionActions={(rows) => (
+                    <>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        bg="white"
+                        leftIcon={<DownloadIcon />}
+                        onClick={() => exportRows(rows)}
+                      >
+                        Export selected (CSV)
+                      </Button>
+                      <Button
+                        size="sm"
+                        bg="#452A7E"
+                        color="white"
+                        _hover={{ bg: "#612ECC" }}
+                        onClick={() => {
+                          setDataToolCaseIds(
+                            rows.map((row) => String(row.original.id)),
+                          );
+                          setOpenTab("dataTool");
+                        }}
+                      >
+                        Analyse in Data Tool
+                      </Button>
+                    </>
+                  )}
+                  renderRowActions={(row) => (
                     <Button
-                      onClick={
-                        () => table.setPageIndex(0)
-                        //table.firstPage()
-                        //setPagination({...pagination, pageIndex: 0 })
-                      }
-                      isDisabled={!table.getCanPreviousPage()}
-                      variant="ghost"
+                      size="xs"
+                      onClick={() => setViewPatient(row.original)}
+                      bgColor={"scBlack"}
+                      color="white"
+                      borderRadius="full"
+                      px="3"
+                      fontSize={"12px"}
+                      fontWeight="700"
+                      _hover={{ bgColor: "#612ECC" }}
+                      aria-label={`View case ${row.original.patientName}`}
                     >
-                      {"<<"}
+                      View
                     </Button>
-                    <Button
-                      onClick={() => {
-                        table.previousPage();
-                      }}
-                      isDisabled={!table.getCanPreviousPage()}
-                      variant="ghost"
-                    >
-                      {"<"}
-                    </Button>
-                    <Button
-                      onClick={() => {
-                        table.nextPage();
-                      }}
-                      isDisabled={!table.getCanNextPage()}
-                      variant="ghost"
-                    >
-                      {">"}
-                    </Button>
-                    <Button
-                      onClick={() =>
-                        table.setPageIndex(table.getPageCount() - 1)
-                      }
-                      isDisabled={!table.getCanNextPage()}
-                      variant="ghost"
-                    >
-                      {">>"}
-                    </Button>
-                    <Box ml="20px" minWidth={"75px"} textAlign={"right"}>
-                      {pagination.pageIndex + 1} of {table.getPageCount()}
-                    </Box>
-                  </Flex>
-                </TableContainer>
+                  )}
+                />
               </Flex>
             )}
           </Flex>
@@ -3352,6 +3520,8 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
               surgeonOptions={surgeonOptions}
               implantLineOptions={implantLineOptions}
               clinlogNotes={clinlogNotesQueryResult?.data?.recordNotes || []}
+              focusCaseIds={dataToolCaseIds}
+              onClearFocus={() => setDataToolCaseIds(null)}
             />
           </Flex>
         )}

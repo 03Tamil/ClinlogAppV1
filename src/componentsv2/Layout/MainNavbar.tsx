@@ -103,6 +103,7 @@ export function MainNavbar() {
     ["mainViewerQuery"],
     mainViewerQuery,
     {},
+    { staleTime: 5 * 60 * 1000, refetchOnWindowFocus: false },
   );
 
   //const {data, isLoading, isError} = useQuery(['leadCountQuery'], newLeadsCount);
@@ -160,7 +161,13 @@ export function MainNavbar() {
         setNeedToSignTerms(false);
       }
     }
-  }, [viewerMainNavbarResult, router]);
+    // Depend on the query's data, not the whole result object (which is a new
+    // object on every render, so this effect previously ran on every render).
+  }, [
+    viewerMainNavbarResult?.data,
+    viewerMainNavbarResult?.isLoading,
+    session?.groups,
+  ]);
 
   const loggedIn = !!session;
   const fullName = session?.fullName ?? null;

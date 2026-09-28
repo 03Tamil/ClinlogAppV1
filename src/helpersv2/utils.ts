@@ -1,10 +1,7 @@
-import { border } from "@chakra-ui/react";
 import { add, differenceInHours, format } from "date-fns";
-import { is } from "date-fns/locale";
-import html2canvas from "html2canvas";
-import { isRadialGradient } from "html2canvas/dist/types/css/types/image";
-import jsPDF from "jspdf";
-import { group } from "node:console";
+// NOTE: html2canvas and jspdf are loaded lazily inside the functions that need
+// them. This file is imported by most pages (e.g. for clinlogFilterColumns), so
+// static imports put ~500KB of PDF/canvas code into every page bundle.
 
 export const convertBase64 = (file) => {
   return new Promise((resolve, reject) => {
@@ -28,7 +25,11 @@ export const currentDate = format(new Date(), "yyyy-MM-dd");
 export const pastOneDay = (dateValue) =>
   differenceInHours(new Date(), new Date(dateValue)) > 23;
 
-export const makePdf = (ref) => {
+export const makePdf = async (ref) => {
+  const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
+    import("html2canvas"),
+    import("jspdf"),
+  ]);
   const image = html2canvas(ref).then((canvas) => {
     let imgWidth = 208;
     let imgHeight = (canvas.height * imgWidth) / canvas.width;
@@ -179,6 +180,7 @@ export function dirtyValues(
 }
 
 export const exportAsImage = async (element, imageFileName) => {
+  const { default: html2canvas } = await import("html2canvas");
   const canvas = await html2canvas(element);
   const image = canvas.toDataURL("image/png", 1.0);
   return image;

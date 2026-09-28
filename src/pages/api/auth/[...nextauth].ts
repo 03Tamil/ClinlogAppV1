@@ -129,7 +129,7 @@ type userAuth = {
   user: any;
 };
 
-const nextAuthOptions = (req, res) => {
+export const nextAuthOptions = (req, res) => {
   return {
     pages: {
       signIn: "/",

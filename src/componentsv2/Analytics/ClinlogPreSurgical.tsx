@@ -15,7 +15,6 @@ import { format, differenceInYears, sub } from "date-fns";
 import { Card, CardHeader, CardTitle } from "src/uicomponents/ui/card";
 import dynamic from "next/dynamic";
 import { id } from "date-fns/locale";
-import { style } from "@mui/system";
 import { title } from "process";
 const ReactApexChart = dynamic(() => import("react-apexcharts"), {
   ssr: false,

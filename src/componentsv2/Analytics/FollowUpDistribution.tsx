@@ -20,7 +20,6 @@ import {
 import { ApexOptions, use } from "apexcharts";
 import { Card, CardHeader, CardTitle } from "src/uicomponents/ui/card";
 import dynamic from "next/dynamic";
-import { textTransform } from "@mui/system";
 import { off } from "process";
 import { time } from "console";
 const ReactApexChart = dynamic(() => import("react-apexcharts"), {

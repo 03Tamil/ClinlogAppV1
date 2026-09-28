@@ -21,7 +21,6 @@ import {
 import { Card, CardHeader, CardTitle } from "src/uicomponents/ui/card";
 import dynamic from "next/dynamic";
 import { id } from "date-fns/locale";
-import { style } from "@mui/system";
 const ReactApexChart = dynamic(() => import("react-apexcharts"), {
   ssr: false,
 });

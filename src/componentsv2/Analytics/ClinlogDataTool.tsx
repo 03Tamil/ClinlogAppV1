@@ -30,9 +30,8 @@ import {
   Tr,
   useDisclosure,
 } from "@chakra-ui/react";
-import { de, fi } from "date-fns/locale";
 import { Card, CardHeader, CardTitle } from "src/uicomponents/ui/card";
-import React, { use, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { MdAdd, MdDelete, MdRefresh, MdSearch } from "react-icons/md";
 import { TbFilterMinus } from "react-icons/tb";
 import ReactSelect, { StylesConfig } from "react-select";
@@ -46,9 +45,16 @@ import {
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import FilterComponent from "./FilterComponent";
+import ClinlogFilterBar from "componentsv2/Clinlog/ClinlogFilterBar";
+import ClinlogDataTable from "componentsv2/Clinlog/ClinlogDataTable";
+import GroupedChecklist from "componentsv2/Clinlog/GroupedChecklist";
+import { FIELD_GROUPS } from "componentsv2/Clinlog/clinlogFields";
+import { toCsv } from "componentsv2/Clinlog/csv";
+import { MdViewColumn } from "react-icons/md";
 import FluidTable from "./FluidTable";
 import RestrictedValuesTable from "./RestrictedValuesTable";
 import { ApexOptions } from "apexcharts";
@@ -59,7 +65,6 @@ import {
 } from "helpersv2/utils";
 import { DownloadIcon } from "@chakra-ui/icons";
 import StandardReports from "./StandardReports";
-import { report } from "process";
 
 const ReactApexChart = dynamic(() => import("react-apexcharts"), {
   ssr: false,
@@ -75,6 +80,9 @@ export type dataToolProps = {
   clinlogNotes?: any[];
   implantLineOptions?: any[];
   surgeonOptions?: any[];
+  /** When set, the Data Tool works on just these case ids (from All Cases). */
+  focusCaseIds?: string[] | null;
+  onClearFocus?: () => void;
 };
 export default function ClinlogDataTool({
   filterColumns,
@@ -87,24 +95,40 @@ export default function ClinlogDataTool({
   clinlogNotes = [],
   implantLineOptions = [],
   surgeonOptions = [],
+  focusCaseIds = null,
+  onClearFocus,
 }: dataToolProps) {
+  // Cases the Data Tool works on: everything, or the cases selected in
+  // All Cases via "Analyse in Data Tool".
+  const workingCases = useMemo(() => {
+    if (!focusCaseIds) return allCasesData ?? [];
+    const ids = new Set(focusCaseIds);
+    return (allCasesData ?? []).filter((record) => ids.has(String(record.id)));
+  }, [allCasesData, focusCaseIds]);
   const [columnFilters, setColumnFilters] = useState([]);
   const [globalFilter, setGlobalFilter] = useState([]);
-  const [filteredData, setFilteredData] = useState([]);
-
-  useEffect(() => {
+  // Derived during render (was useEffect + setState, which rendered every
+  // chart/table once with stale data and then again with the filtered data).
+  const filteredData = useMemo(() => {
     if (globalFilter.length > 0) {
-      const data = allCasesData?.filter((record) => {
-        const row = {
-          original: record,
-        };
-        return globalFilterFunction(row, "", globalFilter);
-      });
-      setFilteredData(data);
-    } else {
-      setFilteredData(allCasesData);
+      return (
+        workingCases.filter((record) =>
+          globalFilterFunction({ original: record }, "", globalFilter),
+        ) ?? []
+      );
     }
-  }, [globalFilter, allCasesData]);
+    return workingCases;
+  }, [globalFilter, workingCases, globalFilterFunction]);
+
+  // Debounced case search for the Reports table.
+  const [searchText, setSearchText] = useState("");
+  useEffect(() => {
+    const id = window.setTimeout(() => {
+      const value = searchText.trim();
+      setColumnFilters(value ? [{ id: "patientName", value }] : []);
+    }, 250);
+    return () => window.clearTimeout(id);
+  }, [searchText]);
 
   const groupOptions = [
     { value: "generalDetails", label: "General Details" },
@@ -255,7 +279,7 @@ export default function ClinlogDataTool({
           )
           .flat(),
       ),
-    ],
+    ].filter(Boolean),
     [filteredData],
   );
 
@@ -1122,19 +1146,70 @@ export default function ClinlogDataTool({
       "postOperativeSinusDisease",
     ],
   };
+  const [rowSelection, setRowSelection] = useState({});
+  const [sorting, setSorting] = useState([]);
+  const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 20 });
   const table = useReactTable({
     data: filteredData,
     columns: columnData,
     state: {
       columnFilters,
       columnVisibility,
+      rowSelection,
+      sorting,
+      pagination,
     },
-
+    enableRowSelection: true,
+    onRowSelectionChange: setRowSelection,
+    getRowId: (row) => String(row.id),
     onColumnVisibilityChange: setColumnVisibility,
     getCoreRowModel: getCoreRowModel(),
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
+    onSortingChange: setSorting,
+    getSortedRowModel: getSortedRowModel(),
+    onPaginationChange: setPagination,
+    // Render one page at a time (it used to render every case at once).
+    getPaginationRowModel: getPaginationRowModel(),
   });
+  useEffect(() => {
+    setPagination((prev) =>
+      prev.pageIndex === 0 ? prev : { ...prev, pageIndex: 0 },
+    );
+  }, [columnFilters, globalFilter, sorting, focusCaseIds]);
+
+  // Exports use the selected cases if any are ticked, otherwise every case
+  // that matches the current search/filters (not just the visible page).
+  const getExportRows = () => {
+    const selected = table.getFilteredSelectedRowModel().rows;
+    return selected.length > 0 ? selected : table.getPrePaginationRowModel().rows;
+  };
+
+  const columnItems = useMemo(
+    () =>
+      (columnData ?? [])
+        .filter((column) => column.id)
+        .map((column) => ({
+          id: column.id,
+          label:
+            typeof column.header === "string" ? column.header : column.id,
+          group:
+            filterColumns.find((col) => col.key === column.id)?.group ?? "case",
+        })),
+    [columnData, filterColumns],
+  );
+  const visibleColumnIds = columnItems
+    .map((item) => item.id)
+    .filter((id) => columnVisibility[id] !== false);
+  const setVisibleColumns = (ids: string[]) => {
+    setColumnVisibility((prev) => {
+      const next = { ...prev };
+      columnItems.forEach((item) => {
+        next[item.id] = ids.includes(item.id);
+      });
+      return next;
+    });
+  };
 
   const exportToCSV = () => {
     // const headers = table
@@ -1172,7 +1247,7 @@ export default function ClinlogDataTool({
     const columnsData = table
       ?.getAllLeafColumns()
       ?.filter((col) => col.getIsVisible());
-    const rows = table?.getRowModel()?.rows.map((row, i) => {
+    const rows = getExportRows().map((row, i) => {
       let rowsData = [];
       let sitesRowsData = [];
       const rowFormatted = row?.getVisibleCells()?.map((cell) => {
@@ -1357,9 +1432,8 @@ export default function ClinlogDataTool({
       })
       ?.flat();
 
-    const csvContent = [headers, ...siteRows]
-      .map((row) => row.map(String).join(","))
-      .join("\n");
+    // Proper CSV quoting (values containing commas used to break columns).
+    const csvContent = toCsv(headers, siteRows);
 
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
@@ -1400,7 +1474,7 @@ export default function ClinlogDataTool({
     const columnsData = table
       ?.getAllLeafColumns()
       ?.filter((col) => col.getIsVisible());
-    const rows = table?.getRowModel()?.rows.map((row, i) => {
+    const rows = getExportRows().map((row, i) => {
       let rowsData = [];
       let sitesRowsData = [];
       const rowFormatted = row?.getVisibleCells()?.map((cell) => {
@@ -1567,9 +1641,8 @@ export default function ClinlogDataTool({
       })
       ?.flat();
 
-    const csvContent = [headers, ...siteRows]
-      .map((row) => row.map(String).join(","))
-      .join("\n");
+    // Proper CSV quoting (values containing commas used to break columns).
+    const csvContent = toCsv(headers, siteRows);
 
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
@@ -1604,6 +1677,36 @@ export default function ClinlogDataTool({
         </Flex>
         <Spacer />
       </Flex>
+      {focusCaseIds && (
+        <Flex
+          align="center"
+          gap="3"
+          px="4"
+          py="3"
+          bg="#F4EEFF"
+          border="1px solid #DDD6FE"
+          borderRadius="10px"
+          wrap="wrap"
+          role="status"
+        >
+          <Text fontSize="13px" color="#351361">
+            Analysing <b>{workingCases.length}</b> selected{" "}
+            {workingCases.length === 1 ? "case" : "cases"} from All Cases.
+            Charts, tables and exports below only use these cases.
+          </Text>
+          {onClearFocus && (
+            <Button
+              size="sm"
+              variant="outline"
+              bg="white"
+              ml="auto"
+              onClick={onClearFocus}
+            >
+              Use all cases
+            </Button>
+          )}
+        </Flex>
+      )}
       <Tabs colorScheme={"purple"}>
         <TabList>
           <Tab
@@ -1632,46 +1735,23 @@ export default function ClinlogDataTool({
         <TabPanels>
           <TabPanel px="0">
             <Flex flexDirection={"column"} w="100%" gap="1rem">
-              <Flex
-                w="100%"
-                gap="1rem"
-                bg="white"
-                p="4"
-                borderRadius="6px"
-                border="1px solid #F7F0F0"
-                align="center"
-              >
-                <Text fontSize="13px" fontWeight={"600"} whiteSpace="nowrap">
-                  Search Case:
-                </Text>
-                <InputGroup>
-                  <InputLeftElement
-                    pointerEvents="none"
-                    children={<MdSearch fontSize={"22px"} />}
-                  />
-                  <Input
-                    type="text"
-                    placeholder="Search by Patient Name or Case Number"
-                    fontSize={"13px"}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      setColumnFilters([
-                        {
-                          id: "patientName",
-                          value: value,
-                        },
-                      ]);
-                    }}
-                  />
-                </InputGroup>
-              </Flex>
-              <FilterComponent
-                globalFilter={globalFilter}
-                setGlobalFilter={setGlobalFilter}
-                surgeonOptions={recordTreatmentSurgeonOptions}
-                selectCustomStyle={selectCustomStyle}
+              <ClinlogFilterBar
+                filters={globalFilter}
+                onFiltersChange={setGlobalFilter}
+                surgeonOptions={surgeonOptions}
                 locationOptions={locationOptions}
                 implantLineOptions={implantLineOptions}
+                searchValue={searchText}
+                onSearchChange={setSearchText}
+                resultCount={filteredData.length}
+                totalCount={workingCases.length}
+                note={
+                  reportType
+                    ? `Filters set by the "${
+                        reportOptions?.find((o) => o.value === reportType)?.name
+                      }" report`
+                    : undefined
+                }
               />
               <SimpleGrid
                 columns={{ base: 1, md: 1, lg: 2, xl: 3 }}
@@ -2031,215 +2111,98 @@ export default function ClinlogDataTool({
                     ))}
                 </Select>
               </Flex>
-              <Flex
-                gap="0.5rem"
-                align={"center"}
-                w="100%"
-                p="2"
-                bg="white"
-                borderRadius="6px"
-                border="1px solid #F7F0F0"
-              >
-                <Text
-                  fontSize={{ base: "12px", md: "13px" }}
-                  textTransform={"uppercase"}
-                  fontWeight={"600"}
-                >
-                  Display Columns:
-                </Text>
-
-                {groupOptions.map((option) => (
-                  <Flex
-                    flexDirection={"column"}
-                    key={option.value + "group_col"}
-                  >
-                    <ReactSelect
-                      isMulti
-                      placeholder={option.label}
-                      key={option.value}
-                      options={filterColumns
-                        .filter((column) => column.group === option.value)
-                        .map((column) => ({
-                          value: column.key,
-                          label: column.label,
-                        }))}
-                      value={Object.keys(columnVisibility)
-                        .filter((key) => columnVisibility[key] === true)
-                        .map((key) => {
-                          const column = filterColumns.find(
-                            (col) => col.key === key,
-                          );
-                          if (column?.group === option.value) {
-                            return {
-                              value: key,
-                              label: column.label,
-                            };
-                          }
-                          return null;
-                        })
-                        .filter((item) => item !== null)}
-                      onChange={(selectedOptions: any[]) => {
-                        const selectedValues = selectedOptions.map(
-                          (option: any) => option.value,
-                        );
+              <ClinlogDataTable
+                table={table}
+                maxH="60vh"
+                toolbarLeft={
+                  <Text fontSize="14px" fontWeight="700" color="#351361">
+                    Cases
+                  </Text>
+                }
+                toolbarRight={
+                  <>
+                    <GroupedChecklist
+                      buttonLabel="Columns"
+                      buttonIcon={<MdViewColumn />}
+                      title="Show these columns"
+                      items={columnItems}
+                      groups={[{ value: "case", label: "Case" }, ...FIELD_GROUPS]}
+                      selected={visibleColumnIds}
+                      onChange={setVisibleColumns}
+                      lockedIds={["caseNumber"]}
+                      defaultSelected={["caseNumber"]}
+                    />
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      borderRadius="full"
+                      fontSize="13px"
+                      leftIcon={<MdRefresh />}
+                      onClick={() => {
                         setColumnVisibility((prev) => {
                           const newVisibility = { ...prev };
-                          const removedValues = Object.keys(
-                            newVisibility,
-                          ).filter((key) => newVisibility[key] === true);
-                          selectedValues.forEach((value) => {
-                            if (value in newVisibility) {
-                              newVisibility[value] = true;
-                            }
-                          });
-                          removedValues.forEach((value) => {
-                            const group = filterColumns.find(
-                              (column) => column.key === value,
-                            )?.group;
-                            if (group === option.value) {
-                              if (
-                                !selectedValues.includes(value) &&
-                                value !== "caseNumber"
-                              ) {
-                                newVisibility[value] = false;
-                              }
-                            }
+                          Object.keys(newVisibility).forEach((key) => {
+                            newVisibility[key] = key === "caseNumber";
                           });
                           return newVisibility;
                         });
+                        setGlobalFilter([]);
+                        setReportType("");
+                        table.resetRowSelection();
                       }}
-                      styles={selectCustomStyle}
-                    />
-                  </Flex>
-                ))}
-              </Flex>
-              <Flex gap="0.5rem" w="100%">
-                <Text
-                  p="2"
-                  fontSize={"13px"}
-                  textTransform={"uppercase"}
-                  fontWeight={600}
-                >
-                  Total: {filteredData.length}
-                </Text>
-                <Spacer />
-                <Button
-                  fontSize={"14px"}
-                  leftIcon={<MdRefresh fontSize={"22px"} />}
-                  fontWeight={700}
-                  fontFamily={"inter"}
-                  color={"#351361"}
-                  textTransform={"uppercase"}
-                  letterSpacing={"2.52px"}
-                  onClick={() => {
-                    setColumnVisibility((prev) => {
-                      const newVisibility = { ...prev };
-                      Object.keys(newVisibility).forEach((key) => {
-                        if (key === "caseNumber") {
-                          newVisibility[key] = true;
-                        } else {
-                          newVisibility[key] = false;
-                        }
-                      });
-                      return newVisibility;
-                    });
-                    setGlobalFilter([]);
-                    setReportType("");
-                  }}
-                >
-                  Reset
-                </Button>
-                <Button
-                  fontSize={"14px"}
-                  fontWeight={700}
-                  leftIcon={<DownloadIcon fontSize={"22px"} />}
-                  fontFamily={"inter"}
-                  color={"#351361"}
-                  textTransform={"uppercase"}
-                  letterSpacing={"2.52px"}
-                  onClick={exportToCSV}
-                >
-                  Export As Sites
-                </Button>
-                <Button
-                  fontSize={"14px"}
-                  fontWeight={700}
-                  leftIcon={<DownloadIcon fontSize={"22px"} />}
-                  fontFamily={"inter"}
-                  color={"#351361"}
-                  textTransform={"uppercase"}
-                  letterSpacing={"2.52px"}
-                  onClick={exportToCSV_case}
-                >
-                  Export As Cases
-                </Button>
-              </Flex>
-              <TableContainer
-                w="100%"
-                maxHeight="50vh"
-                overflowY="auto"
-                overflowX="auto"
-                width="100%"
-                bg="white"
-                borderRadius="6px"
-                border="1px solid #F7F0F0"
-              >
-                <Table variant="simple">
-                  <Thead
-                    position="sticky"
-                    zIndex={1001}
-                    bgColor={"scLightGrey"}
-                    top={0}
-                  >
-                    {table.getHeaderGroups().map((headerGroup) => (
-                      <Tr key={headerGroup.id}>
-                        {headerGroup.headers.map((header) => {
-                          return (
-                            <Th
-                              key={header.id + "_clinlog"}
-                              color="scBlack"
-                              fontFamily={"Inter"}
-                              fontSize={"12px"}
-                              p="6"
-                            >
-                              {header?.isPlaceholder
-                                ? null
-                                : flexRender(
-                                    header.column.columnDef.header,
-                                    header.getContext(),
-                                  )}
-                            </Th>
-                          );
-                        })}
-                      </Tr>
-                    ))}
-                  </Thead>
-                  <Tbody>
-                    {table?.getRowModel()?.rows?.length ? (
-                      table.getRowModel().rows.map((row, i) => (
-                        <Tr key={row.id + "_clinlog"} fontSize="14px">
-                          {row.getVisibleCells().map(
-                            (cell) =>
-                              !cell.id.includes("recordTreatmentStatus") &&
-                              !cell.id.includes("recordConsultationStatus") && (
-                                <Td key={cell.id} p="6">
-                                  {flexRender(
-                                    cell.column.columnDef.cell,
-                                    cell.getContext(),
-                                  )}
-                                </Td>
-                              ),
-                          )}
-                        </Tr>
-                      ))
-                    ) : (
-                      <Tr>
-                        <Th colSpan={columnData.length}>No results.</Th>
-                      </Tr>
-                    )}
-                  </Tbody>
-                </Table>
-              </TableContainer>
+                    >
+                      Reset
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      borderRadius="full"
+                      fontSize="13px"
+                      leftIcon={<DownloadIcon />}
+                      onClick={exportToCSV}
+                      title="One row per implant site"
+                    >
+                      Export as sites
+                    </Button>
+                    <Button
+                      size="sm"
+                      borderRadius="full"
+                      fontSize="13px"
+                      leftIcon={<DownloadIcon />}
+                      bg="#452A7E"
+                      color="white"
+                      _hover={{ bg: "#612ECC" }}
+                      onClick={exportToCSV_case}
+                      title="One row per case"
+                    >
+                      Export as cases
+                    </Button>
+                  </>
+                }
+                renderSelectionActions={() => (
+                  <>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      bg="white"
+                      leftIcon={<DownloadIcon />}
+                      onClick={exportToCSV}
+                    >
+                      Export selected as sites
+                    </Button>
+                    <Button
+                      size="sm"
+                      bg="#452A7E"
+                      color="white"
+                      _hover={{ bg: "#612ECC" }}
+                      leftIcon={<DownloadIcon />}
+                      onClick={exportToCSV_case}
+                    >
+                      Export selected as cases
+                    </Button>
+                  </>
+                )}
+              />
             </Flex>
           </TabPanel>
           <TabPanel px="0">
@@ -2264,13 +2227,14 @@ export default function ClinlogDataTool({
                   }}
                 />
               </InputGroup> */}
-              <FilterComponent
-                globalFilter={globalFilter}
-                setGlobalFilter={setGlobalFilter}
-                surgeonOptions={recordTreatmentSurgeonOptions}
-                selectCustomStyle={selectCustomStyle}
+              <ClinlogFilterBar
+                filters={globalFilter}
+                onFiltersChange={setGlobalFilter}
+                surgeonOptions={surgeonOptions}
                 locationOptions={locationOptions}
                 implantLineOptions={implantLineOptions}
+                resultCount={filteredData.length}
+                totalCount={workingCases.length}
               />
               <Tabs colorScheme={"purple"}>
                 <TabList>
@@ -2309,6 +2273,8 @@ export default function ClinlogDataTool({
                   <TabPanel px="0">
                     <FluidTable
                       filteredData={filteredData}
+                      locationOptions={locationOptions}
+                      implantLineOptions={implantLineOptions}
                       groupOptions={groupOptions}
                       recordTreatmentSurgeonOptions={
                         recordTreatmentSurgeonOptions
@@ -2319,6 +2285,9 @@ export default function ClinlogDataTool({
                   <TabPanel px="0">
                     <RestrictedValuesTable
                       filteredData={filteredData}
+                      clinlogNotes={clinlogNotes}
+                      locationOptions={locationOptions}
+                      implantLineOptions={implantLineOptions}
                       groupOptions={groupOptions}
                       recordTreatmentSurgeonOptions={
                         recordTreatmentSurgeonOptions

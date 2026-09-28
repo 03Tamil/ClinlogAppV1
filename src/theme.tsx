@@ -1,7 +1,5 @@
 import { background, border, extendTheme } from "@chakra-ui/react";
-import zIndex from "@mui/material/styles/zIndex";
 import { max } from "date-fns";
-import { display } from "html2canvas/dist/types/css/property-descriptors/display";
 import { Inter } from "next/font/google";
 const inter = Inter({ subsets: ["latin"] });
 
