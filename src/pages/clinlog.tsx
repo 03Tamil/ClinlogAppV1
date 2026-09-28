@@ -468,8 +468,15 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
       ...new Set(
         clinlogDataQueryResults
           ?.map((record) => {
+            const proposalTouse =
+              record.attachedDentalCharts?.find(
+                (proposal) => proposal.chartStatus === "modified",
+              ) ??
+              record.attachedDentalCharts?.find(
+                (proposal) => proposal.chartStatus === "approved",
+              );
             const allSites =
-              record.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+              proposalTouse?.proposedTreatmentToothMatrix?.filter(
                 (site) => site.treatmentItemNumber === "688",
               );
             return allSites?.map(
@@ -950,7 +957,13 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
         header: "Surgery Date",
 
         cell: (row) => {
-          const chartData = row?.row?.original?.attachedDentalCharts?.[0];
+          const chartData =
+            row?.row?.original?.attachedDentalCharts?.find(
+              (proposal) => proposal.chartStatus === "modified",
+            ) ??
+            row?.row?.original?.attachedDentalCharts?.find(
+              (proposal) => proposal.chartStatus === "approved",
+            );
 
           const cellValue = chartData?.recordTreatmentDate
             ? format(new Date(chartData?.recordTreatmentDate), "yyyy-MM-dd")
@@ -968,6 +981,13 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
         id: "recordTreatmentSurgeons",
         header: "Surgeon",
         cell: (row) => {
+          const proposalTouse =
+            row?.row?.original?.attachedDentalCharts?.find(
+              (proposal) => proposal.chartStatus === "modified",
+            ) ??
+            row?.row?.original?.attachedDentalCharts?.find(
+              (proposal) => proposal.chartStatus === "approved",
+            );
           if (row.row.original.recordTreatmentSurgeons?.length > 0) {
             return (
               <Flex flexDirection={"column"} gap="0.1rem" w="100%">
@@ -981,13 +1001,11 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
           } else {
             return (
               <Flex flexDirection={"column"} gap="0.1rem" w="100%">
-                {row.row.original.attachedDentalCharts?.[0]?.defaultDentist?.map(
-                  (surgeon, i) => (
-                    <Text key={i} w="70%">
-                      Dr. {surgeon.fullName}
-                    </Text>
-                  ),
-                ) || "N/A"}
+                {proposalTouse?.defaultDentist?.map((surgeon, i) => (
+                  <Text key={i} w="70%">
+                    Dr. {surgeon.fullName}
+                  </Text>
+                )) || "N/A"}
               </Flex>
             );
           }
@@ -1259,8 +1277,15 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
         accessorKey: "zygomaImplants",
         header: "Zygoma Implants",
         cell: (row) => {
+          const proposalTouse =
+            row.row.original.attachedDentalCharts?.find(
+              (proposal) => proposal.chartStatus === "modified",
+            ) ??
+            row.row.original.attachedDentalCharts?.find(
+              (proposal) => proposal.chartStatus === "approved",
+            );
           const siteDetails =
-            row.row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+            proposalTouse?.proposedTreatmentToothMatrix?.filter(
               (site) => site.treatmentItemNumber === "688",
             );
           const zygomaImplants =
@@ -1272,8 +1297,15 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
           return zygomaImplants;
         },
         filterFn: (row, columnId, filterValue) => {
+          const proposalTouse =
+            row.original.attachedDentalCharts?.find(
+              (proposal) => proposal.chartStatus === "modified",
+            ) ??
+            row.original.attachedDentalCharts?.find(
+              (proposal) => proposal.chartStatus === "approved",
+            );
           const siteDetails =
-            row.row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+            proposalTouse?.proposedTreatmentToothMatrix?.filter(
               (site) => site.treatmentItemNumber === "688",
             );
           const zygomaImplants = siteDetails?.filter((site) =>
@@ -1297,8 +1329,15 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
         accessorKey: "regularImplants",
         header: "Regular Implants",
         cell: (row) => {
+          const proposalTouse =
+            row.row.original.attachedDentalCharts?.find(
+              (proposal) => proposal.chartStatus === "modified",
+            ) ??
+            row.row.original.attachedDentalCharts?.find(
+              (proposal) => proposal.chartStatus === "approved",
+            );
           const siteDetails =
-            row.row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+            proposalTouse?.proposedTreatmentToothMatrix?.filter(
               (site) => site.treatmentItemNumber === "688",
             );
           const regularImplants =
@@ -1311,8 +1350,15 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
           return regularImplants;
         },
         filterFn: (row, columnId, filterValue) => {
+          const proposalTouse =
+            row.original.attachedDentalCharts?.find(
+              (proposal) => proposal.chartStatus === "modified",
+            ) ??
+            row.original.attachedDentalCharts?.find(
+              (proposal) => proposal.chartStatus === "approved",
+            );
           const siteDetails =
-            row.row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+            proposalTouse?.proposedTreatmentToothMatrix?.filter(
               (site) => site.treatmentItemNumber === "688",
             );
           const regularImplants =
@@ -1338,8 +1384,15 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
         accessorKey: "totalImplants",
         header: "Total Implants",
         cell: (row) => {
+          const proposalTouse =
+            row.row.original.attachedDentalCharts?.find(
+              (proposal) => proposal.chartStatus === "modified",
+            ) ??
+            row.row.original.attachedDentalCharts?.find(
+              (proposal) => proposal.chartStatus === "approved",
+            );
           const siteDetails =
-            row.row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+            proposalTouse?.proposedTreatmentToothMatrix?.filter(
               (site) => site.treatmentItemNumber === "688",
             );
           const regularImplants =
@@ -1404,7 +1457,14 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
         accessorKey: "timeFromSurgery",
         header: "Time from Surgery to Insertion (days)",
         cell: (row) => {
-          const chartData = row?.row?.original?.attachedDentalCharts?.[0];
+          const proposalTouse =
+            row.row.original.attachedDentalCharts?.find(
+              (proposal) => proposal.chartStatus === "modified",
+            ) ??
+            row.row.original.attachedDentalCharts?.find(
+              (proposal) => proposal.chartStatus === "approved",
+            );
+          const chartData = proposalTouse;
           const surgeryDate =
             chartData?.recordTreatmentDate ||
             row?.row.original?.recordTreatmentDate;
@@ -1425,7 +1485,14 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
           return timeDiff > 0 ? timeDiff : "";
         },
         filterFn: (row, columnId, filterValue) => {
-          const chartData = row?.original?.attachedDentalCharts?.[0];
+          const proposalTouse =
+            row.original.attachedDentalCharts?.find(
+              (proposal) => proposal.chartStatus === "modified",
+            ) ??
+            row.original.attachedDentalCharts?.find(
+              (proposal) => proposal.chartStatus === "approved",
+            );
+          const chartData = proposalTouse;
           const surgeryDate =
             chartData?.recordTreatmentDate || row.original?.recordTreatmentDate;
           const timeDiff =
@@ -1531,8 +1598,15 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
               }
               return followUpData?.[column.key?.split("_")?.[0]] || "N/A";
             } else if (column.group === "siteSpecificCharacteristics") {
+              const proposalTouse =
+                row.row.original.attachedDentalCharts?.find(
+                  (proposal) => proposal.chartStatus === "modified",
+                ) ??
+                row.row.original.attachedDentalCharts?.find(
+                  (proposal) => proposal.chartStatus === "approved",
+                );
               const siteDetails =
-                row.row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+                proposalTouse?.proposedTreatmentToothMatrix?.filter(
                   (site) => site.treatmentItemNumber === "688",
                 );
 
@@ -1599,8 +1673,15 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
               const followUpData = row.original.recordFollowUpMatrix?.[0];
               cellValue = followUpData[column.key];
             } else if (column.group === "siteSpecificCharacteristics") {
+              const proposalTouse =
+                row.original.attachedDentalCharts?.find(
+                  (proposal) => proposal.chartStatus === "modified",
+                ) ??
+                row.original.attachedDentalCharts?.find(
+                  (proposal) => proposal.chartStatus === "approved",
+                );
               const siteDetails =
-                row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+                proposalTouse?.proposedTreatmentToothMatrix?.filter(
                   (site) => site.treatmentItemNumber === "688",
                 );
               const siteSpecificData = siteDetails?.map((site) => {
@@ -1701,6 +1782,13 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
   }, [tableData]);
 
   const globalFilterFunction = (row, columnId, filters) => {
+    const proposalTouse =
+      row.original.attachedDentalCharts?.find(
+        (proposal) => proposal.chartStatus === "modified",
+      ) ??
+      row.original.attachedDentalCharts?.find(
+        (proposal) => proposal.chartStatus === "approved",
+      );
     const conditionChecks = filters.map((filter) => {
       const filterValue = filter.value.value;
       const condition = filter.value.condition;
@@ -1725,10 +1813,9 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
           cellValue = followUpData?.[filterColumnId?.split("_")?.[0]];
         }
       } else if (group === "siteSpecificCharacteristics") {
-        const siteDetails =
-          row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
-            (site) => site?.treatmentItemNumber === "688",
-          );
+        const siteDetails = proposalTouse?.proposedTreatmentToothMatrix?.filter(
+          (site) => site?.treatmentItemNumber === "688",
+        );
         const siteSpecificData = siteDetails?.map((site) => {
           if (filterColumnId === "toothValue") {
             return site.toothValue;
@@ -1761,11 +1848,11 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
               ? row.original?.recordTreatmentSurgeons
                   ?.map((surgeon) => surgeon?.fullName)
                   ?.join(",")
-              : row?.original?.attachedDentalCharts?.[0]?.defaultDentist
+              : proposalTouse?.defaultDentist
                   ?.map((surgeon) => surgeon?.fullName)
                   ?.join(",") || null;
         } else if (filterColumnId === "recordTreatmentDate") {
-          const chartData = row?.original?.attachedDentalCharts?.[0];
+          const chartData = proposalTouse;
           cellValue = chartData?.recordTreatmentDate
             ? format(new Date(chartData?.recordTreatmentDate), "yyyy-MM-dd")
             : row?.original?.recordTreatmentDate
@@ -1775,7 +1862,7 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
                 )
               : null;
         } else if (filterColumnId === "timeFromSurgery") {
-          const chartData = row?.original?.attachedDentalCharts?.[0];
+          const chartData = proposalTouse;
           const surgeryDate =
             chartData?.recordTreatmentDate || row.original?.recordTreatmentDate;
           cellValue =
@@ -1796,7 +1883,7 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
             null;
         } else if (filterColumnId === "zygomaImplants") {
           const siteDetails =
-            row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+            proposalTouse?.proposedTreatmentToothMatrix?.filter(
               (site) => site.treatmentItemNumber === "688",
             );
           const zygomaImplants = siteDetails?.filter((site) =>
@@ -1807,7 +1894,7 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
           cellValue = zygomaImplants || 0;
         } else if (filterColumnId === "regularImplants") {
           const siteDetails =
-            row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+            proposalTouse?.proposedTreatmentToothMatrix?.filter(
               (site) => site.treatmentItemNumber === "688",
             );
           const regularImplants =
@@ -1820,7 +1907,7 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
           cellValue = regularImplants;
         } else if (filterColumnId === "totalImplants") {
           const siteDetails =
-            row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+            proposalTouse?.proposedTreatmentToothMatrix?.filter(
               (site) => site.treatmentItemNumber === "688",
             );
           const zygomaImplants = siteDetails?.filter((site) =>

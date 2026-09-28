@@ -1998,27 +1998,40 @@ export default function ClinlogDataTool({
                   value={reportType}
                   onChange={(e) => {
                     const selectedReport = e.target.value;
-                    setReportType(selectedReport);
-
-                    setColumnVisibility((prev) => {
-                      const newVisibility = { ...prev };
-                      Object.keys(newVisibility).forEach((key) => {
-                        if (key === "caseNumber") {
+                    if (selectedReport === "allFields") {
+                      setColumnVisibility((prev) => {
+                        const newVisibility = { ...prev };
+                        Object.keys(newVisibility).forEach((key) => {
                           newVisibility[key] = true;
-                        } else if (
-                          reportColumns[selectedReport]?.includes(key)
-                        ) {
-                          newVisibility[key] = true;
-                        } else {
-                          newVisibility[key] = false;
-                        }
+                        });
+                        return newVisibility;
                       });
-                      return newVisibility;
-                    });
-                    setGlobalFilter(filterReportOptions[selectedReport] || []);
+                    } else {
+                      setReportType(selectedReport);
+
+                      setColumnVisibility((prev) => {
+                        const newVisibility = { ...prev };
+                        Object.keys(newVisibility).forEach((key) => {
+                          if (key === "caseNumber") {
+                            newVisibility[key] = true;
+                          } else if (
+                            reportColumns[selectedReport]?.includes(key)
+                          ) {
+                            newVisibility[key] = true;
+                          } else {
+                            newVisibility[key] = false;
+                          }
+                        });
+                        return newVisibility;
+                      });
+                      setGlobalFilter(
+                        filterReportOptions[selectedReport] || [],
+                      );
+                    }
                   }}
                 >
                   <option value="">-- Select Report Type --</option>
+                  <option value="allFields">All fields</option>
                   {reportOptions
                     ?.filter((opt) => opt?.isCsv)
                     ?.map((option) => (

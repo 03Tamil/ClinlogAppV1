@@ -458,13 +458,19 @@ function Clinlog() {
       ...new Set(
         clinlogDataQueryResults
           ?.map((record) => {
+            const proposalToUse =
+              record.attachedDentalCharts?.find(
+                (proposal) => proposal.chartStatus === "modified",
+              ) ??
+              record.attachedDentalCharts?.find(
+                (proposal) => proposal.chartStatus === "approved",
+              );
             const allSites =
-              record.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+              proposalToUse?.proposedTreatmentToothMatrix?.filter(
                 (site) => site.treatmentItemNumber === "688",
               );
             return allSites?.map(
-              (site) =>
-                site.attachedSiteSpecificRecords?.[0]?.implantLine,
+              (site) => site.attachedSiteSpecificRecords?.[0]?.implantLine,
             );
           })
           .flat(),
@@ -905,7 +911,13 @@ function Clinlog() {
         header: "Surgery Date",
 
         cell: (row) => {
-          const chartData = row?.row?.original?.attachedDentalCharts?.[0];
+          const chartData =
+            row?.row?.original?.attachedDentalCharts?.find(
+              (proposal) => proposal.chartStatus === "modified",
+            ) ??
+            row?.row?.original?.attachedDentalCharts?.find(
+              (proposal) => proposal.chartStatus === "approved",
+            );
 
           const cellValue = chartData?.recordTreatmentDate
             ? format(new Date(chartData?.recordTreatmentDate), "yyyy-MM-dd")
@@ -923,6 +935,13 @@ function Clinlog() {
         id: "recordTreatmentSurgeons",
         header: "Surgeon",
         cell: (row) => {
+          const proposalToUse =
+            row?.row?.original?.attachedDentalCharts?.find(
+              (proposal) => proposal.chartStatus === "modified",
+            ) ??
+            row?.row?.original?.attachedDentalCharts?.find(
+              (proposal) => proposal.chartStatus === "approved",
+            );
           if (row.row.original.recordTreatmentSurgeons?.length > 0) {
             return (
               <Flex flexDirection={"column"} gap="0.1rem" w="100%">
@@ -936,13 +955,11 @@ function Clinlog() {
           } else {
             return (
               <Flex flexDirection={"column"} gap="0.1rem" w="100%">
-                {row.row.original.attachedDentalCharts?.[0]?.defaultDentist?.map(
-                  (surgeon, i) => (
-                    <Text key={i} w="70%">
-                      Dr. {surgeon.fullName}
-                    </Text>
-                  ),
-                ) || "N/A"}
+                {proposalToUse?.defaultDentist?.map((surgeon, i) => (
+                  <Text key={i} w="70%">
+                    Dr. {surgeon.fullName}
+                  </Text>
+                )) || "N/A"}
               </Flex>
             );
           }
@@ -1298,7 +1315,14 @@ function Clinlog() {
         accessorKey: "timeFromSurgery",
         header: "Time from Surgery to Insertion (days)",
         cell: (row) => {
-          const chartData = row?.row?.original?.attachedDentalCharts?.[0];
+          const chartData =
+            row?.row?.original?.attachedDentalCharts?.find(
+              (proposal) => proposal.chartStatus === "modified",
+            ) ??
+            row?.row?.original?.attachedDentalCharts?.find(
+              (proposal) => proposal.chartStatus === "approved",
+            );
+
           const surgeryDate =
             chartData?.recordTreatmentDate ||
             row?.row.original?.recordTreatmentDate;
@@ -1319,7 +1343,13 @@ function Clinlog() {
           return timeDiff > 0 ? timeDiff : "";
         },
         filterFn: (row, columnId, filterValue) => {
-          const chartData = row?.original?.attachedDentalCharts?.[0];
+          const chartData =
+            row?.original?.attachedDentalCharts?.find(
+              (proposal) => proposal.chartStatus === "modified",
+            ) ??
+            row?.original?.attachedDentalCharts?.find(
+              (proposal) => proposal.chartStatus === "approved",
+            );
           const surgeryDate =
             chartData?.recordTreatmentDate || row.original?.recordTreatmentDate;
           const timeDiff =
@@ -1423,8 +1453,15 @@ function Clinlog() {
               }
               return followUpData?.[column.key?.split("_")?.[0]] || "N/A";
             } else if (column.group === "siteSpecificCharacteristics") {
+              const proposalTouse =
+                row.row.original.attachedDentalCharts?.find(
+                  (proposal) => proposal.chartStatus === "modified",
+                ) ??
+                row.row.original.attachedDentalCharts?.find(
+                  (proposal) => proposal.chartStatus === "approved",
+                );
               const siteDetails =
-                row.row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+                proposalTouse?.proposedTreatmentToothMatrix?.filter(
                   (site) => site.treatmentItemNumber === "688",
                 );
 
@@ -1478,8 +1515,15 @@ function Clinlog() {
               const followUpData = row.original.recordFollowUpMatrix?.[0];
               cellValue = followUpData[column.key];
             } else if (column.group === "siteSpecificCharacteristics") {
+              const proposalTouse =
+                row.original.attachedDentalCharts?.find(
+                  (proposal) => proposal.chartStatus === "modified",
+                ) ??
+                row.original.attachedDentalCharts?.find(
+                  (proposal) => proposal.chartStatus === "approved",
+                );
               const siteDetails =
-                row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+                proposalTouse?.proposedTreatmentToothMatrix?.filter(
                   (site) => site.treatmentItemNumber === "688",
                 );
               const siteSpecificData = siteDetails?.map((site) => {
@@ -1572,6 +1616,13 @@ function Clinlog() {
   }, [tableData]);
 
   const globalFilterFunction = (row, columnId, filters) => {
+    const proposalTouse =
+      row.original.attachedDentalCharts?.find(
+        (proposal) => proposal.chartStatus === "modified",
+      ) ??
+      row.original.attachedDentalCharts?.find(
+        (proposal) => proposal.chartStatus === "approved",
+      );
     const conditionChecks = filters.map((filter) => {
       const filterValue = filter.value.value;
       const condition = filter.value.condition;
@@ -1596,10 +1647,9 @@ function Clinlog() {
           cellValue = followUpData?.[filterColumnId];
         }
       } else if (group === "siteSpecificCharacteristics") {
-        const siteDetails =
-          row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
-            (site) => site?.treatmentItemNumber === "688",
-          );
+        const siteDetails = proposalTouse?.proposedTreatmentToothMatrix?.filter(
+          (site) => site?.treatmentItemNumber === "688",
+        );
         const siteSpecificData = siteDetails?.map((site) => {
           if (filterColumnId === "toothValue") {
             return site.toothValue;
@@ -1632,11 +1682,11 @@ function Clinlog() {
               ? row.original?.recordTreatmentSurgeons
                   ?.map((surgeon) => surgeon?.fullName)
                   ?.join(",")
-              : row?.original?.attachedDentalCharts?.[0]?.defaultDentist
+              : proposalTouse?.defaultDentist
                   ?.map((surgeon) => surgeon?.fullName)
                   ?.join(",") || null;
         } else if (filterColumnId === "timeFromSurgery") {
-          const chartData = row?.original?.attachedDentalCharts?.[0];
+          const chartData = proposalTouse;
           const surgeryDate =
             chartData?.recordTreatmentDate || row.original?.recordTreatmentDate;
           cellValue =
