@@ -3283,6 +3283,7 @@ export const clinlogDataQueryNew = gql`
         alcohol
         bruxism
         dateOfInsertion
+        recordBmi
         diabetesAndOsteoporosis
         diagnosisOrAetiology
         edentulous

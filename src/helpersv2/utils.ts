@@ -2370,6 +2370,7 @@ export const clinlogFilterColumns = [
         value: "Absent or poor mineralisation",
       },
       { name: "Sound (non-zygoma)", value: "Sound (non-zygoma)" },
+      { name: "Not applicable", value: "Not Applicable" },
       { name: "Unknown", value: "unknown" },
     ],
   },

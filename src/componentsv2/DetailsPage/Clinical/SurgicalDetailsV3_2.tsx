@@ -464,11 +464,13 @@ export default function SurgicalDetailsV3_2({
     onClose: onCharcteristicsClose,
   } = useDisclosure();
 
-  const approvedTreatments = proposedTreatmentChartResults?.find(
-    (proposal) =>
-      proposal.chartStatus === "approved" ||
-      proposal.chartStatus === "modified",
-  );
+  const approvedTreatments =
+    proposedTreatmentChartResults?.find(
+      (proposal) => proposal.chartStatus === "modified",
+    ) ||
+    proposedTreatmentChartResults?.find(
+      (proposal) => proposal.chartStatus === "approved",
+    );
 
   const barTypeOptions = [
     { name: "FIXED FP3 PROSTHESIS WITH RIGID BAR", value: "fixedFp3" },
@@ -483,16 +485,20 @@ export default function SurgicalDetailsV3_2({
 
   const sitesWithImplantsMemo = useMemo(() => {
     let approvedProposal = null;
+    let modifiedProposal = null;
     if (activeTab === "THIS TREATMENT") {
-      approvedProposal = proposedTreatmentChartResults?.find(
-        (proposal) =>
-          proposal.chartStatus === "approved" ||
-          proposal.chartStatus === "modified",
+      modifiedProposal = proposedTreatmentChartResults?.find(
+        (proposal) => proposal.chartStatus === "modified",
       );
 
-      if (approvedProposal) {
+      approvedProposal = proposedTreatmentChartResults?.find(
+        (proposal) => proposal.chartStatus === "approved",
+      );
+
+      if (approvedProposal || modifiedProposal) {
+        const proposalToUse = modifiedProposal || approvedProposal;
         const filteredSites =
-          approvedProposal?.proposedTreatmentToothMatrix?.filter((item) => {
+          proposalToUse?.proposedTreatmentToothMatrix?.filter((item) => {
             if (statusFilter === "all") {
               return true;
             } else if (statusFilter === "completed") {
@@ -514,7 +520,7 @@ export default function SurgicalDetailsV3_2({
           .map((item) => ({
             ...item,
             insertionDate:
-              approvedProposal.patientFormRecord?.[0]?.dateOfInsertion,
+              proposalToUse.patientFormRecord?.[0]?.dateOfInsertion,
           }));
       }
     } else {
@@ -939,6 +945,11 @@ export default function SurgicalDetailsV3_2({
     } else {
       setValue("archType", "unknown");
     }
+    if (selectedRecord?.edentulous) {
+      setValue("edentulous", selectedRecord?.edentulous);
+    } else {
+      setValue("edentulous", "unknown");
+    }
     if (selectedRecord?.upperArchCondition) {
       setValue("upperArchCondition", selectedRecord?.upperArchCondition);
     } else {
@@ -1099,6 +1110,7 @@ export default function SurgicalDetailsV3_2({
         preAnaestheticInformationSubmission?.bmi ??
         selectedRecord?.recordBmi ??
         null;
+      console.log("Calculated BMI:", bmi);
       if (bmi) {
         setValue("recordBmi", bmi);
       } else {
@@ -1363,31 +1375,48 @@ export default function SurgicalDetailsV3_2({
         value: getValues("archType"),
         edit: true,
       },
-      {
-        label: "Surgical Treatment Images",
-        key: "surgicalTreatmentImages",
-        icon: "add_photo_alternate",
-        info:
-          getValues("preOpPhotos") ||
-          getValues("preOpReconstructedOpg") ||
-          getValues("postOpPhotos") ||
-          getValues("postOp2DOpg") ||
-          getValues("postOp3DOpg")
-            ? "Images uploaded"
-            : "No images uploaded",
-        boxColor:
-          getValues("preOpPhotos") ||
-          getValues("preOpReconstructedOpg") ||
-          getValues("postOpPhotos") ||
-          getValues("postOp2DOpg") ||
-          getValues("postOp3DOpg")
-            ? "#4ADE80"
-            : "#FF1111",
-        type: "images",
+      // {
+      //   label: "Surgical Treatment Images",
+      //   key: "surgicalTreatmentImages",
+      //   icon: "add_photo_alternate",
+      //   info:
+      //     getValues("preOpPhotos") ||
+      //     getValues("preOpReconstructedOpg") ||
+      //     getValues("postOpPhotos") ||
+      //     getValues("postOp2DOpg") ||
+      //     getValues("postOp3DOpg")
+      //       ? "Images uploaded"
+      //       : "No images uploaded",
+      //   boxColor:
+      //     getValues("preOpPhotos") ||
+      //     getValues("preOpReconstructedOpg") ||
+      //     getValues("postOpPhotos") ||
+      //     getValues("postOp2DOpg") ||
+      //     getValues("postOp3DOpg")
+      //       ? "#4ADE80"
+      //       : "#FF1111",
+      //   type: "images",
 
+      //   edit: true,
+      // },
+      {
+        label: "Edentulous",
+        key: "edentulous",
+
+        options: [
+          { name: "-- Select --", value: "" },
+          { name: "Yes", value: "Yes" },
+          { name: "No", value: "No" },
+          { name: "Unknown", value: "unknown" },
+        ],
+        info:
+          getValues("edentulous") !== "unknown"
+            ? "Select Edentulous Status"
+            : "Edentulous Status.",
+        boxColor: getValues("edentulous") !== "unknown" ? "#4ADE80" : "#FF1111",
+        value: getValues("edentulous"),
         edit: true,
       },
-
       {
         label: "Upper Arch Condition at Surgery",
         key: "upperArchCondition",
@@ -3955,7 +3984,7 @@ export default function SurgicalDetailsV3_2({
                 letterSpacing={"1.3px"}
                 textTransform={"uppercase"}
               >
-               {selectedSite
+                {selectedSite
                   ? selectedSite?.treatmentItemNumber === "666"
                     ? "RETAINER DETAILS"
                     : `SITE SPECIFIC DETAILS | SITE ${selectedSite?.toothValue}`
@@ -3969,11 +3998,14 @@ export default function SurgicalDetailsV3_2({
               selectedSite={selectedSite}
               toastData={toastData}
               patientName={patientName}
-              approvedProposal={proposedTreatmentChartResults?.find(
-                (proposal) =>
-                  proposal.chartStatus === "approved" ||
-                  proposal.chartStatus === "modified",
-              )}
+              approvedProposal={
+                proposedTreatmentChartResults?.find(
+                  (proposal) => proposal.chartStatus === "modified",
+                ) ||
+                proposedTreatmentChartResults?.find(
+                  (proposal) => proposal.chartStatus === "approved",
+                )
+              }
               onSidebarClose={onSidebarClose}
               globalPostId={globalPostId}
               proposedTreatmentChartIds={proposedTreatmentChartIds}
