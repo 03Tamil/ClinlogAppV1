@@ -151,6 +151,16 @@ const itemSpecificationFields = [
   "preOperativeSinusDiseaseManagementLabel",
   "conformanceWithTreatmentPlan",
   "conformanceWithTreatmentPlanLabel",
+  "prf",
+  "lotCode",
+  "dateOfManufacture",
+  "dateOfExpiry",
+  "implantProductCode",
+  "abutmentProductCode",
+  "abutmentLotCode",
+  "abutmentDateOfManufacture",
+  "abutmentDateOfExpiry",
+  "revisedTreatment",
 ];
 
 const getItemSpecification = (siteSpecificRecord?: any) => {
@@ -178,6 +188,7 @@ export default function SurgicalDetailsV3_2({
   detailsData,
   fromClinlog = false,
 }) {
+  console.log(proposedTreatmentChartResults);
   const router = useRouter();
   const { query } = router;
   // Tab state for segmented control
@@ -2388,15 +2399,16 @@ export default function SurgicalDetailsV3_2({
         header: "Status",
         cell: (info) => {
           const item = info.row.original;
+          const isExistingOrPlanned = item?.isExistingOrPlanned;
           const hasSpecs = item?.attachedSiteSpecificRecords?.length > 0;
           const isFailed =
             item?.attachedSiteSpecificRecords?.[0]?.attachedSiteSpecificFollowUp
               ?.length > 0 &&
             item?.attachedSiteSpecificRecords?.[0]?.attachedSiteSpecificFollowUp?.some(
               (followUp) =>
-                followUp?.statusOfImplant === "failed" ||
-                followUp?.statusOfBar === "failed",
+                followUp?.implantFunctionAtFollowUp === "No (failed)",
             );
+
           if (isFailed) {
             return (
               <Flex
@@ -2408,8 +2420,12 @@ export default function SurgicalDetailsV3_2({
                   transform: "scale(1.15)",
                 }}
                 onClick={() => {
-                  setSelectedSite(item);
-                  onSidebarOpen();
+                  if (item?.isExistingOrPlanned) {
+                    return;
+                  } else {
+                    setSelectedSite(item);
+                    onSidebarOpen();
+                  }
                 }}
               >
                 <Flex
@@ -2430,6 +2446,15 @@ export default function SurgicalDetailsV3_2({
             );
           }
           if (hasSpecs) {
+            const isNotPlaced =
+              item?.attachedSiteSpecificRecords?.[0]?.conformanceWithTreatmentPlan?.includes(
+                "not placed",
+              ) || false;
+            const isNotUsed =
+              item?.attachedSiteSpecificRecords?.[0]?.conformanceWithTreatmentPlan?.includes(
+                "not used",
+              ) || false;
+
             return (
               <Flex
                 align={"center"}
@@ -2440,13 +2465,22 @@ export default function SurgicalDetailsV3_2({
                   transform: "scale(1.15)",
                 }}
                 onClick={() => {
-                  setSelectedSite(item);
-                  onSidebarOpen();
+                  if (item?.isExistingOrPlanned) {
+                    setSelectedSite(item);
+                    onAddImplantOpen();
+                  } else {
+                    setSelectedSite(item);
+                    onSidebarOpen();
+                  }
                 }}
               >
                 <Flex
                   borderRadius="50%"
-                  bgColor="#4ADE80"
+                  bgColor={
+                    item?.isExistingOrPlanned || isNotPlaced || isNotUsed
+                      ? "gray.400"
+                      : "#4ADE80"
+                  }
                   width="10px"
                   height="10px"
                 ></Flex>
@@ -2456,7 +2490,14 @@ export default function SurgicalDetailsV3_2({
                   fontWeight={"500"}
                   fontFamily={"inter"}
                 >
-                  Active
+                  {item?.isExistingOrPlanned
+                    ? item?.attachedSiteSpecificRecords?.[0]
+                        ?.existingOrPlannedImplantStatusLabel
+                    : isNotPlaced
+                      ? "Not Placed"
+                      : isNotUsed
+                        ? "Not Used"
+                        : "Active"}
                 </Text>
               </Flex>
             );
@@ -2471,8 +2512,13 @@ export default function SurgicalDetailsV3_2({
                 transform: "scale(1.15)",
               }}
               onClick={() => {
-                setSelectedSite(item);
-                onSidebarOpen();
+                if (item?.isExistingOrPlanned) {
+                  setSelectedSite(item);
+                  onAddImplantOpen();
+                } else {
+                  setSelectedSite(item);
+                  onSidebarOpen();
+                }
               }}
             >
               <Flex
@@ -2579,7 +2625,20 @@ export default function SurgicalDetailsV3_2({
         header: "Component Type",
         cell: (info) => {
           const item = info.row.original;
-          if (item?.treatmentItemNumber === "666") {
+          if (item?.isExistingOrPlanned) {
+            const specsData =
+              item?.attachedSiteSpecificRecords?.[0]?.implantCategoryLabel ||
+              "";
+            return (
+              <Text
+                fontSize={"13px"}
+                fontWeight={"700"}
+                textTransform={"uppercase"}
+              >
+                {specsData ? specsData : "N/A"}
+              </Text>
+            );
+          } else if (item?.treatmentItemNumber === "666") {
             if (item?.attachedSiteSpecificRecords?.[0]) {
               return (
                 <Text fontSize={"13px"} fontWeight={"700"}>
@@ -2614,7 +2673,8 @@ export default function SurgicalDetailsV3_2({
 
             return (
               <Text fontSize={"13px"}>
-                {itemSpecification?.implantTypeLabel ||
+                {itemSpecification?.implantLine ||
+                  itemSpecification?.implantTypeLabel ||
                   itemSpecification?.implantType}
               </Text>
             );
@@ -2754,6 +2814,7 @@ export default function SurgicalDetailsV3_2({
         header: "Action",
         cell: (info) => {
           const item = info.row.original;
+          const isExistingOrPlanned = item?.isExistingOrPlanned;
           return (
             <Flex>
               <Button
@@ -2764,6 +2825,7 @@ export default function SurgicalDetailsV3_2({
                   setSelectedSite(item);
                   onSidebarOpen();
                 }}
+                isDisabled={isExistingOrPlanned}
               >
                 <chakra.span
                   className="material-symbols-outlined"

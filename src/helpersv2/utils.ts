@@ -2000,8 +2000,9 @@ export const clinlogFilterColumns = [
     options: [
       { name: "80Ncm and above", value: "80Ncm and above" },
       { name: "60-75Ncm", value: "60-75Ncm" },
-      { name: "55Ncm and Under", value: "55Ncm and Under" },
+      { name: "40-55Ncm", value: "40-55Ncm" },
       { name: "35 Ncm (minimum)", value: "35 Ncm (minimum)" },
+      { name: "30Ncm and Under", value: "30Ncm and Under" },
       { name: "Zygoma Hand Driver Ideal", value: "Zygoma Hand Driver Ideal" },
       { name: "Zygoma Hand Driver Low", value: "Zygoma Hand Driver Low" },
       {

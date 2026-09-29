@@ -3342,6 +3342,7 @@ export const clinlogDataQueryNew = gql`
                 id
                 toothValue
                 treatmentItemNumber
+                isExistingOrPlanned
                 attachedSiteSpecificRecords {
                   ... on treatmentItemSpecificationRecord_itemSpecificationAndDetails_Entry {
                     id
@@ -3399,6 +3400,31 @@ export const clinlogDataQueryNew = gql`
                     abutmentHeight
                     abutmentLength
                     abutmentSerialSequenceBarCode
+                  }
+                  ... on treatmentItemSpecificationRecord_existingOrPlannedImplants_Entry {
+                    id
+                    attachedSiteSpecificFollowUp(orderBy: "dateCreated ASC") {
+                      ... on siteSpecificFollowUp_default_Entry {
+                        id
+                        title
+                        dateCreated
+                        dateUpdated
+                        recordFollowUpDate
+                        implantFunctionAtFollowUp
+                        implantFunctionAtFollowUpLabel: implantFunctionAtFollowUp(
+                          label: true
+                        )
+                      }
+                    }
+                    existingOrPlannedImplantStatus
+                    existingOrPlannedImplantStatusLabel: existingOrPlannedImplantStatus(
+                      label: true
+                    )
+                    implantCategory
+                    implantCategoryLabel: implantCategory(label: true)
+                    plannedSite
+                    movedSite
+                    description
                   }
                 }
               }
@@ -3558,6 +3584,31 @@ export const clinlogDataQuery = gql`
                     abutmentHeight
                     abutmentLength
                     abutmentSerialSequenceBarCode
+                  }
+                  ... on treatmentItemSpecificationRecord_existingOrPlannedImplants_Entry {
+                    id
+                    attachedSiteSpecificFollowUp(orderBy: "dateCreated ASC") {
+                      ... on siteSpecificFollowUp_default_Entry {
+                        id
+                        title
+                        dateCreated
+                        dateUpdated
+                        recordFollowUpDate
+                        implantFunctionAtFollowUp
+                        implantFunctionAtFollowUpLabel: implantFunctionAtFollowUp(
+                          label: true
+                        )
+                      }
+                    }
+                    existingOrPlannedImplantStatus
+                    existingOrPlannedImplantStatusLabel: existingOrPlannedImplantStatus(
+                      label: true
+                    )
+                    implantCategory
+                    implantCategoryLabel: implantCategory(label: true)
+                    plannedSite
+                    movedSite
+                    description
                   }
                 }
               }
