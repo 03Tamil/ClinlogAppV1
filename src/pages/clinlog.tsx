@@ -1033,7 +1033,14 @@ function Clinlog({ clinlogQueryToken }: { clinlogQueryToken: string }) {
         accessorKey: "sex",
         header: "Gender",
         cell: (row) => {
-          return row.row.original.sex;
+          const genderValue = ["m", "M", "Male", "male"]?.includes(
+            row.row.original.sex,
+          )
+            ? "Male"
+            : ["f", "F", "Female", "female"]?.includes(row.row.original.sex)
+              ? "Female"
+              : row.row.original.sex;
+          return genderValue;
         },
         // filterFn: (row, columnId, filterValue) => {
         //   const gender = row.original.sex;

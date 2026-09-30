@@ -144,12 +144,18 @@ export default function ClinlogDataTool({
   const implantsData = useMemo(() => {
     const result = [];
     const regularImplants = filteredData?.reduce((acc, record) => {
-      const siteDetails =
-        record?.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
-          (site) =>
-            site.treatmentItemNumber === "688" &&
-            site?.attachedSiteSpecificRecords?.length > 0,
+      const chartData =
+        record?.attachedDentalCharts?.find(
+          (proposal) => proposal.chartStatus === "modified",
+        ) ??
+        record?.attachedDentalCharts?.find(
+          (proposal) => proposal.chartStatus === "approved",
         );
+      const siteDetails = chartData?.proposedTreatmentToothMatrix?.filter(
+        (site) =>
+          site.treatmentItemNumber === "688" &&
+          site?.attachedSiteSpecificRecords?.length > 0,
+      );
       const regularImplants = siteDetails?.filter((site) => {
         const implantCategory =
           site?.attachedSiteSpecificRecords?.[0]?.implantCategory || "";
@@ -160,12 +166,18 @@ export default function ClinlogDataTool({
       return count;
     }, 0);
     const zygomaImplants = filteredData?.reduce((acc, record) => {
-      const siteDetails =
-        record?.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
-          (site) =>
-            site.treatmentItemNumber === "688" &&
-            site?.attachedSiteSpecificRecords?.length > 0,
+      const chartData =
+        record?.attachedDentalCharts?.find(
+          (proposal) => proposal.chartStatus === "modified",
+        ) ??
+        record?.attachedDentalCharts?.find(
+          (proposal) => proposal.chartStatus === "approved",
         );
+      const siteDetails = chartData?.proposedTreatmentToothMatrix?.filter(
+        (site) =>
+          site.treatmentItemNumber === "688" &&
+          site?.attachedSiteSpecificRecords?.length > 0,
+      );
       const zygomaImplants = siteDetails?.filter((site) => {
         const implantCategory =
           site?.attachedSiteSpecificRecords?.[0]?.implantCategory || "";
@@ -365,8 +377,14 @@ export default function ClinlogDataTool({
       } else if (column?.group === "siteSpecificCharacteristics") {
         const siteDetails = filteredData
           ?.map((record) => {
-            const chartData = record?.attachedDentalCharts?.[0];
-
+            //  const chartData = record?.attachedDentalCharts?.[0];
+            const chartData =
+              record.attachedDentalCharts?.find(
+                (proposal) => proposal.chartStatus === "modified",
+              ) ??
+              record.attachedDentalCharts?.find(
+                (proposal) => proposal.chartStatus === "approved",
+              );
             if (!chartData) return [];
             return (
               chartData?.proposedTreatmentToothMatrix?.filter(
@@ -505,7 +523,14 @@ export default function ClinlogDataTool({
       if (group1 === "siteSpecificCharacteristics") {
         const siteDetails = filteredData
           ?.map((record) => {
-            const chartData = record?.attachedDentalCharts?.[0];
+            // const chartData = record?.attachedDentalCharts?.[0];
+            const chartData =
+              record.attachedDentalCharts?.find(
+                (proposal) => proposal.chartStatus === "modified",
+              ) ??
+              record.attachedDentalCharts?.find(
+                (proposal) => proposal.chartStatus === "approved",
+              );
 
             if (!chartData) return [];
             return (
@@ -583,7 +608,14 @@ export default function ClinlogDataTool({
       if (group2 === "siteSpecificCharacteristics") {
         const siteDetails = filteredData
           ?.map((record) => {
-            const chartData = record?.attachedDentalCharts?.[0];
+            // const chartData = record?.attachedDentalCharts?.[0];
+            const chartData =
+              record.attachedDentalCharts?.find(
+                (proposal) => proposal.chartStatus === "modified",
+              ) ??
+              record.attachedDentalCharts?.find(
+                (proposal) => proposal.chartStatus === "approved",
+              );
 
             if (!chartData) return [];
             return (
@@ -669,11 +701,18 @@ export default function ClinlogDataTool({
             compareParams?.group1 === "siteSpecificCharacteristics" &&
             compareParams?.group2 === "siteSpecificCharacteristics"
               ? filteredData
-                  ?.map((record) =>
-                    record?.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+                  ?.map((record) => {
+                    const chartData =
+                      record.attachedDentalCharts?.find(
+                        (proposal) => proposal.chartStatus === "modified",
+                      ) ??
+                      record.attachedDentalCharts?.find(
+                        (proposal) => proposal.chartStatus === "approved",
+                      );
+                    return chartData?.proposedTreatmentToothMatrix?.filter(
                       (site) => site?.treatmentItemNumber === "688",
-                    ),
-                  )
+                    );
+                  })
                   ?.flat()?.length
               : filteredData?.length,
           ],
@@ -712,11 +751,18 @@ export default function ClinlogDataTool({
               compareParams?.group1 === "siteSpecificCharacteristics" &&
               compareParams?.group2 === "siteSpecificCharacteristics"
                 ? filteredData
-                    ?.map((record) =>
-                      record?.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
+                    ?.map((record) => {
+                      const chartData =
+                        record.attachedDentalCharts?.find(
+                          (proposal) => proposal.chartStatus === "modified",
+                        ) ??
+                        record.attachedDentalCharts?.find(
+                          (proposal) => proposal.chartStatus === "approved",
+                        );
+                      return chartData?.proposedTreatmentToothMatrix?.filter(
                         (site) => site?.treatmentItemNumber === "688",
-                      ),
-                    )
+                      );
+                    })
                     ?.flat()?.length
                 : filteredData?.length;
             if (val === "TOTAL") {
@@ -1177,7 +1223,14 @@ export default function ClinlogDataTool({
       let sitesRowsData = [];
       const rowFormatted = row?.getVisibleCells()?.map((cell) => {
         if (cell.column.id === "recordTreatmentDate") {
-          const chartData = row.original?.attachedDentalCharts?.[0];
+          // const chartData = row.original?.attachedDentalCharts?.[0];
+          const chartData =
+            row.original.attachedDentalCharts?.find(
+              (proposal) => proposal.chartStatus === "modified",
+            ) ??
+            row.original.attachedDentalCharts?.find(
+              (proposal) => proposal.chartStatus === "approved",
+            );
 
           const surgeryDate = chartData?.recordTreatmentDate;
           const dateValue = surgeryDate
@@ -1189,6 +1242,11 @@ export default function ClinlogDataTool({
           } else {
             return "";
           }
+        } else if (cell.column.id === "caseNumber") {
+          const caseNumber =
+            cell.row.original.caseNumber?.toString() ||
+            `SCR${cell.row.original.id}`;
+          return caseNumber;
         } else if (cell.column.id === "fullName") {
           return (
             cell.row.original.recordFirstName +
@@ -1196,10 +1254,16 @@ export default function ClinlogDataTool({
             cell.row.original.recordLastName
           );
         } else if (cell.column.id === "regularImplants") {
-          const siteDetails =
-            cell.row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
-              (site) => site.treatmentItemNumber === "688",
+          const chartData =
+            cell.row.original.attachedDentalCharts?.find(
+              (proposal) => proposal.chartStatus === "modified",
+            ) ??
+            cell.row.original.attachedDentalCharts?.find(
+              (proposal) => proposal.chartStatus === "approved",
             );
+          const siteDetails = chartData?.proposedTreatmentToothMatrix?.filter(
+            (site) => site.treatmentItemNumber === "688",
+          );
           const zygomaImplants =
             siteDetails?.filter(
               (site) =>
@@ -1209,10 +1273,16 @@ export default function ClinlogDataTool({
             )?.length || 0;
           return zygomaImplants;
         } else if (cell.column.id === "zygomaImplants") {
-          const siteDetails =
-            cell.row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
-              (site) => site.treatmentItemNumber === "688",
+          const chartData =
+            cell.row.original.attachedDentalCharts?.find(
+              (proposal) => proposal.chartStatus === "modified",
+            ) ??
+            cell.row.original.attachedDentalCharts?.find(
+              (proposal) => proposal.chartStatus === "approved",
             );
+          const siteDetails = chartData?.proposedTreatmentToothMatrix?.filter(
+            (site) => site.treatmentItemNumber === "688",
+          );
           const zygomaImplants =
             siteDetails?.filter((site) =>
               site?.attachedSiteSpecificRecords?.[0]?.implantCategory?.includes(
@@ -1224,10 +1294,16 @@ export default function ClinlogDataTool({
           // const regularImplants =
           //   Number(cell.row.original?.regularImplants) || 0;
           // const zygomaImplants = Number(cell.row.original?.zygomaImplants) || 0;
-          const siteDetails =
-            cell.row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
-              (site) => site.treatmentItemNumber === "688",
+          const chartData =
+            cell.row.original.attachedDentalCharts?.find(
+              (proposal) => proposal.chartStatus === "modified",
+            ) ??
+            cell.row.original.attachedDentalCharts?.find(
+              (proposal) => proposal.chartStatus === "approved",
             );
+          const siteDetails = chartData?.proposedTreatmentToothMatrix?.filter(
+            (site) => site.treatmentItemNumber === "688",
+          );
           const regularImplants =
             siteDetails?.filter(
               (site) =>
@@ -1252,10 +1328,30 @@ export default function ClinlogDataTool({
             .join("\n");
           return `"${surgeonNames}"`;
         } else if (followUpColumns?.includes(cell.column.id)) {
-          const followUpData = cell.row.original?.recordFollowUpMatrix?.[0];
-          return (
-            followUpData?.[cell.column.id?.split("_")?.[0]]?.toString() || ""
-          );
+          const followUpData = cell.row.original?.recordFollowUpMatrix
+            ?.slice()
+            .sort(
+              (a, b) =>
+                new Date(b.dateOfFollowUp ?? 0).getTime() -
+                new Date(a.dateOfFollowUp ?? 0).getTime(),
+            )[0];
+          if (cell.column.id?.includes("timeFromSurgery")) {
+            const followUpDate = followUpData?.dateOfFollowUp;
+            const surgeryDate = cell.row.original?.recordTreatmentDate;
+            const timeFromSurgery =
+              surgeryDate && followUpDate
+                ? Math.floor(
+                    (new Date(followUpDate).getTime() -
+                      new Date(surgeryDate).getTime()) /
+                      (1000 * 60 * 60 * 24),
+                  )
+                : null;
+            return timeFromSurgery?.toString() || "";
+          } else {
+            return (
+              followUpData?.[cell.column.id?.split("_")?.[0]]?.toString() || ""
+            );
+          }
         } else if (patientSurveyColumns?.includes(cell.column.id)) {
           const surveyData = clinlogNotes?.find((note) => {
             return (
@@ -1271,10 +1367,17 @@ export default function ClinlogDataTool({
           siteSpecificColumns?.includes(cell.column.id) ||
           ssFollowUpColumns?.includes(cell.column.id)
         ) {
-          const siteDetails =
-            cell.row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
-              (site) => site.treatmentItemNumber === "688",
+          const chartData =
+            cell.row.original.attachedDentalCharts?.find(
+              (proposal) => proposal.chartStatus === "modified",
+            ) ??
+            cell.row.original.attachedDentalCharts?.find(
+              (proposal) => proposal.chartStatus === "approved",
             );
+
+          const siteDetails = chartData?.proposedTreatmentToothMatrix?.filter(
+            (site) => site.treatmentItemNumber === "688",
+          );
           const siteSpecificData = siteDetails?.map((site) => {
             if (cell.column.id === "toothValue") {
               return site.toothValue;
@@ -1326,6 +1429,15 @@ export default function ClinlogDataTool({
                 )
               : null;
           return timeDiff > 0 ? timeDiff : "";
+        } else if (cell.column.id === "sex") {
+          const genderValue = ["m", "M", "Male", "male"]?.includes(
+            cell.row.original.sex,
+          )
+            ? "Male"
+            : ["f", "F", "Female", "female"]?.includes(cell.row.original.sex)
+              ? "Female"
+              : cell.row.original.sex;
+          return genderValue;
         }
 
         return cell.getValue()?.toString()?.replaceAll(",", "") || "";
@@ -1405,7 +1517,14 @@ export default function ClinlogDataTool({
       let sitesRowsData = [];
       const rowFormatted = row?.getVisibleCells()?.map((cell) => {
         if (cell.column.id === "recordTreatmentDate") {
-          const chartData = row.original?.attachedDentalCharts?.[0];
+          //const chartData = row.original?.attachedDentalCharts?.[0];
+          const chartData =
+            row.original.attachedDentalCharts?.find(
+              (proposal) => proposal.chartStatus === "modified",
+            ) ??
+            row.original.attachedDentalCharts?.find(
+              (proposal) => proposal.chartStatus === "approved",
+            );
 
           const surgeryDate = chartData?.recordTreatmentDate;
           const dateValue = surgeryDate
@@ -1417,6 +1536,11 @@ export default function ClinlogDataTool({
           } else {
             return "";
           }
+        } else if (cell.column.id === "caseNumber") {
+          const caseNumber =
+            cell.row.original.caseNumber?.toString() ||
+            `SCR${cell.row.original.id}`;
+          return caseNumber;
         } else if (cell.column.id === "fullName") {
           return (
             cell.row.original.recordFirstName +
@@ -1424,10 +1548,16 @@ export default function ClinlogDataTool({
             cell.row.original.recordLastName
           );
         } else if (cell.column.id === "zygomaImplants") {
-          const siteDetails =
-            cell.row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
-              (site) => site.treatmentItemNumber === "688",
+          const chartData =
+            cell.row.original.attachedDentalCharts?.find(
+              (proposal) => proposal.chartStatus === "modified",
+            ) ??
+            cell.row.original.attachedDentalCharts?.find(
+              (proposal) => proposal.chartStatus === "approved",
             );
+          const siteDetails = chartData?.proposedTreatmentToothMatrix?.filter(
+            (site) => site.treatmentItemNumber === "688",
+          );
           const zygomaImplants =
             siteDetails?.filter((site) =>
               site?.attachedSiteSpecificRecords?.[0]?.implantCategory?.includes(
@@ -1436,10 +1566,16 @@ export default function ClinlogDataTool({
             )?.length || 0;
           return zygomaImplants;
         } else if (cell.column.id === "regularImplants") {
-          const siteDetails =
-            cell.row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
-              (site) => site.treatmentItemNumber === "688",
+          const chartData =
+            cell.row.original.attachedDentalCharts?.find(
+              (proposal) => proposal.chartStatus === "modified",
+            ) ??
+            cell.row.original.attachedDentalCharts?.find(
+              (proposal) => proposal.chartStatus === "approved",
             );
+          const siteDetails = chartData?.proposedTreatmentToothMatrix?.filter(
+            (site) => site.treatmentItemNumber === "688",
+          );
           const regularImplants =
             siteDetails?.filter((site) => {
               const implantCategory =
@@ -1448,9 +1584,28 @@ export default function ClinlogDataTool({
             })?.length || 0;
           return regularImplants;
         } else if (cell.column.id === "totalImplants") {
+          const chartData =
+            cell.row.original.attachedDentalCharts?.find(
+              (proposal) => proposal.chartStatus === "modified",
+            ) ??
+            cell.row.original.attachedDentalCharts?.find(
+              (proposal) => proposal.chartStatus === "approved",
+            );
+          const siteDetails = chartData?.proposedTreatmentToothMatrix?.filter(
+            (site) => site.treatmentItemNumber === "688",
+          );
           const regularImplants =
-            Number(cell.row.original?.regularImplants) || 0;
-          const zygomaImplants = Number(cell.row.original?.zygomaImplants) || 0;
+            siteDetails?.filter((site) => {
+              const implantCategory =
+                site?.attachedSiteSpecificRecords?.[0]?.implantCategory || "";
+              return !implantCategory.includes("zygomatic");
+            })?.length || 0;
+          const zygomaImplants =
+            siteDetails?.filter((site) =>
+              site?.attachedSiteSpecificRecords?.[0]?.implantCategory?.includes(
+                "zygomatic",
+              ),
+            )?.length || 0;
           return regularImplants + zygomaImplants;
         } else if (cell.column.id === "recordTreatmentSurgeons") {
           const surgeons = cell.row.original?.recordTreatmentSurgeons || [];
@@ -1462,10 +1617,30 @@ export default function ClinlogDataTool({
             .join("\n");
           return `"${surgeonNames}"`;
         } else if (followUpColumns?.includes(cell.column.id)) {
-          const followUpData = cell.row.original?.recordFollowUpMatrix?.[0];
-          return (
-            followUpData?.[cell.column.id?.split("_")?.[0]]?.toString() || ""
-          );
+          const followUpData = cell.row.original?.recordFollowUpMatrix
+            ?.slice()
+            .sort(
+              (a, b) =>
+                new Date(b.dateOfFollowUp ?? 0).getTime() -
+                new Date(a.dateOfFollowUp ?? 0).getTime(),
+            )[0];
+          if (cell.column.id?.includes("timeFromSurgery")) {
+            const followUpDate = followUpData?.dateOfFollowUp;
+            const surgeryDate = cell.row.original?.recordTreatmentDate;
+            const timeFromSurgery =
+              surgeryDate && followUpDate
+                ? Math.floor(
+                    (new Date(followUpDate).getTime() -
+                      new Date(surgeryDate).getTime()) /
+                      (1000 * 60 * 60 * 24),
+                  )
+                : null;
+            return timeFromSurgery?.toString();
+          } else {
+            return (
+              followUpData?.[cell.column.id?.split("_")?.[0]]?.toString() || ""
+            );
+          }
         } else if (patientSurveyColumns?.includes(cell.column.id)) {
           const surveyData = clinlogNotes?.find((note) => {
             return (
@@ -1481,10 +1656,17 @@ export default function ClinlogDataTool({
           siteSpecificColumns?.includes(cell.column.id) ||
           ssFollowUpColumns?.includes(cell.column.id)
         ) {
-          const siteDetails =
-            cell.row.original.attachedDentalCharts?.[0]?.proposedTreatmentToothMatrix?.filter(
-              (site) => site.treatmentItemNumber === "688",
+          const chartData =
+            cell.row.original.attachedDentalCharts?.find(
+              (proposal) => proposal.chartStatus === "modified",
+            ) ??
+            cell.row.original.attachedDentalCharts?.find(
+              (proposal) => proposal.chartStatus === "approved",
             );
+
+          const siteDetails = chartData?.proposedTreatmentToothMatrix?.filter(
+            (site) => site.treatmentItemNumber === "688",
+          );
           const siteSpecificData = siteDetails?.map((site) => {
             if (cell.column.id === "toothValue") {
               return site.toothValue;
@@ -1536,6 +1718,15 @@ export default function ClinlogDataTool({
                 )
               : null;
           return timeDiff > 0 ? timeDiff : "";
+        } else if (cell.column.id === "sex") {
+          const genderValue = ["m", "M", "Male", "male"]?.includes(
+            cell.row.original.sex,
+          )
+            ? "Male"
+            : ["f", "F", "Female", "female"]?.includes(cell.row.original.sex)
+              ? "Female"
+              : cell.row.original.sex;
+          return genderValue;
         }
 
         return cell.getValue()?.toString()?.replaceAll(",", "") || "";
@@ -2002,7 +2193,16 @@ export default function ClinlogDataTool({
                       setColumnVisibility((prev) => {
                         const newVisibility = { ...prev };
                         Object.keys(newVisibility).forEach((key) => {
-                          newVisibility[key] = true;
+                          if (
+                            ![
+                              "status",
+                              "images",
+                              "edentulous",
+                              "recordClinic",
+                              "fullName",
+                            ].includes(key)
+                          )
+                            newVisibility[key] = true;
                         });
                         return newVisibility;
                       });
